@@ -2,855 +2,569 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>출입코드 노트</title>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Noto+Sans+KR:wght@300;400;600;700&display=swap" rel="stylesheet">
+<meta name="theme-color" content="#0a0a0e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="출입코드">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0f0f10;
-    --surface: #18181b;
-    --surface2: #1f1f24;
-    --border: #2a2a32;
-    --accent: #f59e0b;
-    --accent2: #fbbf24;
-    --text: #e4e4e7;
-    --text-dim: #71717a;
-    --text-muted: #3f3f46;
-    --code-bg: #0a0a0b;
-    --green: #4ade80;
-    --blue: #60a5fa;
-  }
+:root{
+  --bg:#0a0a0e;--s1:#101015;--s2:#16161e;--s3:#1e1e28;--s4:#242432;
+  --border:#1e1e2c;--border2:#2a2a3c;--border3:#363650;
+  --amber:#f59e0b;--amber2:#fcd34d;--amber-dim:#7c4f06;
+  --blue:#60a5fa;--blue-dim:#1e3a5f;
+  --green:#34d399;--green2:#6ee7b7;--green-dim:#0d3a28;
+  --red:#f87171;--red-dim:#3a1010;
+  --text:#e8e8f0;--text2:#8888a8;--text3:#3a3a5a;
+  --mono:'IBM Plex Mono',monospace;--sans:'Noto Sans KR',sans-serif;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);-webkit-tap-highlight-color:transparent;overscroll-behavior:none;}
+.app{display:flex;flex-direction:column;height:100dvh;height:100vh;max-width:560px;margin:0 auto;}
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+/* HEADER */
+.topbar{flex-shrink:0;padding:14px 16px 0;}
+.header{display:flex;align-items:center;gap:10px;padding-bottom:12px;border-bottom:1px solid var(--border);}
+.header-icon{width:32px;height:32px;background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;box-shadow:0 2px 12px rgba(245,158,11,.25);}
+.header-info{flex:1;}
+.header-info h1{font-size:13px;font-weight:700;color:var(--text);letter-spacing:.07em;text-transform:uppercase;}
+.header-info p{font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:1px;}
+.add-region-btn{display:flex;align-items:center;gap:4px;padding:8px 13px;background:linear-gradient(135deg,var(--amber),#d97706);color:#0a0a0e;font-weight:700;font-size:12px;font-family:var(--sans);border:none;border-radius:9px;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:opacity .15s;}
+.add-region-btn:active{opacity:.8;}
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Noto Sans KR', sans-serif;
-    min-height: 100vh;
-    padding: 16px;
-  }
+/* SEARCH */
+.search-wrap{position:relative;padding:10px 16px 8px;flex-shrink:0;}
+.search-wrap input{width:100%;background:var(--s2);border:1px solid var(--border2);border-radius:10px;padding:10px 16px 10px 40px;color:var(--text);font-size:14px;font-family:var(--sans);outline:none;transition:border-color .2s,box-shadow .2s;}
+.search-wrap input:focus{border-color:var(--amber);box-shadow:0 0 0 3px rgba(245,158,11,.1);}
+.search-wrap input::placeholder{color:var(--text3);}
+.si{position:absolute;left:29px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:14px;pointer-events:none;}
 
-  /* Header */
-  header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 20px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid var(--border);
-  }
+/* SCROLL */
+.content-scroll{flex:1;overflow-y:scroll;overflow-x:hidden;-webkit-overflow-scrolling:touch;scroll-snap-type:y proximity;padding:4px 16px 50px;}
+.content-scroll::-webkit-scrollbar{width:3px;}
+.content-scroll::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
 
-  .header-icon {
-    font-size: 22px;
-  }
+.no-results{text-align:center;padding:50px 20px;color:var(--text3);font-size:12px;font-family:var(--mono);display:none;}
+.empty-state{text-align:center;padding:60px 20px 20px;}
+.empty-state .es-icon{font-size:40px;margin-bottom:14px;}
+.empty-state p{color:var(--text3);font-size:13px;line-height:1.8;}
+.empty-state strong{color:var(--amber);}
 
-  header h1 {
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--accent);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
+/* ═══ REGION CARD ═══ */
+.region-card{scroll-snap-align:start;margin-bottom:14px;border-radius:16px;overflow:hidden;border:1px solid var(--border);transition:border-color .2s;}
+.region-card.open{border-color:var(--border3);box-shadow:0 4px 24px rgba(0,0,0,.5);}
+.region-header{display:flex;align-items:center;cursor:pointer;user-select:none;background:var(--s1);min-height:60px;position:relative;}
+.region-color-bar{width:4px;align-self:stretch;flex-shrink:0;background:linear-gradient(180deg,var(--amber),var(--amber-dim));opacity:.6;transition:opacity .2s;}
+.region-card.open .region-color-bar{opacity:1;}
+.region-header-inner{display:flex;align-items:center;gap:10px;flex:1;padding:12px 10px 12px 14px;min-width:0;}
+.region-icon{width:36px;height:36px;border-radius:10px;background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.25);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;transition:background .2s;}
+.region-card.open .region-icon{background:rgba(245,158,11,.2);}
+.region-name{font-size:15px;font-weight:700;color:var(--text);}
+.region-meta{font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:2px;}
+.region-actions{display:flex;align-items:center;gap:4px;padding:0 10px 0 0;flex-shrink:0;}
+.act-btn{width:32px;height:32px;border:1px solid var(--border2);border-radius:8px;background:var(--s3);color:var(--text2);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s,border-color .15s;flex-shrink:0;}
+.act-btn:active{transform:scale(.9);}
+.act-btn.add{color:var(--amber);border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.08);}
+.act-btn.del{color:var(--red);border-color:rgba(248,113,113,.3);background:rgba(248,113,113,.06);}
+.chev{color:var(--text3);font-size:11px;transition:transform .25s;margin-left:2px;flex-shrink:0;}
+.region-card.open .chev.r{transform:rotate(180deg);color:var(--amber);}
 
-  header span {
-    font-size: 11px;
-    color: var(--text-dim);
-    margin-left: auto;
-    font-family: 'IBM Plex Mono', monospace;
-  }
+/* REGION BODY */
+.region-body{display:none;background:var(--bg);padding:8px 10px 10px;}
+.region-card.open .region-body{display:block;}
 
-  /* Search */
-  .search-wrap {
-    position: relative;
-    margin-bottom: 20px;
-  }
+/* ═══ COMPLEX CARD ═══ */
+.complex-card{border-radius:12px;border:1px solid var(--border);margin-bottom:8px;overflow:hidden;transition:border-color .2s;}
+.complex-card.open{border-color:var(--border2);box-shadow:0 2px 14px rgba(0,0,0,.4);}
+.complex-header{display:flex;align-items:center;cursor:pointer;user-select:none;background:var(--s2);min-height:50px;}
+.complex-color-bar{width:3px;align-self:stretch;flex-shrink:0;background:linear-gradient(180deg,var(--blue),var(--blue-dim));opacity:.5;transition:opacity .2s;}
+.complex-card.open .complex-color-bar{opacity:1;}
+.complex-header-inner{display:flex;align-items:center;gap:9px;flex:1;padding:10px 8px 10px 12px;min-width:0;}
+.complex-icon{width:30px;height:30px;border-radius:8px;background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.2);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.complex-card.open .complex-icon{background:rgba(96,165,250,.18);}
+.complex-info-col{flex:1;min-width:0;}
+.complex-name{font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.complex-addr{font-size:10px;color:var(--text2);font-family:var(--mono);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.complex-actions{display:flex;align-items:center;gap:3px;padding:0 8px 0 0;}
+.act-sm{width:28px;height:28px;border:1px solid var(--border2);border-radius:7px;background:var(--s3);color:var(--text2);font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s;flex-shrink:0;}
+.act-sm:active{transform:scale(.88);}
+.act-sm.add{color:var(--blue);border-color:rgba(96,165,250,.3);background:rgba(96,165,250,.08);}
+.act-sm.del{color:var(--red);border-color:rgba(248,113,113,.3);background:rgba(248,113,113,.06);}
+.chev.c{color:var(--text3);font-size:10px;transition:transform .2s;}
+.complex-card.open .chev.c{transform:rotate(180deg);color:var(--blue);}
 
-  .search-wrap input {
-    width: 100%;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 12px 16px 12px 40px;
-    color: var(--text);
-    font-size: 14px;
-    font-family: 'Noto Sans KR', sans-serif;
-    outline: none;
-    transition: border-color 0.2s;
-  }
+/* COMPLEX BODY */
+.complex-body{display:none;background:var(--s1);padding:8px 10px 10px;}
+.complex-card.open .complex-body{display:block;}
 
-  .search-wrap input:focus {
-    border-color: var(--accent);
-  }
+/* SECTION LABEL */
+.section-lbl{font-size:10px;font-weight:700;color:var(--amber);letter-spacing:.13em;text-transform:uppercase;font-family:var(--mono);padding:8px 4px 5px;display:flex;align-items:center;gap:5px;}
+.section-lbl::before{content:'▸';font-size:9px;}
 
-  .search-wrap input::placeholder {
-    color: var(--text-muted);
-  }
+/* ═══ CODE ROW ═══ */
+.code-row{display:flex;align-items:center;gap:8px;background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:10px 10px 10px 12px;margin-bottom:5px;position:relative;}
+.code-row.global{background:rgba(245,158,11,.05);border-color:rgba(245,158,11,.18);}
+.code-row.copied{border-color:var(--green)!important;background:rgba(52,211,153,.06)!important;}
+.code-main{flex:1;min-width:0;cursor:pointer;padding-right:4px;}
+.code-lbl{font-size:11px;color:var(--text2);line-height:1.5;}
+.code-sub{font-size:10px;color:var(--blue);font-weight:600;display:block;margin-bottom:1px;}
+.code-val{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--green2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.03em;}
+.code-row.global .code-val{color:var(--amber2);}
+.code-acts{display:flex;gap:3px;flex-shrink:0;}
+.copy-hint{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:11px;color:var(--green);font-weight:700;font-family:var(--mono);background:rgba(10,10,14,.92);padding:3px 12px;border-radius:6px;opacity:0;pointer-events:none;transition:opacity .15s;white-space:nowrap;}
+.code-row.copied .copy-hint{opacity:1;}
+.add-row-btn{width:100%;padding:9px;border:1px dashed var(--border2);border-radius:9px;background:transparent;color:var(--text3);font-size:12px;font-family:var(--sans);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:border-color .15s,color .15s;margin-top:4px;}
+.add-row-btn:active{border-color:var(--blue);color:var(--blue);}
+.add-row-btn.amber:active{border-color:var(--amber);color:var(--amber);}
 
-  .search-icon {
-    position: absolute;
-    left: 13px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--text-dim);
-    font-size: 15px;
-  }
+/* ═══ MODAL ═══ */
+.modal-overlay{position:fixed;inset:0;background:rgba(5,5,10,.88);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s;}
+.modal-overlay.active{opacity:1;pointer-events:all;}
+.modal-box{width:100%;max-width:420px;background:var(--s2);border:1px solid var(--border3);border-radius:18px;padding:24px 20px 20px;box-shadow:0 20px 60px rgba(0,0,0,.7);transform:scale(.93) translateY(16px);transition:transform .25s cubic-bezier(.34,1.56,.64,1);max-height:90vh;overflow-y:auto;}
+.modal-overlay.active .modal-box{transform:scale(1) translateY(0);}
+.modal-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:18px;display:flex;align-items:center;gap:8px;}
+.modal-title span{font-size:18px;}
+.fg{margin-bottom:14px;}
+.flbl{font-size:10px;font-weight:700;color:var(--text2);letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px;display:block;font-family:var(--mono);}
+.finput{width:100%;background:var(--s3);border:1px solid var(--border2);border-radius:9px;padding:11px 13px;color:var(--text);font-size:14px;font-family:var(--sans);outline:none;transition:border-color .2s,box-shadow .2s;}
+.finput:focus{border-color:var(--amber);box-shadow:0 0 0 3px rgba(245,158,11,.1);}
+.finput::placeholder{color:var(--text3);}
+.fhint{font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:4px;}
+.fcheck{display:flex;align-items:center;gap:10px;padding:11px 13px;background:var(--s3);border:1px solid var(--border2);border-radius:9px;cursor:pointer;}
+.fcheck input[type=checkbox]{width:16px;height:16px;accent-color:var(--amber);cursor:pointer;}
+.fcheck label{font-size:13px;color:var(--text2);cursor:pointer;}
+.modal-acts{display:flex;gap:8px;margin-top:20px;}
+.btn-primary{flex:1;padding:13px;background:linear-gradient(135deg,var(--amber),#d97706);color:#0a0a0e;font-weight:700;font-size:14px;font-family:var(--sans);border:none;border-radius:11px;cursor:pointer;transition:opacity .15s;}
+.btn-primary:active{opacity:.85;}
+.btn-sec{padding:13px 18px;background:var(--s3);color:var(--text2);font-weight:600;font-size:13px;font-family:var(--sans);border:1px solid var(--border2);border-radius:11px;cursor:pointer;}
+.btn-sec:active{background:var(--border2);}
 
-  /* Complex Card */
-  .complex {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    margin-bottom: 12px;
-    overflow: hidden;
-    transition: border-color 0.2s;
-  }
+/* CONFIRM */
+.confirm-box{width:100%;max-width:320px;background:var(--s2);border:1px solid var(--border3);border-radius:18px;padding:26px 22px 20px;box-shadow:0 20px 60px rgba(0,0,0,.7);transform:scale(.93);transition:transform .25s cubic-bezier(.34,1.56,.64,1);}
+.modal-overlay.active .confirm-box{transform:scale(1);}
+.c-icon{font-size:34px;text-align:center;margin-bottom:12px;}
+.c-msg{font-size:14px;color:var(--text);text-align:center;line-height:1.65;margin-bottom:20px;}
+.c-msg strong{color:var(--red);}
+.c-acts{display:flex;gap:8px;}
+.btn-danger{flex:1;padding:13px;background:linear-gradient(135deg,var(--red),#dc2626);color:#fff;font-weight:700;font-size:14px;font-family:var(--sans);border:none;border-radius:11px;cursor:pointer;}
+.btn-danger:active{opacity:.85;}
 
-  .complex:hover {
-    border-color: #3a3a44;
-  }
-
-  .complex-header {
-    padding: 14px 16px;
-    cursor: pointer;
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    user-select: none;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .complex-star {
-    color: var(--accent);
-    font-size: 13px;
-    margin-top: 1px;
-    flex-shrink: 0;
-  }
-
-  .complex-info {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .complex-name {
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--text);
-    line-height: 1.3;
-  }
-
-  .complex-addr {
-    font-size: 11px;
-    color: var(--text-dim);
-    margin-top: 3px;
-    font-family: 'IBM Plex Mono', monospace;
-  }
-
-  .toggle-icon {
-    color: var(--text-muted);
-    font-size: 12px;
-    flex-shrink: 0;
-    transition: transform 0.2s;
-    margin-top: 3px;
-  }
-
-  .complex.open .toggle-icon {
-    transform: rotate(180deg);
-  }
-
-  .complex-body {
-    display: none;
-    padding: 0 12px 12px;
-  }
-
-  .complex.open .complex-body {
-    display: block;
-  }
-
-  /* Code entries */
-  .code-section {
-    margin-bottom: 8px;
-  }
-
-  .section-label {
-    font-size: 10px;
-    font-weight: 600;
-    color: var(--accent);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    margin-bottom: 6px;
-    padding-top: 8px;
-  }
-
-  .code-row {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    background: var(--code-bg);
-    border: 1px solid var(--border);
-    border-radius: 7px;
-    padding: 10px 12px;
-    margin-bottom: 5px;
-    cursor: pointer;
-    transition: border-color 0.15s, background 0.15s;
-    position: relative;
-  }
-
-  .code-row:active, .code-row.copied {
-    border-color: var(--accent);
-    background: #1a1500;
-  }
-
-  .code-label {
-    font-size: 11px;
-    color: var(--text-dim);
-    flex: 1;
-    line-height: 1.5;
-    min-width: 0;
-  }
-
-  .code-label strong {
-    color: var(--blue);
-    font-weight: 600;
-    display: block;
-    font-size: 10px;
-    margin-bottom: 2px;
-  }
-
-  .code-value {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--green);
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-
-  .copy-hint {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 10px;
-    color: var(--accent);
-    opacity: 0;
-    transition: opacity 0.2s;
-    pointer-events: none;
-    font-family: 'IBM Plex Mono', monospace;
-  }
-
-  .code-row.copied .copy-hint {
-    opacity: 1;
-  }
-
-  /* Global codes (no section) */
-  .global-code {
-    background: #1a1a0a;
-    border-color: #3a3520;
-  }
-
-  .global-code .code-value {
-    color: var(--accent2);
-  }
-
-  /* Divider */
-  .divider {
-    border: none;
-    border-top: 1px solid var(--border);
-    margin: 8px 0;
-  }
-
-  /* Single address lines */
-  .addr-section {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 12px 14px;
-    margin-bottom: 12px;
-  }
-
-  .addr-section-title {
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--text-dim);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    margin-bottom: 8px;
-  }
-
-  /* No results */
-  .no-results {
-    text-align: center;
-    padding: 40px 20px;
-    color: var(--text-muted);
-    font-size: 13px;
-    display: none;
-  }
-
-  /* Count badge */
-  .count {
-    font-size: 10px;
-    background: var(--surface2);
-    color: var(--text-dim);
-    padding: 1px 6px;
-    border-radius: 20px;
-    font-family: 'IBM Plex Mono', monospace;
-    margin-left: 6px;
-  }
+/* ZOOM */
+.zoom-box{width:100%;max-width:360px;background:var(--s2);border:1px solid var(--border3);border-radius:20px;padding:28px 24px 22px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.7);transform:scale(.9) translateY(20px);transition:transform .25s cubic-bezier(.34,1.56,.64,1);}
+.modal-overlay.active .zoom-box{transform:scale(1) translateY(0);}
+.z-addr{font-size:11px;color:var(--text2);font-family:var(--mono);margin-bottom:6px;}
+.z-sub{font-size:13px;color:var(--blue);font-weight:600;margin-bottom:18px;min-height:18px;}
+.z-code{font-family:var(--mono);font-size:34px;font-weight:700;color:var(--green2);letter-spacing:.05em;line-height:1.2;padding:16px;background:var(--bg);border-radius:12px;border:1px solid var(--border2);margin-bottom:20px;word-break:break-all;text-shadow:0 0 20px rgba(110,231,183,.25);}
+.z-code.global{color:var(--amber2);text-shadow:0 0 20px rgba(252,211,77,.25);}
+.z-acts{display:flex;gap:8px;}
+.z-copy{flex:1;padding:13px;background:linear-gradient(135deg,var(--amber),#d97706);color:#0a0a0e;font-weight:700;font-size:14px;border:none;border-radius:11px;cursor:pointer;transition:opacity .15s;}
+.z-copy.done{background:linear-gradient(135deg,var(--green),#10b981);}
+.z-copy:active{opacity:.85;}
+.z-close{padding:13px 16px;background:var(--s3);color:var(--text2);font-weight:600;font-size:13px;border:1px solid var(--border2);border-radius:11px;cursor:pointer;}
+.z-hint{font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:14px;}
 </style>
 </head>
 <body>
-
-<header>
-  <span class="header-icon">🔑</span>
-  <h1>출입코드 노트</h1>
-  <span>tap = 복사</span>
-</header>
-
-<div class="search-wrap">
-  <span class="search-icon">🔍</span>
-  <input type="text" id="searchInput" placeholder="단지명 또는 주소 검색..." autocomplete="off">
+<div class="app">
+  <div class="topbar">
+    <div class="header">
+      <div class="header-icon">🔑</div>
+      <div class="header-info">
+        <h1>출입코드 노트</h1>
+        <p>탭=확대복사 · 자동저장</p>
+      </div>
+      <button class="add-region-btn" onclick="openModal('addRegion')">＋ 지역 추가</button>
+    </div>
+  </div>
+  <div class="search-wrap">
+    <span class="si">🔍</span>
+    <input type="text" id="searchInput" placeholder="지역·단지·주소·코드 검색..." autocomplete="off" autocorrect="off" spellcheck="false" oninput="handleSearch(this.value)">
+  </div>
+  <div class="content-scroll" id="contentRoot"></div>
 </div>
 
-<div id="content">
-
-  <div class="complex" data-keywords="대치현대 삼성로64길5">
-    <div class="complex-header" onclick="toggle(this)">
-      <span class="complex-star">★</span>
-      <div class="complex-info">
-        <div class="complex-name">대치현대</div>
-        <div class="complex-addr">삼성로64길 5</div>
-      </div>
-      <span class="toggle-icon">▼</span>
-    </div>
-    <div class="complex-body">
-      <div class="code-row global-code" onclick="copyCode(this, '##9077')">
-        <div class="code-label">공동 현관</div>
-        <div class="code-value">##9077</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row global-code" onclick="copyCode(this, '##2580')">
-        <div class="code-label">공동 현관 (101동·105동)</div>
-        <div class="code-value">##2580</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
+<div class="modal-overlay" id="formModal" onclick="ovcl(event,'formModal')">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-title" id="formTitle"></div>
+    <div id="formFields"></div>
+    <div class="modal-acts">
+      <button class="btn-sec" onclick="closeModal('formModal')">취소</button>
+      <button class="btn-primary" onclick="submitForm()">저장</button>
     </div>
   </div>
-
-  <div class="complex" data-keywords="세영팔레스 영동대로65길57">
-    <div class="complex-header" onclick="toggle(this)">
-      <span class="complex-star">★</span>
-      <div class="complex-info">
-        <div class="complex-name">세영팔레스A</div>
-        <div class="complex-addr">영동대로65길 57</div>
-      </div>
-      <span class="toggle-icon">▼</span>
-    </div>
-    <div class="complex-body">
-      <div class="section-label">🔐 열경 1657</div>
-      <div class="code-row" onclick="copyCode(this, '101동 1005호 / 열경1657')">
-        <div class="code-label"><strong>101동 1005호</strong>열경 1657</div>
-        <div class="code-value">열경1657</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '101동 1102호 / 열경1657')">
-        <div class="code-label"><strong>101동 1102호</strong>열경 1657</div>
-        <div class="code-value">열경1657</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '101동 1203호 / 열경1657')">
-        <div class="code-label"><strong>101동 1203호</strong>열경 1657</div>
-        <div class="code-value">열경1657</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="complex" data-keywords="대치푸르지오써밋 삼성로72길12">
-    <div class="complex-header" onclick="toggle(this)">
-      <span class="complex-star">★</span>
-      <div class="complex-info">
-        <div class="complex-name">대치푸르지오 써밋</div>
-        <div class="complex-addr">삼성로72길 12</div>
-      </div>
-      <span class="toggle-icon">▼</span>
-    </div>
-    <div class="complex-body">
-      <div class="code-row" onclick="copyCode(this, '201#0320#')">
-        <div class="code-label"><strong>101동 1~3라인</strong></div>
-        <div class="code-value">201#0320#</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '305#3006#')">
-        <div class="code-label"><strong>101동 4~5라인</strong></div>
-        <div class="code-value">305#3006#</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '702#1543#')">
-        <div class="code-label"><strong>102동 1~2라인</strong></div>
-        <div class="code-value">702#1543#</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '702#0009#')">
-        <div class="code-label"><strong>103동 1~2라인</strong></div>
-        <div class="code-value">702#0009#</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '104#8080#')">
-        <div class="code-label"><strong>104동 1~4라인</strong></div>
-        <div class="code-value">104#8080#</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '703#8899#')">
-        <div class="code-label"><strong>105동 3~5라인</strong></div>
-        <div class="code-value">703#8899#</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '1003#1004#')">
-        <div class="code-label"><strong>106동 3~5라인</strong></div>
-        <div class="code-value">1003#1004#</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '1102#0607#')">
-        <div class="code-label"><strong>107동 1~2라인</strong></div>
-        <div class="code-value">1102#0607#</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '1202#6699#')">
-        <div class="code-label"><strong>108동 1~2라인</strong></div>
-        <div class="code-value">1202#6699#</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '601#6733')">
-        <div class="code-label"><strong>109동 1~2라인</strong></div>
-        <div class="code-value">601#6733</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '103#4545#')">
-        <div class="code-label"><strong>109동 3~5라인</strong></div>
-        <div class="code-value">103#4545#</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="complex" data-keywords="디에이치에델루이 역삼로532">
-    <div class="complex-header" onclick="toggle(this)">
-      <span class="complex-star">★</span>
-      <div class="complex-info">
-        <div class="complex-name">디에이치 에델루이</div>
-        <div class="complex-addr">역삼로 532</div>
-      </div>
-      <span class="toggle-icon">▼</span>
-    </div>
-    <div class="complex-body">
-      <div class="code-row global-code" onclick="copyCode(this, '##0282 / ##1478')">
-        <div class="code-label">공동 현관</div>
-        <div class="code-value">##0282 / ##1478</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <hr class="divider">
-      <div class="code-row" onclick="copyCode(this, '#105#1053#')">
-        <div class="code-label"><strong>101동 1~5라인</strong></div>
-        <div class="code-value">#105#1053#</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '#403#1212#')">
-        <div class="code-label"><strong>102동 1~5라인</strong></div>
-        <div class="code-value">#403#1212#</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '#1102#8533')">
-        <div class="code-label"><strong>103동 1~2라인</strong></div>
-        <div class="code-value">#1102#8533</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '#9101#0423')">
-        <div class="code-label"><strong>106동 1~2라인</strong></div>
-        <div class="code-value">#9101#0423</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '#1303#1234')">
-        <div class="code-label"><strong>공통 (##0282 / ##1478)</strong></div>
-        <div class="code-value">#1303#1234</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="complex" data-keywords="대치르엘 도곡93길23">
-    <div class="complex-header" onclick="toggle(this)">
-      <span class="complex-star">★</span>
-      <div class="complex-info">
-        <div class="complex-name">대치르엘</div>
-        <div class="complex-addr">도곡93길 23</div>
-      </div>
-      <span class="toggle-icon">▼</span>
-    </div>
-    <div class="complex-body">
-      <div class="code-row" onclick="copyCode(this, '602#7777#')">
-        <div class="code-label"><strong>101동 1~3라인</strong></div>
-        <div class="code-value">602#7777#</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '공동2730')">
-        <div class="code-label"><strong>102동 1~2라인</strong></div>
-        <div class="code-value">공동 2730</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '404#0645#')">
-        <div class="code-label"><strong>102동 3~4라인</strong></div>
-        <div class="code-value">404#0645#</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '101#9309#')">
-        <div class="code-label"><strong>103동 1~2라인</strong></div>
-        <div class="code-value">101#9309#</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '503#7777 / 0000')">
-        <div class="code-label"><strong>103동 3~5라인</strong></div>
-        <div class="code-value">503#7777 / 0000</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '601#0407#')">
-        <div class="code-label"><strong>104동 1~2라인</strong></div>
-        <div class="code-value">601#0407#</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '801#5104#')">
-        <div class="code-label"><strong>105동 1~2라인</strong></div>
-        <div class="code-value">801#5104#</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '803#1006#')">
-        <div class="code-label"><strong>106동 1~4라인</strong></div>
-        <div class="code-value">803#1006#</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '1504#9569#')">
-        <div class="code-label"><strong>106동 (보조)</strong></div>
-        <div class="code-value">1504#9569#</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="complex" data-keywords="래미하이스턴 도곡93길12">
-    <div class="complex-header" onclick="toggle(this)">
-      <span class="complex-star">★</span>
-      <div class="complex-info">
-        <div class="complex-name">래미하이스턴</div>
-        <div class="complex-addr">도곡93길 12</div>
-      </div>
-      <span class="toggle-icon">▼</span>
-    </div>
-    <div class="complex-body">
-      <div class="code-row global-code" onclick="copyCode(this, '#*1122#')">
-        <div class="code-label">201동·202동·203동·206동 전체 / 202동 3~5라인·6~7라인</div>
-        <div class="code-value">#*1122#</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <hr class="divider">
-      <div class="code-row" onclick="copyCode(this, '#0202 0917')">
-        <div class="code-label"><strong>205동 1~2라인 (1)</strong></div>
-        <div class="code-value">#0202 0917</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '#*5173#')">
-        <div class="code-label"><strong>205동 1~2라인 (2)</strong></div>
-        <div class="code-value">#*5173#</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '#*5273#')">
-        <div class="code-label"><strong>205동 3~5라인</strong></div>
-        <div class="code-value">#*5273#</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="complex" data-keywords="풍림아이원3차 영동대로330 영동대로72길10">
-    <div class="complex-header" onclick="toggle(this)">
-      <span class="complex-star" style="color:var(--blue)">◆</span>
-      <div class="complex-info">
-        <div class="complex-name">풍림아이원 3차</div>
-        <div class="complex-addr">영동대로330-7 / 영동대로72길 10</div>
-      </div>
-      <span class="toggle-icon">▼</span>
-    </div>
-    <div class="complex-body">
-      <div class="code-row" onclick="copyCode(this, '401동603호 / 열쇠603엔터1003')">
-        <div class="code-label"><strong>401동 603호</strong>열쇠 603 → 엔터 → 1003</div>
-        <div class="code-value">603 → 1003</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '401동1001호 / 열쇠1001엔터8018')">
-        <div class="code-label"><strong>401동 1001호</strong>열쇠 1001 → 엔터 → 8018</div>
-        <div class="code-value">1001 → 8018</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '301동1202호 / 열쇠1202엔터9684')">
-        <div class="code-label"><strong>301동 1202호</strong>열쇠 1202 → 엔터 → 9684</div>
-        <div class="code-value">1202 → 9684</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="complex" data-keywords="영동대로 삼성로 역삼로 테헤란로 하이캐슬 바실리체 아이파크 대치2차">
-    <div class="complex-header" onclick="toggle(this)">
-      <span class="complex-star" style="color:var(--text-dim)">≡</span>
-      <div class="complex-info">
-        <div class="complex-name">개별 주소 코드</div>
-        <div class="complex-addr">영동대로 · 삼성로 · 역삼로 · 테헤란로</div>
-      </div>
-      <span class="toggle-icon">▼</span>
-    </div>
-    <div class="complex-body">
-
-      <div class="section-label">영동대로</div>
-      <div class="code-row" onclick="copyCode(this, '종7124')">
-        <div class="code-label"><strong>영동대로71길 24</strong></div>
-        <div class="code-value">종 7124</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '종1234')">
-        <div class="code-label"><strong>영동대로71길 42</strong></div>
-        <div class="code-value">종 1234</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '#904*0008#')">
-        <div class="code-label"><strong>영동대로85길20 대치3차아이파크</strong></div>
-        <div class="code-value">#904*0008#</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '#506*1122#')">
-        <div class="code-label"><strong>영동대로85길20 대치3차아이파크</strong></div>
-        <div class="code-value">#506*1122#</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '#818*2580#')">
-        <div class="code-label"><strong>영동대로85길20 대치3차아이파크</strong></div>
-        <div class="code-value">#818*2580#</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '#1011*2580#')">
-        <div class="code-label"><strong>영동대로85길20 대치3차아이파크</strong></div>
-        <div class="code-value">#1011*2580#</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '**2580#')">
-        <div class="code-label"><strong>영동대로85길34 대치2차</strong></div>
-        <div class="code-value">**2580#</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-
-      <div class="section-label">삼성로</div>
-      <div class="code-row" onclick="copyCode(this, '##9077 / ##2580')">
-        <div class="code-label"><strong>삼성로64길5 대치현대</strong></div>
-        <div class="code-value">##9077 / ##2580</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '종5543')">
-        <div class="code-label"><strong>삼성로64길40 하이캐슬</strong></div>
-        <div class="code-value">종 5543</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '경열3721종')">
-        <div class="code-label"><strong>삼성로76길5-6</strong></div>
-        <div class="code-value">경열3721종</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '경비열쇠2525종')">
-        <div class="code-label"><strong>삼성로76길5-11</strong></div>
-        <div class="code-value">경비열쇠2525종</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '종2846')">
-        <div class="code-label"><strong>삼성로76길23-11</strong></div>
-        <div class="code-value">종 2846</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '종1127')">
-        <div class="code-label"><strong>삼성로76길23-12</strong></div>
-        <div class="code-value">종 1127</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '열쇠6902종')">
-        <div class="code-label"><strong>삼성로82길30</strong></div>
-        <div class="code-value">열쇠6902종</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '종4468')">
-        <div class="code-label"><strong>삼성로83길6</strong></div>
-        <div class="code-value">종 4468</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '종3080')">
-        <div class="code-label"><strong>삼성로84길12</strong></div>
-        <div class="code-value">종 3080</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '654321*')">
-        <div class="code-label"><strong>삼성로 414</strong></div>
-        <div class="code-value">654321*</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '1403#1010')">
-        <div class="code-label"><strong>삼성로436 바실리체</strong></div>
-        <div class="code-value">1403#1010</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-
-      <div class="section-label">역삼로</div>
-      <div class="code-row" onclick="copyCode(this, '열쇠1234종')">
-        <div class="code-label"><strong>역삼로81길25</strong></div>
-        <div class="code-value">열쇠1234종</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '#2145종')">
-        <div class="code-label"><strong>역삼로83길7</strong></div>
-        <div class="code-value">#2145종</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '*8652통화')">
-        <div class="code-label"><strong>역삼로83길12-7</strong></div>
-        <div class="code-value">*8652통화</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '*7849*')">
-        <div class="code-label"><strong>역삼로83길18</strong></div>
-        <div class="code-value">*7849*</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '406#0301#')">
-        <div class="code-label"><strong>역삼로83길22</strong></div>
-        <div class="code-value">406#0301#</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '2004')">
-        <div class="code-label"><strong>역삼로85길17-7</strong></div>
-        <div class="code-value">2004</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '#2145')">
-        <div class="code-label"><strong>역삼로87길7</strong></div>
-        <div class="code-value">#2145</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '경열7856종')">
-        <div class="code-label"><strong>역삼로87길13</strong></div>
-        <div class="code-value">경열7856종</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '1096*')">
-        <div class="code-label"><strong>역삼로87길15</strong></div>
-        <div class="code-value">1096*</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '2456*')">
-        <div class="code-label"><strong>역삼로87길23</strong></div>
-        <div class="code-value">2456*</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '종2580')">
-        <div class="code-label"><strong>역삼로87길25</strong></div>
-        <div class="code-value">종 2580</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '종1234')">
-        <div class="code-label"><strong>역삼로88길9</strong></div>
-        <div class="code-value">종 1234</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '열쇠50종')">
-        <div class="code-label"><strong>역삼로90길26</strong></div>
-        <div class="code-value">열쇠50종</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '970411#')">
-        <div class="code-label"><strong>역삼로92길12</strong></div>
-        <div class="code-value">970411#</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '939495*')">
-        <div class="code-label"><strong>역삼로92길17</strong></div>
-        <div class="code-value">939495*</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '#1210')">
-        <div class="code-label"><strong>역삼로92길34</strong></div>
-        <div class="code-value">#1210</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '#1303#1234 (##0282)')">
-        <div class="code-label"><strong>역삼로532 대치에델루이</strong></div>
-        <div class="code-value">#1303#1234</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '3040310종')">
-        <div class="code-label"><strong>역삼로551-5</strong></div>
-        <div class="code-value">3040310종</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-      <div class="code-row" onclick="copyCode(this, '종1379')">
-        <div class="code-label"><strong>역삼로555 W타워</strong></div>
-        <div class="code-value">종 1379</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-
-      <div class="section-label">테헤란로</div>
-      <div class="code-row" onclick="copyCode(this, '3355#')">
-        <div class="code-label"><strong>테헤란로92길43</strong></div>
-        <div class="code-value">3355#</div>
-        <span class="copy-hint">복사됨</span>
-      </div>
-    </div>
-  </div>
-
 </div>
 
-<div class="no-results" id="noResults">🔍 검색 결과가 없습니다</div>
+<div class="modal-overlay" id="confirmModal" onclick="ovcl(event,'confirmModal')">
+  <div class="confirm-box" onclick="event.stopPropagation()">
+    <div class="c-icon">🗑️</div>
+    <div class="c-msg" id="confirmMsg"></div>
+    <div class="c-acts">
+      <button class="btn-sec" onclick="closeModal('confirmModal')">취소</button>
+      <button class="btn-danger" id="confirmOkBtn">삭제</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="zoomModal" onclick="ovcl(event,'zoomModal')">
+  <div class="zoom-box" onclick="event.stopPropagation()">
+    <div class="z-addr" id="zAddr"></div>
+    <div class="z-sub" id="zSub"></div>
+    <div class="z-code" id="zCode"></div>
+    <div class="z-acts">
+      <button class="z-copy" id="zCopyBtn" onclick="execZoomCopy()">📋 복사하기</button>
+      <button class="z-close" onclick="closeModal('zoomModal')">닫기</button>
+    </div>
+    <div class="z-hint">바깥 탭하면 닫힙니다</div>
+  </div>
+</div>
 
 <script>
-function toggle(header) {
-  const card = header.closest('.complex');
-  card.classList.toggle('open');
+// ══ UTILS ══
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2);}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+// ══ DEFAULT DATA ══
+const DFLT={regions:[{id:'rg1',name:'대치동',complexes:[
+  {id:'cx1',name:'대치현대',addr:'삼성로64길 5',codes:[
+    {id:'k001',section:'',label:'공동 현관',sublabel:'',value:'##9077',isGlobal:true},
+    {id:'k002',section:'',label:'공동 현관 (101동·105동)',sublabel:'',value:'##2580',isGlobal:true}]},
+  {id:'cx2',name:'세영팔레스A',addr:'영동대로65길 57',codes:[
+    {id:'k010',section:'🔐 열경 1657',label:'101동 1005호',sublabel:'',value:'열경1657',isGlobal:false},
+    {id:'k011',section:'',label:'101동 1102호',sublabel:'',value:'열경1657',isGlobal:false},
+    {id:'k012',section:'',label:'101동 1203호',sublabel:'',value:'열경1657',isGlobal:false}]},
+  {id:'cx3',name:'대치푸르지오써밋',addr:'삼성로72길 12',codes:[
+    {id:'k020',section:'',label:'101동 1~3라인',sublabel:'',value:'201#0320#',isGlobal:false},
+    {id:'k021',section:'',label:'101동 4~5라인',sublabel:'',value:'305#3006#',isGlobal:false},
+    {id:'k022',section:'',label:'102동 1~2라인',sublabel:'',value:'702#1543#',isGlobal:false},
+    {id:'k023',section:'',label:'103동 1~2라인',sublabel:'',value:'702#0009#',isGlobal:false},
+    {id:'k024',section:'',label:'104동 1~4라인',sublabel:'',value:'104#8080#',isGlobal:false},
+    {id:'k025',section:'',label:'105동 3~5라인',sublabel:'',value:'703#8899#',isGlobal:false},
+    {id:'k026',section:'',label:'106동 3~5라인',sublabel:'',value:'1003#1004#',isGlobal:false},
+    {id:'k027',section:'',label:'107동 1~2라인',sublabel:'',value:'1102#0607#',isGlobal:false},
+    {id:'k028',section:'',label:'108동 1~2라인',sublabel:'',value:'1202#6699#',isGlobal:false},
+    {id:'k029',section:'',label:'109동 1~2라인',sublabel:'',value:'601#6733',isGlobal:false},
+    {id:'k030',section:'',label:'109동 3~5라인',sublabel:'',value:'103#4545#',isGlobal:false}]},
+  {id:'cx4',name:'디에이치 에델루이',addr:'역삼로 532',codes:[
+    {id:'k040',section:'',label:'공동 현관',sublabel:'',value:'##0282 / ##1478',isGlobal:true},
+    {id:'k041',section:'',label:'101동 1~5라인',sublabel:'',value:'#105#1053#',isGlobal:false},
+    {id:'k042',section:'',label:'102동 1~5라인',sublabel:'',value:'#403#1212#',isGlobal:false},
+    {id:'k043',section:'',label:'103동 1~2라인',sublabel:'',value:'#1102#8533',isGlobal:false},
+    {id:'k044',section:'',label:'106동 1~2라인',sublabel:'',value:'#9101#0423',isGlobal:false},
+    {id:'k045',section:'',label:'공통 (##0282 / ##1478)',sublabel:'',value:'#1303#1234',isGlobal:false}]},
+  {id:'cx5',name:'대치르엘',addr:'도곡93길 23',codes:[
+    {id:'k050',section:'',label:'101동 1~3라인',sublabel:'',value:'602#7777#',isGlobal:false},
+    {id:'k051',section:'',label:'102동 1~2라인',sublabel:'',value:'공동 2730',isGlobal:false},
+    {id:'k052',section:'',label:'102동 3~4라인',sublabel:'',value:'404#0645#',isGlobal:false},
+    {id:'k053',section:'',label:'103동 1~2라인',sublabel:'',value:'101#9309#',isGlobal:false},
+    {id:'k054',section:'',label:'103동 3~5라인',sublabel:'',value:'503#7777 / 0000',isGlobal:false},
+    {id:'k055',section:'',label:'104동 1~2라인',sublabel:'',value:'601#0407#',isGlobal:false},
+    {id:'k056',section:'',label:'105동 1~2라인',sublabel:'',value:'801#5104#',isGlobal:false},
+    {id:'k057',section:'',label:'106동 1~4라인',sublabel:'',value:'803#1006#',isGlobal:false},
+    {id:'k058',section:'',label:'106동 (보조)',sublabel:'',value:'1504#9569#',isGlobal:false}]},
+  {id:'cx6',name:'래미하이스턴',addr:'도곡93길 12',codes:[
+    {id:'k060',section:'',label:'201·202·203·206동 전체',sublabel:'',value:'#*1122#',isGlobal:true},
+    {id:'k061',section:'',label:'205동 1~2라인 (1)',sublabel:'',value:'#0202 0917',isGlobal:false},
+    {id:'k062',section:'',label:'205동 1~2라인 (2)',sublabel:'',value:'#*5173#',isGlobal:false},
+    {id:'k063',section:'',label:'205동 3~5라인',sublabel:'',value:'#*5273#',isGlobal:false}]},
+  {id:'cx7',name:'풍림아이원 3차',addr:'영동대로330-7 / 영동대로72길 10',codes:[
+    {id:'k070',section:'',label:'401동 603호',sublabel:'열쇠603→엔터→1003',value:'603 → 1003',isGlobal:false},
+    {id:'k071',section:'',label:'401동 1001호',sublabel:'열쇠1001→엔터→8018',value:'1001 → 8018',isGlobal:false},
+    {id:'k072',section:'',label:'301동 1202호',sublabel:'열쇠1202→엔터→9684',value:'1202 → 9684',isGlobal:false}]},
+  {id:'cx8',name:'개별 주소 코드',addr:'영동대로 · 삼성로 · 역삼로 · 테헤란로',codes:[
+    {id:'k080',section:'영동대로',label:'영동대로71길 24',sublabel:'',value:'종 7124',isGlobal:false},
+    {id:'k081',section:'',label:'영동대로71길 42',sublabel:'',value:'종 1234',isGlobal:false},
+    {id:'k082',section:'',label:'영동대로85길20 대치3차아이파크',sublabel:'',value:'#904*0008#',isGlobal:false},
+    {id:'k083',section:'',label:'영동대로85길20 대치3차아이파크',sublabel:'',value:'#506*1122#',isGlobal:false},
+    {id:'k084',section:'',label:'영동대로85길20 대치3차아이파크',sublabel:'',value:'#818*2580#',isGlobal:false},
+    {id:'k085',section:'',label:'영동대로85길20 대치3차아이파크',sublabel:'',value:'#1011*2580#',isGlobal:false},
+    {id:'k086',section:'',label:'영동대로85길34 대치2차',sublabel:'',value:'**2580#',isGlobal:false},
+    {id:'k090',section:'삼성로',label:'삼성로64길5 대치현대',sublabel:'',value:'##9077 / ##2580',isGlobal:false},
+    {id:'k091',section:'',label:'삼성로64길40 하이캐슬',sublabel:'',value:'종 5543',isGlobal:false},
+    {id:'k092',section:'',label:'삼성로76길5-6',sublabel:'',value:'경열3721종',isGlobal:false},
+    {id:'k093',section:'',label:'삼성로76길5-11',sublabel:'',value:'경비열쇠2525종',isGlobal:false},
+    {id:'k094',section:'',label:'삼성로76길23-11',sublabel:'',value:'종 2846',isGlobal:false},
+    {id:'k095',section:'',label:'삼성로76길23-12',sublabel:'',value:'종 1127',isGlobal:false},
+    {id:'k096',section:'',label:'삼성로82길30',sublabel:'',value:'열쇠6902종',isGlobal:false},
+    {id:'k097',section:'',label:'삼성로83길6',sublabel:'',value:'종 4468',isGlobal:false},
+    {id:'k098',section:'',label:'삼성로84길12',sublabel:'',value:'종 3080',isGlobal:false},
+    {id:'k099',section:'',label:'삼성로 414',sublabel:'',value:'654321*',isGlobal:false},
+    {id:'k100',section:'',label:'삼성로436 바실리체',sublabel:'',value:'1403#1010',isGlobal:false},
+    {id:'k110',section:'역삼로',label:'역삼로81길25',sublabel:'',value:'열쇠1234종',isGlobal:false},
+    {id:'k111',section:'',label:'역삼로83길7',sublabel:'',value:'#2145종',isGlobal:false},
+    {id:'k112',section:'',label:'역삼로83길12-7',sublabel:'',value:'*8652통화',isGlobal:false},
+    {id:'k113',section:'',label:'역삼로83길18',sublabel:'',value:'*7849*',isGlobal:false},
+    {id:'k114',section:'',label:'역삼로83길22',sublabel:'',value:'406#0301#',isGlobal:false},
+    {id:'k115',section:'',label:'역삼로85길17-7',sublabel:'',value:'2004',isGlobal:false},
+    {id:'k116',section:'',label:'역삼로87길7',sublabel:'',value:'#2145',isGlobal:false},
+    {id:'k117',section:'',label:'역삼로87길13',sublabel:'',value:'경열7856종',isGlobal:false},
+    {id:'k118',section:'',label:'역삼로87길15',sublabel:'',value:'1096*',isGlobal:false},
+    {id:'k119',section:'',label:'역삼로87길23',sublabel:'',value:'2456*',isGlobal:false},
+    {id:'k120',section:'',label:'역삼로87길25',sublabel:'',value:'종 2580',isGlobal:false},
+    {id:'k121',section:'',label:'역삼로88길9',sublabel:'',value:'종 1234',isGlobal:false},
+    {id:'k122',section:'',label:'역삼로90길26',sublabel:'',value:'열쇠50종',isGlobal:false},
+    {id:'k123',section:'',label:'역삼로92길12',sublabel:'',value:'970411#',isGlobal:false},
+    {id:'k124',section:'',label:'역삼로92길17',sublabel:'',value:'939495*',isGlobal:false},
+    {id:'k125',section:'',label:'역삼로92길34',sublabel:'',value:'#1210',isGlobal:false},
+    {id:'k126',section:'',label:'역삼로532 대치에델루이',sublabel:'#1303#1234',value:'#1303#1234 (##0282)',isGlobal:false},
+    {id:'k127',section:'',label:'역삼로551-5',sublabel:'',value:'3040310종',isGlobal:false},
+    {id:'k128',section:'',label:'역삼로555 W타워',sublabel:'',value:'종 1379',isGlobal:false},
+    {id:'k130',section:'테헤란로',label:'테헤란로92길43',sublabel:'',value:'3355#',isGlobal:false}]}
+]}]};
+
+// ══ STATE & STORAGE ══
+let data={regions:[]};
+let openR=new Set(), openC=new Set(), q='';
+
+function save(){try{localStorage.setItem('acn3',JSON.stringify(data));}catch(e){}}
+function load(){
+  try{const r=localStorage.getItem('acn3');data=r?JSON.parse(r):JSON.parse(JSON.stringify(DFLT));}
+  catch(e){data=JSON.parse(JSON.stringify(DFLT));}
 }
 
-function copyCode(el, text) {
-  navigator.clipboard.writeText(text).catch(() => {});
-  el.classList.add('copied');
-  setTimeout(() => el.classList.remove('copied'), 1200);
-}
+function fR(rid){return data.regions.find(x=>x.id===rid);}
+function fC(rid,cid){const r=fR(rid);return r?r.complexes.find(x=>x.id===cid):null;}
+function fK(rid,cid,kid){const c=fC(rid,cid);return c?c.codes.find(x=>x.id===kid):null;}
 
-const searchInput = document.getElementById('searchInput');
-const complexes = document.querySelectorAll('.complex');
-const noResults = document.getElementById('noResults');
+// ══ RENDER ══
+function render(){
+  const root=document.getElementById('contentRoot');
+  let html='',vis=0;
 
-searchInput.addEventListener('input', function() {
-  const q = this.value.trim().toLowerCase();
-  let found = 0;
+  if(!data.regions.length){
+    root.innerHTML=`<div class="empty-state"><div class="es-icon">🗺️</div><p>지역이 없습니다.<br>상단 <strong>＋ 지역 추가</strong> 버튼으로<br>새 지역을 만들어 보세요.</p></div>`;
+    return;
+  }
 
-  complexes.forEach(card => {
-    const keywords = (card.dataset.keywords || '').toLowerCase();
-    const name = card.querySelector('.complex-name')?.textContent.toLowerCase() || '';
-    const addr = card.querySelector('.complex-addr')?.textContent.toLowerCase() || '';
-    const labels = [...card.querySelectorAll('.code-label')].map(el => el.textContent.toLowerCase()).join(' ');
-    const haystack = keywords + name + addr + labels;
-
-    const match = !q || haystack.includes(q);
-    card.style.display = match ? '' : 'none';
-    if (match) {
-      found++;
-      if (q) card.classList.add('open');
-      else card.classList.remove('open');
+  data.regions.forEach(rg=>{
+    let mcx=[];
+    if(!q){mcx=rg.complexes;}
+    else{
+      const rm=rg.name.toLowerCase().includes(q);
+      rg.complexes.forEach(cx=>{
+        const cm=cx.name.toLowerCase().includes(q)||cx.addr.toLowerCase().includes(q);
+        const mk=cx.codes.filter(cd=>cd.label.toLowerCase().includes(q)||cd.value.toLowerCase().includes(q)||cd.sublabel.toLowerCase().includes(q)||cd.section.toLowerCase().includes(q));
+        if(rm||cm||mk.length)mcx.push({...cx,codes:rm||cm?cx.codes:mk});
+      });
     }
+    if(q&&!mcx.length)return;
+    vis++;
+    const ro=openR.has(rg.id)||!!q;
+    const cc=mcx.length,ka=mcx.reduce((a,c)=>a+c.codes.length,0);
+
+    html+=`<div class="region-card${ro?' open':''}" id="rc_${esc(rg.id)}">
+<div class="region-header" onclick="tR('${esc(rg.id)}')">
+<div class="region-color-bar"></div>
+<div class="region-header-inner">
+<div class="region-icon">🏘️</div>
+<div><div class="region-name">${esc(rg.name)}</div><div class="region-meta">${cc}개 단지 · ${ka}개 코드</div></div>
+</div>
+<div class="region-actions" onclick="event.stopPropagation()">
+<button class="act-btn add" title="단지 추가" onclick="openModal('aC',{r:'${esc(rg.id)}'})">＋</button>
+<button class="act-btn" title="지역 편집" onclick="openModal('eR',{r:'${esc(rg.id)}'})">✏️</button>
+<button class="act-btn del" title="지역 삭제" onclick="cdR('${esc(rg.id)}')">🗑</button>
+</div>
+<span class="chev r">▼</span>
+</div>
+<div class="region-body">`;
+
+    if(!mcx.length){
+      html+=`<div style="text-align:center;padding:20px 0;color:var(--text3);font-size:12px;font-family:var(--mono);">단지가 없습니다 · <span style="color:var(--amber);cursor:pointer;" onclick="openModal('aC',{r:'${esc(rg.id)}'})">＋ 단지 추가</span></div>`;
+    } else {
+      mcx.forEach(cx=>{
+        const co=openC.has(cx.id)||!!q;
+        html+=`<div class="complex-card${co?' open':''}" id="cc_${esc(cx.id)}">
+<div class="complex-header" onclick="tC('${esc(cx.id)}')">
+<div class="complex-color-bar"></div>
+<div class="complex-header-inner">
+<div class="complex-icon">🏢</div>
+<div class="complex-info-col"><div class="complex-name">${esc(cx.name)}</div><div class="complex-addr">${esc(cx.addr||'')}</div></div>
+</div>
+<div class="complex-actions" onclick="event.stopPropagation()">
+<button class="act-sm add" title="코드 추가" onclick="openModal('aK',{r:'${esc(rg.id)}',c:'${esc(cx.id)}'})">＋</button>
+<button class="act-sm" title="단지 편집" onclick="openModal('eC',{r:'${esc(rg.id)}',c:'${esc(cx.id)}'})">✏️</button>
+<button class="act-sm del" title="단지 삭제" onclick="cdC('${esc(rg.id)}','${esc(cx.id)}')">🗑</button>
+</div>
+<span class="chev c">▼</span>
+</div>
+<div class="complex-body">`;
+
+        let ps='__';
+        cx.codes.forEach(cd=>{
+          if(cd.section&&cd.section!==ps)html+=`<div class="section-lbl">${esc(cd.section)}</div>`;
+          ps=cd.section||ps;
+          html+=`<div class="code-row${cd.isGlobal?' global':''}" id="kd_${esc(cd.id)}">
+<div class="code-main" onclick="showZ('${esc(cd.id)}','${esc(rg.id)}','${esc(cx.id)}')">
+${cd.sublabel?`<span class="code-sub">${esc(cd.sublabel)}</span>`:''}
+<div class="code-lbl">${esc(cd.label)}</div>
+<div class="code-val">${esc(cd.value)}</div>
+</div>
+<div class="code-acts" onclick="event.stopPropagation()">
+<button class="act-sm" onclick="openModal('eK',{r:'${esc(rg.id)}',c:'${esc(cx.id)}',k:'${esc(cd.id)}'})">✏️</button>
+<button class="act-sm del" onclick="cdK('${esc(rg.id)}','${esc(cx.id)}','${esc(cd.id)}')">🗑</button>
+</div>
+<span class="copy-hint">✓ 복사됨</span>
+</div>`;
+        });
+
+        html+=`<button class="add-row-btn" onclick="openModal('aK',{r:'${esc(rg.id)}',c:'${esc(cx.id)}'})">＋ 코드 추가</button>
+</div></div>`;
+      });
+      html+=`<button class="add-row-btn amber" style="border-color:rgba(245,158,11,.25);color:rgba(245,158,11,.6);" onclick="openModal('aC',{r:'${esc(rg.id)}'})">＋ 단지 추가</button>`;
+    }
+    html+=`</div></div>`;
   });
 
-  noResults.style.display = found === 0 ? 'block' : 'none';
+  if(q&&!vis)html=`<div class="no-results" style="display:block;">🔍 "${esc(q)}" 검색 결과 없음</div>`;
+  root.innerHTML=html;
+}
+
+function tR(id){openR.has(id)?openR.delete(id):openR.add(id);render();}
+function tC(id){openC.has(id)?openC.delete(id):openC.add(id);render();}
+function handleSearch(v){q=v.toLowerCase().trim();render();}
+
+// ══ MODAL ══
+let mCtx={};
+
+function openModal(type,ctx){
+  mCtx={type,...(ctx||{})};
+  let title='',fields='';
+  if(type==='addRegion'||type==='aR'){
+    title='<span>🏘️</span> 지역 추가';
+    fields=fi('rn','지역명','예: 일원동, 개포동, 도곡동...','');
+  } else if(type==='eR'){
+    const r=fR(mCtx.r);
+    title='<span>✏️</span> 지역 편집';
+    fields=fi('rn','지역명','',r?r.name:'');
+  } else if(type==='aC'){
+    title='<span>🏢</span> 단지 추가';
+    fields=fi('cn','단지명','예: 대치현대, 세영팔레스...','')+fi('ca','주소 (선택)','예: 삼성로64길 5','');
+  } else if(type==='eC'){
+    const cx=fC(mCtx.r,mCtx.c);
+    title='<span>✏️</span> 단지 편집';
+    fields=fi('cn','단지명','',cx?cx.name:'')+fi('ca','주소','',cx?cx.addr:'');
+  } else if(type==='aK'){
+    title='<span>🔐</span> 코드 추가';
+    fields=fi('ks','섹션 구분 (선택)','예: 영동대로, 공동현관...','')+
+      `<div class="fhint" style="margin-top:-10px;margin-bottom:12px;">코드 위에 소제목을 붙일 때 사용</div>`+
+      fi('kl','위치 설명','예: 101동 1~3라인, 공동 현관','')+
+      fi('kb','상세 위치 (선택)','예: 열쇠603→엔터→1003','')+
+      fi('kv','코드값 ✱','예: ##9077, 종1234, 열쇠603...','')+
+      fc('kg','isGlobal','🟡 공동 코드 (황금색으로 표시)',false);
+  } else if(type==='eK'){
+    const cd=fK(mCtx.r,mCtx.c,mCtx.k);
+    title='<span>✏️</span> 코드 편집';
+    fields=fi('ks','섹션 구분','',cd?cd.section:'')+
+      fi('kl','위치 설명','',cd?cd.label:'')+
+      fi('kb','상세 위치','',cd?cd.sublabel:'')+
+      fi('kv','코드값 ✱','',cd?cd.value:'')+
+      fc('kg','isGlobal','🟡 공동 코드',cd?cd.isGlobal:false);
+  }
+  document.getElementById('formTitle').innerHTML=title;
+  document.getElementById('formFields').innerHTML=fields;
+  document.getElementById('formModal').classList.add('active');
+  document.body.style.overflow='hidden';
+  setTimeout(()=>{const f=document.getElementById('formFields').querySelector('input[type=text]');if(f)f.focus();},200);
+}
+
+function fi(id,lbl,ph,val){
+  return `<div class="fg"><label class="flbl" for="${id}">${lbl}</label><input class="finput" type="text" id="${id}" placeholder="${ph}" value="${esc(val)}" autocomplete="off"></div>`;
+}
+function fc(id,name,lbl,checked){
+  return `<div class="fg"><div class="fcheck"><input type="checkbox" id="${id}" ${checked?'checked':''}><label for="${id}">${lbl}</label></div></div>`;
+}
+
+function submitForm(){
+  const t=mCtx.type;
+  function v(id){const e=document.getElementById(id);return e?(e.value||'').trim():'';}
+  function c(id){const e=document.getElementById(id);return e?e.checked:false;}
+  function shake(id){const e=document.getElementById(id);if(!e)return;e.style.borderColor='var(--red)';e.style.boxShadow='0 0 0 3px rgba(248,113,113,.15)';setTimeout(()=>{e.style.borderColor='';e.style.boxShadow='';},1500);e.focus();}
+
+  if(t==='addRegion'||t==='aR'){
+    const n=v('rn');if(!n)return shake('rn');
+    const id=uid();data.regions.push({id,name:n,complexes:[]});openR.add(id);
+  } else if(t==='eR'){
+    const n=v('rn');if(!n)return shake('rn');
+    const r=fR(mCtx.r);if(r)r.name=n;
+  } else if(t==='aC'){
+    const n=v('cn'),a=v('ca');if(!n)return shake('cn');
+    const r=fR(mCtx.r);if(r){const id=uid();r.complexes.push({id,name:n,addr:a,codes:[]});openC.add(id);}
+  } else if(t==='eC'){
+    const n=v('cn'),a=v('ca');if(!n)return shake('cn');
+    const cx=fC(mCtx.r,mCtx.c);if(cx){cx.name=n;cx.addr=a;}
+  } else if(t==='aK'){
+    const val=v('kv');if(!val)return shake('kv');
+    const cx=fC(mCtx.r,mCtx.c);
+    if(cx)cx.codes.push({id:uid(),section:v('ks'),label:v('kl'),sublabel:v('kb'),value:val,isGlobal:c('kg')});
+  } else if(t==='eK'){
+    const val=v('kv');if(!val)return shake('kv');
+    const cd=fK(mCtx.r,mCtx.c,mCtx.k);
+    if(cd){cd.section=v('ks');cd.label=v('kl');cd.sublabel=v('kb');cd.value=val;cd.isGlobal=c('kg');}
+  }
+  save();closeModal('formModal');render();
+}
+
+function closeModal(id){document.getElementById(id).classList.remove('active');document.body.style.overflow='';}
+function ovcl(e,id){if(e.target===document.getElementById(id))closeModal(id);}
+
+// ══ CONFIRM DELETE ══
+function cdR(rid){
+  const r=fR(rid);if(!r)return;
+  document.getElementById('confirmMsg').innerHTML=`<strong>${esc(r.name)}</strong> 지역과 모든 단지·코드를 삭제합니다.`;
+  document.getElementById('confirmOkBtn').onclick=()=>{
+    data.regions=data.regions.filter(x=>x.id!==rid);openR.delete(rid);save();closeModal('confirmModal');render();
+  };
+  document.getElementById('confirmModal').classList.add('active');
+  document.body.style.overflow='hidden';
+}
+function cdC(rid,cid){
+  const cx=fC(rid,cid);if(!cx)return;
+  document.getElementById('confirmMsg').innerHTML=`<strong>${esc(cx.name)}</strong> 단지와 모든 코드를 삭제합니다.`;
+  document.getElementById('confirmOkBtn').onclick=()=>{
+    const r=fR(rid);if(r)r.complexes=r.complexes.filter(x=>x.id!==cid);openC.delete(cid);save();closeModal('confirmModal');render();
+  };
+  document.getElementById('confirmModal').classList.add('active');
+  document.body.style.overflow='hidden';
+}
+function cdK(rid,cid,kid){
+  const cd=fK(rid,cid,kid);if(!cd)return;
+  document.getElementById('confirmMsg').innerHTML=`코드 <strong>${esc(cd.value)}</strong> 를 삭제합니다.`;
+  document.getElementById('confirmOkBtn').onclick=()=>{
+    const cx=fC(rid,cid);if(cx)cx.codes=cx.codes.filter(x=>x.id!==kid);save();closeModal('confirmModal');render();
+  };
+  document.getElementById('confirmModal').classList.add('active');
+  document.body.style.overflow='hidden';
+}
+
+// ══ ZOOM ══
+let zVal='',zRowId='';
+function showZ(kid,rid,cid){
+  const cd=fK(rid,cid,kid);if(!cd)return;
+  const cx=fC(rid,cid);
+  zVal=cd.value;zRowId='kd_'+kid;
+  document.getElementById('zAddr').textContent=cx?(cx.name+(cx.addr?' · '+cx.addr:'')):cd.label;
+  document.getElementById('zSub').textContent=cd.sublabel||cd.label;
+  const ce=document.getElementById('zCode');ce.textContent=cd.value;ce.className='z-code'+(cd.isGlobal?' global':'');
+  const btn=document.getElementById('zCopyBtn');btn.textContent='📋 복사하기';btn.classList.remove('done');
+  document.getElementById('zoomModal').classList.add('active');
+  document.body.style.overflow='hidden';
+}
+function execZoomCopy(){
+  navigator.clipboard.writeText(zVal).catch(()=>{});
+  const btn=document.getElementById('zCopyBtn');btn.textContent='✓ 복사됨!';btn.classList.add('done');
+  const row=document.getElementById(zRowId);if(row){row.classList.add('copied');setTimeout(()=>row&&row.classList.remove('copied'),1500);}
+  setTimeout(()=>closeModal('zoomModal'),700);
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape')['zoomModal','confirmModal','formModal'].forEach(id=>{const el=document.getElementById(id);if(el.classList.contains('active'))closeModal(id);});
+  if(e.key==='Enter'&&document.getElementById('formModal').classList.contains('active')){
+    if(document.activeElement&&document.activeElement.tagName==='INPUT'&&document.activeElement.type!=='checkbox')submitForm();
+  }
 });
+
+load();render();
 </script>
 </body>
 </html>
