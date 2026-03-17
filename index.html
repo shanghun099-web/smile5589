@@ -24,7 +24,7 @@
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);-webkit-tap-highlight-color:transparent;overscroll-behavior:none;}
 .app{display:flex;flex-direction:column;height:100dvh;height:100vh;max-width:560px;margin:0 auto;}
 
-/* ── TOPBAR ── */
+/* TOPBAR */
 .topbar{flex-shrink:0;padding:14px 16px 0;}
 .header{display:flex;align-items:center;gap:10px;padding-bottom:12px;border-bottom:1px solid var(--border);}
 .hicon{width:32px;height:32px;background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;box-shadow:0 2px 12px rgba(245,158,11,.25);}
@@ -34,45 +34,59 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 .add-rgn-btn{display:flex;align-items:center;gap:4px;padding:8px 13px;background:linear-gradient(135deg,var(--amber),#d97706);color:#0a0a0e;font-weight:700;font-size:12px;font-family:var(--sans);border:none;border-radius:9px;cursor:pointer;white-space:nowrap;flex-shrink:0;}
 .add-rgn-btn:active{opacity:.8;}
 
-/* ── SEARCH ── */
+/* SEARCH */
 .swrap{position:relative;padding:10px 16px 8px;flex-shrink:0;}
 .swrap input{width:100%;background:var(--s2);border:1px solid var(--border2);border-radius:10px;padding:10px 16px 10px 40px;color:var(--text);font-size:14px;font-family:var(--sans);outline:none;transition:border-color .2s,box-shadow .2s;}
 .swrap input:focus{border-color:var(--amber);box-shadow:0 0 0 3px rgba(245,158,11,.1);}
 .swrap input::placeholder{color:var(--text3);}
 .si{position:absolute;left:29px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:14px;pointer-events:none;}
 
-/* ── SCROLL ── */
+/* SCROLL — normal, unblocked */
 .cscroll{flex:1;overflow-y:scroll;overflow-x:hidden;-webkit-overflow-scrolling:touch;scroll-snap-type:y proximity;padding:4px 16px 50px;}
 .cscroll::-webkit-scrollbar{width:3px;}
 .cscroll::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
-.cscroll.no-snap{scroll-snap-type:none !important;}
+/* While dragging, disable scroll snap so ghost moves freely */
+body.dragging .cscroll{scroll-snap-type:none;}
 
-/* ── DRAG HANDLE ── */
-.dh{align-self:stretch;display:flex;align-items:center;justify-content:center;flex-shrink:0;touch-action:none;user-select:none;-webkit-tap-highlight-color:transparent;color:var(--text3);cursor:grab;transition:color .15s,background .15s;}
-.dh.rh{width:34px;font-size:16px;border-right:1px solid var(--border);}
-.dh.ch{width:28px;font-size:14px;border-right:1px solid var(--border);}
-.dh.kh{width:28px;font-size:13px;}
-.dh.active-drag{color:var(--amber);background:rgba(245,158,11,.08);}
+/* DRAG HANDLE */
+.dh{
+  align-self:stretch;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;touch-action:none;
+  -webkit-tap-highlight-color:transparent;user-select:none;
+  cursor:grab;color:var(--text3);font-size:17px;letter-spacing:-.5px;
+  transition:color .15s,background .15s;
+}
+.dh.rh{width:36px;border-right:1px solid var(--border);}
+.dh.ch{width:30px;border-right:1px solid var(--border);}
+.dh.kh{width:28px;}
+/* Highlight during long-press countdown */
+.dh.pressing{color:var(--amber);background:rgba(245,158,11,.1);}
+/* Hide during search */
 .cscroll.searching .dh{opacity:0;pointer-events:none;}
 
-/* ── DROP INDICATOR ── */
-.drop-line{height:3px;background:linear-gradient(90deg,transparent,var(--amber) 20%,var(--amber) 80%,transparent);border-radius:3px;margin:3px 0;pointer-events:none;flex-shrink:0;}
+/* DROP INDICATOR */
+.drop-line{
+  height:3px;
+  background:linear-gradient(90deg,transparent,var(--amber) 15%,var(--amber) 85%,transparent);
+  border-radius:3px;margin:2px 0;pointer-events:none;flex-shrink:0;
+}
 
-/* ── EMPTY / NO RESULTS ── */
+/* EMPTY */
 .empty-state{text-align:center;padding:60px 20px 20px;}
 .empty-state .eico{font-size:40px;margin-bottom:14px;}
 .empty-state p{color:var(--text3);font-size:13px;line-height:1.8;}
 .empty-state strong{color:var(--amber);}
 .no-results{text-align:center;padding:50px 20px;color:var(--text3);font-size:12px;font-family:var(--mono);}
 
-/* ── REGION CARD ── */
+/* REGION CARD */
 .region-card{scroll-snap-align:start;margin-bottom:14px;border-radius:16px;overflow:hidden;border:1px solid var(--border);transition:border-color .2s,box-shadow .15s;}
 .region-card.open{border-color:var(--border3);box-shadow:0 4px 24px rgba(0,0,0,.5);}
-.region-card.drag-src{opacity:.22;pointer-events:none;}
-.rg-hdr{display:flex;align-items:center;cursor:pointer;user-select:none;background:var(--s1);min-height:60px;}
+.region-card.drag-placeholder{opacity:.2;pointer-events:none;}
+.rg-hdr{display:flex;align-items:center;background:var(--s1);min-height:60px;user-select:none;}
 .rg-bar{width:4px;align-self:stretch;flex-shrink:0;background:linear-gradient(180deg,var(--amber),var(--amber-dim));opacity:.6;transition:opacity .2s;}
 .region-card.open .rg-bar{opacity:1;}
-.rg-inner{display:flex;align-items:center;gap:10px;flex:1;padding:12px 10px 12px 14px;min-width:0;}
+.rg-clickable{display:flex;align-items:center;gap:10px;flex:1;padding:12px 10px 12px 14px;min-width:0;cursor:pointer;}
 .rg-ico{width:36px;height:36px;border-radius:10px;background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.25);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
 .region-card.open .rg-ico{background:rgba(245,158,11,.2);}
 .rg-name{font-size:15px;font-weight:700;color:var(--text);}
@@ -87,14 +101,14 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 .rg-body{display:none;background:var(--bg);padding:8px 10px 10px;}
 .region-card.open .rg-body{display:block;}
 
-/* ── COMPLEX CARD ── */
+/* COMPLEX CARD */
 .complex-card{border-radius:12px;border:1px solid var(--border);margin-bottom:8px;overflow:hidden;transition:border-color .2s;}
 .complex-card.open{border-color:var(--border2);box-shadow:0 2px 14px rgba(0,0,0,.4);}
-.complex-card.drag-src{opacity:.22;pointer-events:none;}
-.cx-hdr{display:flex;align-items:center;cursor:pointer;user-select:none;background:var(--s2);min-height:50px;}
+.complex-card.drag-placeholder{opacity:.2;pointer-events:none;}
+.cx-hdr{display:flex;align-items:center;background:var(--s2);min-height:50px;user-select:none;}
 .cx-bar{width:3px;align-self:stretch;flex-shrink:0;background:linear-gradient(180deg,var(--blue),var(--blue-dim));opacity:.5;transition:opacity .2s;}
 .complex-card.open .cx-bar{opacity:1;}
-.cx-inner{display:flex;align-items:center;gap:9px;flex:1;padding:10px 8px 10px 12px;min-width:0;}
+.cx-clickable{display:flex;align-items:center;gap:9px;flex:1;padding:10px 8px 10px 12px;min-width:0;cursor:pointer;}
 .cx-ico{width:30px;height:30px;border-radius:8px;background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.2);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
 .complex-card.open .cx-ico{background:rgba(96,165,250,.18);}
 .cx-col{flex:1;min-width:0;}
@@ -110,15 +124,15 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 .cx-body{display:none;background:var(--s1);padding:8px 10px 10px;}
 .complex-card.open .cx-body{display:block;}
 
-/* ── SECTION LABEL ── */
+/* SECTION LABEL */
 .sec-lbl{font-size:10px;font-weight:700;color:var(--amber);letter-spacing:.13em;text-transform:uppercase;font-family:var(--mono);padding:8px 4px 5px;display:flex;align-items:center;gap:5px;}
 .sec-lbl::before{content:'▸';font-size:9px;}
 
-/* ── CODE ROW ── */
+/* CODE ROW */
 .code-row{display:flex;align-items:center;background:var(--s2);border:1px solid var(--border);border-radius:10px;margin-bottom:5px;position:relative;overflow:hidden;}
 .code-row.global{background:rgba(245,158,11,.05);border-color:rgba(245,158,11,.18);}
 .code-row.copied{border-color:var(--green)!important;background:rgba(52,211,153,.06)!important;}
-.code-row.drag-src{opacity:.22;pointer-events:none;}
+.code-row.drag-placeholder{opacity:.2;pointer-events:none;}
 .code-main{flex:1;min-width:0;cursor:pointer;padding:10px 8px 10px 10px;}
 .code-lbl{font-size:11px;color:var(--text2);line-height:1.5;}
 .code-sub{font-size:10px;color:var(--blue);font-weight:600;display:block;margin-bottom:1px;}
@@ -131,7 +145,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 .add-row-btn.amber-btn{border-color:rgba(245,158,11,.22);color:rgba(245,158,11,.5);}
 .add-row-btn:active{border-color:var(--amber);color:var(--amber);}
 
-/* ── MODALS ── */
+/* MODALS */
 .movl{position:fixed;inset:0;background:rgba(5,5,10,.88);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s;}
 .movl.active{opacity:1;pointer-events:all;}
 .mbox{width:100%;max-width:420px;background:var(--s2);border:1px solid var(--border3);border-radius:18px;padding:24px 20px 20px;box-shadow:0 20px 60px rgba(0,0,0,.7);transform:scale(.93) translateY(16px);transition:transform .25s cubic-bezier(.34,1.56,.64,1);max-height:90vh;overflow-y:auto;}
@@ -151,7 +165,6 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 .bpri:active{opacity:.85;}
 .bsec{padding:13px 18px;background:var(--s3);color:var(--text2);font-weight:600;font-size:13px;font-family:var(--sans);border:1px solid var(--border2);border-radius:11px;cursor:pointer;}
 .bsec:active{background:var(--border2);}
-/* confirm */
 .cbox{width:100%;max-width:320px;background:var(--s2);border:1px solid var(--border3);border-radius:18px;padding:26px 22px 20px;box-shadow:0 20px 60px rgba(0,0,0,.7);transform:scale(.93);transition:transform .25s cubic-bezier(.34,1.56,.64,1);}
 .movl.active .cbox{transform:scale(1);}
 .cico{font-size:34px;text-align:center;margin-bottom:12px;}
@@ -160,7 +173,6 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 .cacts{display:flex;gap:8px;}
 .bdng{flex:1;padding:13px;background:linear-gradient(135deg,var(--red),#dc2626);color:#fff;font-weight:700;font-size:14px;font-family:var(--sans);border:none;border-radius:11px;cursor:pointer;}
 .bdng:active{opacity:.85;}
-/* zoom */
 .zbox{width:100%;max-width:360px;background:var(--s2);border:1px solid var(--border3);border-radius:20px;padding:28px 24px 22px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.7);transform:scale(.9) translateY(20px);transition:transform .25s cubic-bezier(.34,1.56,.64,1);}
 .movl.active .zbox{transform:scale(1) translateY(0);}
 .zadr{font-size:11px;color:var(--text2);font-family:var(--mono);margin-bottom:6px;}
@@ -174,8 +186,14 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 .zcls{padding:13px 16px;background:var(--s3);color:var(--text2);font-weight:600;font-size:13px;border:1px solid var(--border2);border-radius:11px;cursor:pointer;}
 .zhnt{font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:14px;}
 
-/* ── DRAG GHOST (global) ── */
-#drag-ghost{position:fixed;z-index:400;pointer-events:none;border-radius:12px;box-shadow:0 18px 50px rgba(0,0,0,.75),0 0 0 1.5px rgba(245,158,11,.5);transform:scale(1.025) rotate(0.7deg);transition:none;opacity:.88;}
+/* DRAG GHOST — floats above everything */
+#drag-ghost{
+  position:fixed;z-index:400;pointer-events:none;
+  border-radius:12px;
+  box-shadow:0 16px 48px rgba(0,0,0,.75),0 0 0 1.5px rgba(245,158,11,.5);
+  transform:scale(1.03) rotate(.5deg);
+  opacity:.9;display:none;
+}
 </style>
 </head>
 <body>
@@ -185,7 +203,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
       <div class="hicon">🔑</div>
       <div class="hinfo">
         <h1>출입코드 노트</h1>
-        <p>꾹 누르기=순서변경 · 탭=복사</p>
+        <p>⠿ 꾹 누르기 = 순서변경 · 탭 = 복사</p>
       </div>
       <button class="add-rgn-btn" onclick="openModal('aR')">＋ 지역 추가</button>
     </div>
@@ -232,18 +250,18 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
   </div>
 </div>
 
-<div id="drag-ghost" style="display:none;"></div>
+<div id="drag-ghost"></div>
 
 <script>
-// ════════════════════════════════
+// ══════════════════════════════════════════════
 //  UTILS
-// ════════════════════════════════
+// ══════════════════════════════════════════════
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-// ════════════════════════════════
-//  DEFAULT DATA
-// ════════════════════════════════
+// ══════════════════════════════════════════════
+//  DATA
+// ══════════════════════════════════════════════
 const DFLT={regions:[{id:'rg1',name:'대치동',complexes:[
   {id:'cx1',name:'대치현대',addr:'삼성로64길 5',codes:[
     {id:'k001',section:'',label:'공동 현관',sublabel:'',value:'##9077',isGlobal:true},
@@ -270,7 +288,7 @@ const DFLT={regions:[{id:'rg1',name:'대치동',complexes:[
     {id:'k042',section:'',label:'102동 1~5라인',sublabel:'',value:'#403#1212#',isGlobal:false},
     {id:'k043',section:'',label:'103동 1~2라인',sublabel:'',value:'#1102#8533',isGlobal:false},
     {id:'k044',section:'',label:'106동 1~2라인',sublabel:'',value:'#9101#0423',isGlobal:false},
-    {id:'k045',section:'',label:'공통',sublabel:'',value:'#1303#1234',isGlobal:false}]},
+    {id:'k045',section:'',label:'공통 (##0282)',sublabel:'',value:'#1303#1234',isGlobal:false}]},
   {id:'cx5',name:'대치르엘',addr:'도곡93길 23',codes:[
     {id:'k050',section:'',label:'101동 1~3라인',sublabel:'',value:'602#7777#',isGlobal:false},
     {id:'k051',section:'',label:'102동 1~2라인',sublabel:'',value:'공동 2730',isGlobal:false},
@@ -331,28 +349,24 @@ const DFLT={regions:[{id:'rg1',name:'대치동',complexes:[
     {id:'k130',section:'테헤란로',label:'테헤란로92길43',sublabel:'',value:'3355#',isGlobal:false}]}
 ]}]};
 
-// ════════════════════════════════
-//  STATE
-// ════════════════════════════════
 let data={regions:[]};
-let openR=new Set(), openC=new Set(), q='';
-
-function save(){try{localStorage.setItem('acn4',JSON.stringify(data));}catch(e){}}
-function load(){try{const r=localStorage.getItem('acn4');data=r?JSON.parse(r):JSON.parse(JSON.stringify(DFLT));}catch(e){data=JSON.parse(JSON.stringify(DFLT));}}
+let openR=new Set(),openC=new Set(),q='';
+function save(){try{localStorage.setItem('acn5',JSON.stringify(data));}catch(e){}}
+function load(){try{const r=localStorage.getItem('acn5');data=r?JSON.parse(r):JSON.parse(JSON.stringify(DFLT));}catch(e){data=JSON.parse(JSON.stringify(DFLT));}}
 function fR(id){return data.regions.find(x=>x.id===id);}
 function fC(rid,cid){return fR(rid)?.complexes.find(x=>x.id===cid);}
 function fK(rid,cid,kid){return fC(rid,cid)?.codes.find(x=>x.id===kid);}
 
-// ════════════════════════════════
+// ══════════════════════════════════════════════
 //  RENDER
-// ════════════════════════════════
+// ══════════════════════════════════════════════
 function render(){
   const root=document.getElementById('contentRoot');
   if(!data.regions.length){
     root.innerHTML=`<div class="empty-state"><div class="eico">🗺️</div><p>지역이 없습니다.<br>상단 <strong>＋ 지역 추가</strong> 버튼으로<br>새 지역을 만들어 보세요.</p></div>`;
     return;
   }
-  let html='', vis=0;
+  let html='',vis=0;
   data.regions.forEach(rg=>{
     let mcx=[];
     if(!q){mcx=rg.complexes;}
@@ -369,12 +383,14 @@ function render(){
     const ro=openR.has(rg.id)||!!q;
     const kc=mcx.reduce((a,c)=>a+c.codes.length,0);
     html+=`<div class="region-card${ro?' open':''}" id="rc_${esc(rg.id)}" data-id="${esc(rg.id)}">
-<div class="rg-hdr" onclick="tR('${esc(rg.id)}')">
-<div class="dh rh" ontouchstart="DND.begin(event,'region','${esc(rg.id)}',null,null)" onclick="event.stopPropagation()">⠿</div>
+<div class="rg-hdr">
+<div class="dh rh" data-type="region" data-id="${esc(rg.id)}">⠿</div>
 <div class="rg-bar"></div>
-<div class="rg-inner"><div class="rg-ico">🏘️</div>
-<div><div class="rg-name">${esc(rg.name)}</div><div class="rg-meta">${mcx.length}개 단지 · ${kc}개 코드</div></div></div>
-<div class="rg-acts" onclick="event.stopPropagation()">
+<div class="rg-clickable" onclick="tR('${esc(rg.id)}')">
+<div class="rg-ico">🏘️</div>
+<div><div class="rg-name">${esc(rg.name)}</div><div class="rg-meta">${mcx.length}개 단지 · ${kc}개 코드</div></div>
+</div>
+<div class="rg-acts">
 <button class="abt add" onclick="openModal('aC',{r:'${esc(rg.id)}'})">＋</button>
 <button class="abt" onclick="openModal('eR',{r:'${esc(rg.id)}'})">✏️</button>
 <button class="abt del" onclick="cdR('${esc(rg.id)}')">🗑</button>
@@ -388,12 +404,14 @@ function render(){
       mcx.forEach(cx=>{
         const co=openC.has(cx.id)||!!q;
         html+=`<div class="complex-card${co?' open':''}" id="cc_${esc(cx.id)}" data-id="${esc(cx.id)}" data-rid="${esc(rg.id)}">
-<div class="cx-hdr" onclick="tC('${esc(cx.id)}')">
-<div class="dh ch" ontouchstart="DND.begin(event,'complex','${esc(cx.id)}','${esc(rg.id)}',null)" onclick="event.stopPropagation()">⠿</div>
+<div class="cx-hdr">
+<div class="dh ch" data-type="complex" data-id="${esc(cx.id)}" data-rid="${esc(rg.id)}">⠿</div>
 <div class="cx-bar"></div>
-<div class="cx-inner"><div class="cx-ico">🏢</div>
-<div class="cx-col"><div class="cx-name">${esc(cx.name)}</div><div class="cx-addr">${esc(cx.addr||'')}</div></div></div>
-<div class="cx-acts" onclick="event.stopPropagation()">
+<div class="cx-clickable" onclick="tC('${esc(cx.id)}')">
+<div class="cx-ico">🏢</div>
+<div class="cx-col"><div class="cx-name">${esc(cx.name)}</div><div class="cx-addr">${esc(cx.addr||'')}</div></div>
+</div>
+<div class="cx-acts">
 <button class="asm add" onclick="openModal('aK',{r:'${esc(rg.id)}',c:'${esc(cx.id)}'})">＋</button>
 <button class="asm" onclick="openModal('eC',{r:'${esc(rg.id)}',c:'${esc(cx.id)}'})">✏️</button>
 <button class="asm del" onclick="cdC('${esc(rg.id)}','${esc(cx.id)}')">🗑</button>
@@ -406,21 +424,20 @@ function render(){
           if(cd.section&&cd.section!==ps)html+=`<div class="sec-lbl">${esc(cd.section)}</div>`;
           ps=cd.section||ps;
           html+=`<div class="code-row${cd.isGlobal?' global':''}" id="kd_${esc(cd.id)}" data-id="${esc(cd.id)}" data-rid="${esc(rg.id)}" data-cid="${esc(cx.id)}">
-<div class="dh kh" ontouchstart="DND.begin(event,'code','${esc(cd.id)}','${esc(rg.id)}','${esc(cx.id)}')" onclick="event.stopPropagation()">⠿</div>
+<div class="dh kh" data-type="code" data-id="${esc(cd.id)}" data-rid="${esc(rg.id)}" data-cid="${esc(cx.id)}">⠿</div>
 <div class="code-main" onclick="showZ('${esc(cd.id)}','${esc(rg.id)}','${esc(cx.id)}')">
 ${cd.sublabel?`<span class="code-sub">${esc(cd.sublabel)}</span>`:''}
 <div class="code-lbl">${esc(cd.label)}</div>
 <div class="code-val">${esc(cd.value)}</div>
 </div>
-<div class="code-acts" onclick="event.stopPropagation()">
+<div class="code-acts">
 <button class="asm" onclick="openModal('eK',{r:'${esc(rg.id)}',c:'${esc(cx.id)}',k:'${esc(cd.id)}'})">✏️</button>
 <button class="asm del" onclick="cdK('${esc(rg.id)}','${esc(cx.id)}','${esc(cd.id)}')">🗑</button>
 </div>
 <span class="copy-hint">✓ 복사됨</span>
 </div>`;
         });
-        html+=`<button class="add-row-btn" onclick="openModal('aK',{r:'${esc(rg.id)}',c:'${esc(cx.id)}'})">＋ 코드 추가</button>
-</div></div>`;
+        html+=`<button class="add-row-btn" onclick="openModal('aK',{r:'${esc(rg.id)}',c:'${esc(cx.id)}'})">＋ 코드 추가</button></div></div>`;
       });
       html+=`<button class="add-row-btn amber-btn" onclick="openModal('aC',{r:'${esc(rg.id)}'})">＋ 단지 추가</button>`;
     }
@@ -428,6 +445,7 @@ ${cd.sublabel?`<span class="code-sub">${esc(cd.sublabel)}</span>`:''}
   });
   if(q&&!vis)html=`<div class="no-results">🔍 "${esc(q)}" 검색 결과 없음</div>`;
   root.innerHTML=html;
+  attachHandles();
 }
 
 function tR(id){openR.has(id)?openR.delete(id):openR.add(id);render();}
@@ -438,218 +456,240 @@ function handleSearch(v){
   render();
 }
 
-// ════════════════════════════════
-//  DRAG & DROP
-// ════════════════════════════════
+// ══════════════════════════════════════════════
+//  DRAG & DROP  —  key fix: passive listeners
+//  until drag activates; only block scroll after
+// ══════════════════════════════════════════════
 const DND={
-  _timer:null,
+  // state
   active:false,
-  type:null,      // 'region' | 'complex' | 'code'
-  id:null,
-  rid:null,
-  cid:null,
-  src:null,       // source DOM element
-  ghost:null,     // ghost element
-  indicator:null, // drop line element
-  offY:0,         // touch Y offset within ghost
-  _scrollDir:0,
-  _rafScroll:null,
-  dropBefore:null,
+  type:null, id:null, rid:null, cid:null,
+  src:null, ghost:null, indicator:null,
+  dropBefore:null, offY:0,
+  // internal
+  _timer:null, _startY:0, _startX:0,
+  _scrollDir:0, _raf:null,
+  // bound handlers (saved so we can removeEventListener)
+  _onMoveBound:null, _onEndBound:null, _onCancelBound:null,
 
-  begin(e,type,id,rid,cid){
-    if(this.active)return;
-    const t=e.touches[0];
+  // ── Called on touchstart of a handle ──────
+  begin(e, type, id, rid, cid){
+    if(this.active) return;
+    const t = e.touches[0];
     this.type=type; this.id=id; this.rid=rid; this.cid=cid;
+    this._startY = t.clientY;
+    this._startX = t.clientX;
 
-    // find draggable ancestor
-    let el=e.currentTarget;
+    // Find card ancestor
+    let el = e.currentTarget;
     while(el){
-      if(el.classList.contains('region-card')||el.classList.contains('complex-card')||el.classList.contains('code-row'))break;
-      el=el.parentElement;
+      if(el.classList.contains('region-card')||el.classList.contains('complex-card')||el.classList.contains('code-row')) break;
+      el = el.parentElement;
     }
-    this.src=el;
+    this.src = el;
 
-    this._timer=setTimeout(()=>this._activate(e.touches[0]),450);
+    // Highlight the handle immediately
+    e.currentTarget.classList.add('pressing');
+    this._pressHandle = e.currentTarget;
+
+    // Passive move listener – only watches for scroll-intent to cancel
+    this._earlyMove = (ev) => {
+      const dy = Math.abs(ev.touches[0].clientY - this._startY);
+      const dx = Math.abs(ev.touches[0].clientX - this._startX);
+      // If user scrolls more than 8px in Y before timeout → cancel
+      if(dy > 8 || dx > 8){
+        clearTimeout(this._timer);
+        this._timer = null;
+        this._pressHandle?.classList.remove('pressing');
+        document.removeEventListener('touchmove', this._earlyMove);
+      }
+    };
+    document.addEventListener('touchmove', this._earlyMove, {passive:true});
+
+    this._timer = setTimeout(()=>{
+      document.removeEventListener('touchmove', this._earlyMove);
+      this._activate(t);
+    }, 420);
   },
 
+  // ── Long press confirmed → activate drag ──
   _activate(touch){
-    this.active=true;
-    if(navigator.vibrate)navigator.vibrate(25);
+    this.active = true;
+    if(navigator.vibrate) navigator.vibrate(30);
+    this._pressHandle?.classList.remove('pressing');
 
-    const rect=this.src.getBoundingClientRect();
-    this.offY=touch.clientY-rect.top;
+    const rect = this.src.getBoundingClientRect();
+    this.offY = touch.clientY - rect.top;
 
-    // Build ghost content (header only, no body)
-    const ghost=document.getElementById('drag-ghost');
-    const clone=this.src.cloneNode(true);
-    // Hide body and extra buttons in clone
+    // Build ghost
+    const ghost = document.getElementById('drag-ghost');
+    const clone = this.src.cloneNode(true);
     clone.querySelectorAll('.rg-body,.cx-body,.add-row-btn').forEach(b=>b.remove());
-    clone.querySelectorAll('.drag-src').forEach(b=>b.classList.remove('drag-src'));
     clone.style.cssText='width:100%;';
-    ghost.innerHTML='';
+    ghost.innerHTML = '';
     ghost.appendChild(clone);
     ghost.style.cssText=`display:block;left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;`;
-    this.ghost=ghost;
+    this.ghost = ghost;
 
     // Dim source
-    this.src.classList.add('drag-src');
+    this.src.classList.add('drag-placeholder');
 
-    // Create indicator line
-    const ind=document.createElement('div');
-    ind.className='drop-line';
-    this.indicator=ind;
+    // Drop indicator
+    this.indicator = document.createElement('div');
+    this.indicator.className = 'drop-line';
 
-    // Disable scroll snap
-    document.getElementById('contentRoot').classList.add('no-snap');
+    // No scroll snap while dragging
+    document.body.classList.add('dragging');
 
-    // Highlight handle
-    this.src.querySelector('.dh')?.classList.add('active-drag');
+    // NOW attach non-passive move handler (to block scroll)
+    this._onMoveBound  = (e) => this._onMove(e);
+    this._onEndBound   = ()  => this._onEnd();
+    this._onCancelBound= ()  => this._onCancel();
+    document.addEventListener('touchmove',   this._onMoveBound,   {passive:false});
+    document.addEventListener('touchend',    this._onEndBound,    {passive:true});
+    document.addEventListener('touchcancel', this._onCancelBound, {passive:true});
   },
 
-  move(e){
-    if(!this.active)return;
-    e.preventDefault();
-    const t=e.touches[0];
-    const cy=t.clientY;
+  _onMove(e){
+    e.preventDefault(); // now safe — blocks scroll only during active drag
+    const t = e.touches[0];
+    const cy = t.clientY;
 
     // Move ghost
-    this.ghost.style.top=(cy-this.offY)+'px';
+    this.ghost.style.top = (cy - this.offY) + 'px';
 
     // Auto-scroll
-    const sc=document.getElementById('contentRoot');
-    const sr=sc.getBoundingClientRect();
-    const zone=80;
-    if(cy<sr.top+zone)this._scrollDir=-1;
-    else if(cy>sr.bottom-zone)this._scrollDir=1;
-    else this._scrollDir=0;
-    this._ensureScroll(sc);
+    const sc = document.getElementById('contentRoot');
+    const sr = sc.getBoundingClientRect();
+    const zone = 90;
+    if(cy < sr.top + zone)       this._scrollDir = -1;
+    else if(cy > sr.bottom - zone) this._scrollDir =  1;
+    else                           this._scrollDir =  0;
+    this._runScroll(sc);
 
-    // Find drop target
+    // Drop indicator
     this._findDrop(cy);
   },
 
-  _ensureScroll(sc){
-    if(this._scrollDir===0){if(this._rafScroll){cancelAnimationFrame(this._rafScroll);this._rafScroll=null;}return;}
-    if(this._rafScroll)return;
-    const loop=()=>{
-      sc.scrollTop+=this._scrollDir*5;
-      if(this._scrollDir!==0)this._rafScroll=requestAnimationFrame(loop);
-      else this._rafScroll=null;
+  _runScroll(sc){
+    if(this._scrollDir === 0){
+      if(this._raf){ cancelAnimationFrame(this._raf); this._raf=null; }
+      return;
+    }
+    if(this._raf) return;
+    const step = ()=>{
+      sc.scrollTop += this._scrollDir * 6;
+      this._raf = this._scrollDir !== 0 ? requestAnimationFrame(step) : null;
     };
-    this._rafScroll=requestAnimationFrame(loop);
+    this._raf = requestAnimationFrame(step);
   },
 
   _getSiblings(){
     if(this.type==='region'){
       const root=document.getElementById('contentRoot');
-      return{container:root,siblings:[...root.children].filter(c=>c.classList.contains('region-card'))};
+      return{container:root, siblings:[...root.children].filter(c=>c.classList.contains('region-card'))};
     } else if(this.type==='complex'){
       const rb=document.getElementById('rc_'+this.rid)?.querySelector('.rg-body');
-      return{container:rb,siblings:rb?[...rb.children].filter(c=>c.classList.contains('complex-card')):[]};
+      return{container:rb, siblings:rb?[...rb.children].filter(c=>c.classList.contains('complex-card')):[]};
     } else {
       const cb=document.getElementById('cc_'+this.cid)?.querySelector('.cx-body');
-      return{container:cb,siblings:cb?[...cb.children].filter(c=>c.classList.contains('code-row')):[]};
+      return{container:cb, siblings:cb?[...cb.children].filter(c=>c.classList.contains('code-row')):[]};
     }
   },
 
   _findDrop(cy){
     const{container,siblings}=this._getSiblings();
-    if(!container)return;
+    if(!container) return;
+    if(this.indicator.parentNode) this.indicator.parentNode.removeChild(this.indicator);
 
-    // Remove indicator
-    if(this.indicator.parentNode)this.indicator.parentNode.removeChild(this.indicator);
-
-    // Find insertion point
     let insertBefore=null;
     for(const sib of siblings){
-      if(sib===this.src)continue;
+      if(sib===this.src) continue;
       const r=sib.getBoundingClientRect();
-      if(cy<r.top+r.height/2){insertBefore=sib;break;}
+      if(cy < r.top + r.height/2){ insertBefore=sib; break; }
     }
     this.dropBefore=insertBefore;
 
-    // Place indicator
     if(insertBefore){
-      container.insertBefore(this.indicator,insertBefore);
+      container.insertBefore(this.indicator, insertBefore);
     } else {
       const btn=container.querySelector('.add-row-btn');
-      if(btn)container.insertBefore(this.indicator,btn);
-      else container.appendChild(this.indicator);
+      btn ? container.insertBefore(this.indicator,btn) : container.appendChild(this.indicator);
     }
   },
 
-  end(){
-    clearTimeout(this._timer);
-    if(!this.active){this._reset();return;}
-
-    // Execute reorder
+  _onEnd(){
     this._reorder();
-
-    // Cleanup visuals first, then re-render
     this._cleanup();
     save();
     render();
   },
 
+  _onCancel(){
+    this._cleanup();
+    render();
+  },
+
   _reorder(){
     let arr;
-    if(this.type==='region')arr=data.regions;
-    else if(this.type==='complex')arr=fR(this.rid)?.complexes;
-    else arr=fC(this.rid,this.cid)?.codes;
-    if(!arr)return;
-
-    const fromIdx=arr.findIndex(x=>x.id===this.id);
-    if(fromIdx===-1)return;
-    const[item]=arr.splice(fromIdx,1);
-
-    if(this.dropBefore&&this.dropBefore.dataset.id){
-      const toId=this.dropBefore.dataset.id;
-      const toIdx=arr.findIndex(x=>x.id===toId);
-      arr.splice(toIdx!==-1?toIdx:arr.length,0,item);
+    if(this.type==='region')          arr=data.regions;
+    else if(this.type==='complex')    arr=fR(this.rid)?.complexes;
+    else                              arr=fC(this.rid,this.cid)?.codes;
+    if(!arr) return;
+    const fi=arr.findIndex(x=>x.id===this.id);
+    if(fi===-1) return;
+    const [item]=arr.splice(fi,1);
+    if(this.dropBefore?.dataset?.id){
+      const ti=arr.findIndex(x=>x.id===this.dropBefore.dataset.id);
+      arr.splice(ti!==-1?ti:arr.length, 0, item);
     } else {
       arr.push(item);
     }
   },
 
-  cancel(){
-    clearTimeout(this._timer);
-    this._cleanup();
-    this._reset();
-  },
-
   _cleanup(){
-    if(this._rafScroll){cancelAnimationFrame(this._rafScroll);this._rafScroll=null;}
+    clearTimeout(this._timer); this._timer=null;
+    if(this._raf){ cancelAnimationFrame(this._raf); this._raf=null; }
     this._scrollDir=0;
-    if(this.ghost){this.ghost.style.display='none';this.ghost.innerHTML='';}
-    if(this.indicator&&this.indicator.parentNode)this.indicator.parentNode.removeChild(this.indicator);
-    if(this.src){this.src.classList.remove('drag-src');this.src.querySelector('.dh')?.classList.remove('active-drag');}
-    document.getElementById('contentRoot').classList.remove('no-snap');
-  },
-
-  _reset(){
-    this.active=false;this.type=null;this.id=null;this.rid=null;this.cid=null;
-    this.src=null;this.ghost=null;this.indicator=null;this.dropBefore=null;this._timer=null;
+    document.removeEventListener('touchmove',   this._onMoveBound,   {passive:false});
+    document.removeEventListener('touchend',    this._onEndBound);
+    document.removeEventListener('touchcancel', this._onCancelBound);
+    document.removeEventListener('touchmove',   this._earlyMove);
+    this._pressHandle?.classList.remove('pressing');
+    if(this.ghost){ this.ghost.style.display='none'; this.ghost.innerHTML=''; }
+    if(this.indicator?.parentNode) this.indicator.parentNode.removeChild(this.indicator);
+    if(this.src) this.src.classList.remove('drag-placeholder');
+    document.body.classList.remove('dragging');
+    this.active=false; this.type=null; this.id=null; this.rid=null; this.cid=null;
+    this.src=null; this.ghost=null; this.indicator=null; this.dropBefore=null;
+    this._onMoveBound=null; this._onEndBound=null; this._onCancelBound=null;
+    this._pressHandle=null;
   }
 };
 
-// Global touch listeners (passive:false only on move to allow preventDefault)
-document.addEventListener('touchmove',e=>{if(DND.active)DND.move(e);},{passive:false});
-document.addEventListener('touchend',()=>{if(DND.active||DND._timer)DND.end();});
-document.addEventListener('touchcancel',()=>{DND.cancel();});
+function attachHandles(){
+  document.querySelectorAll('.dh').forEach(el=>{
+    el.addEventListener('touchstart', e=>{
+      const d=el.dataset;
+      DND.begin(e, d.type, d.id, d.rid||null, d.cid||null);
+    },{passive:true});
+  });
+}
 
-// ════════════════════════════════
+// ══════════════════════════════════════════════
 //  MODAL
-// ════════════════════════════════
+// ══════════════════════════════════════════════
 let mCtx={};
 
 function openModal(type,ctx){
   mCtx={type,...(ctx||{})};
   let title='',fields='';
-  if(type==='aR'||type==='addRegion'){
+  if(type==='aR'){
     title='<span>🏘️</span> 지역 추가';
     fields=fi('rn','지역명','예: 일원동, 개포동, 도곡동...','');
   } else if(type==='eR'){
-    const r=fR(mCtx.r);title='<span>✏️</span> 지역 편집';fields=fi('rn','지역명','',r?.name||'');
+    const r=fR(mCtx.r);title='<span>✏️</span> 지역 편집';
+    fields=fi('rn','지역명','',r?.name||'');
   } else if(type==='aC'){
     title='<span>🏢</span> 단지 추가';
     fields=fi('cn','단지명','예: 대치현대, 래미하이스턴...','')+fi('ca','주소 (선택)','예: 삼성로64길 5','');
@@ -660,7 +700,7 @@ function openModal(type,ctx){
     title='<span>🔐</span> 코드 추가';
     fields=fi('ks','섹션 구분 (선택)','예: 영동대로, 공동현관...','')+
       `<div class="fhint" style="margin-top:-10px;margin-bottom:12px;">코드 위에 소제목을 붙일 때 사용</div>`+
-      fi('kl','위치 설명','예: 101동 1~3라인','')+ fi('kb','상세 위치 (선택)','예: 열쇠603→엔터→1003','')+
+      fi('kl','위치 설명','예: 101동 1~3라인','')+fi('kb','상세 위치 (선택)','예: 열쇠603→엔터→1003','')+
       fi('kv','코드값 ✱','예: ##9077, 종1234...','')+fc('kg','공동 코드 (황금색)');
   } else if(type==='eK'){
     const cd=fK(mCtx.r,mCtx.c,mCtx.k);title='<span>✏️</span> 코드 편집';
@@ -671,7 +711,7 @@ function openModal(type,ctx){
   document.getElementById('fmFields').innerHTML=fields;
   document.getElementById('formModal').classList.add('active');
   document.body.style.overflow='hidden';
-  setTimeout(()=>{document.getElementById('fmFields').querySelector('input[type=text]')?.focus();},200);
+  setTimeout(()=>document.getElementById('fmFields').querySelector('input[type=text]')?.focus(),200);
 }
 
 function fi(id,lbl,ph,val){return`<div class="fg"><label class="flbl" for="${id}">${lbl}</label><input class="finp" type="text" id="${id}" placeholder="${ph}" value="${esc(val)}" autocomplete="off"></div>`;}
@@ -683,7 +723,7 @@ function submitForm(){
   const c=id=>document.getElementById(id)?.checked||false;
   const shake=id=>{const e=document.getElementById(id);if(!e)return;e.style.borderColor='var(--red)';e.style.boxShadow='0 0 0 3px rgba(248,113,113,.15)';setTimeout(()=>{e.style.borderColor='';e.style.boxShadow='';},1500);e.focus();};
 
-  if(t==='aR'||t==='addRegion'){
+  if(t==='aR'){
     const n=v('rn');if(!n)return shake('rn');
     const id=uid();data.regions.push({id,name:n,complexes:[]});openR.add(id);
   } else if(t==='eR'){
@@ -709,9 +749,9 @@ function submitForm(){
 function closeModal(id){document.getElementById(id).classList.remove('active');document.body.style.overflow='';}
 function ovcl(e,id){if(e.target===document.getElementById(id))closeModal(id);}
 
-// ════════════════════════════════
+// ══════════════════════════════════════════════
 //  CONFIRM DELETE
-// ════════════════════════════════
+// ══════════════════════════════════════════════
 function cdR(rid){
   const r=fR(rid);if(!r)return;
   document.getElementById('confMsg').innerHTML=`<strong>${esc(r.name)}</strong> 지역과 모든 단지·코드를 삭제합니다.`;
@@ -731,9 +771,9 @@ function cdK(rid,cid,kid){
   document.getElementById('confirmModal').classList.add('active');document.body.style.overflow='hidden';
 }
 
-// ════════════════════════════════
+// ══════════════════════════════════════════════
 //  ZOOM
-// ════════════════════════════════
+// ══════════════════════════════════════════════
 let zVal='',zRowId='';
 function showZ(kid,rid,cid){
   const cd=fK(rid,cid,kid);if(!cd)return;
@@ -752,11 +792,13 @@ function execZCopy(){
   setTimeout(()=>closeModal('zoomModal'),700);
 }
 
-// ════════════════════════════════
+// ══════════════════════════════════════════════
 //  KEYBOARD
-// ════════════════════════════════
+// ══════════════════════════════════════════════
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape')['zoomModal','confirmModal','formModal'].forEach(id=>{const el=document.getElementById(id);if(el.classList.contains('active'))closeModal(id);});
+  if(e.key==='Escape')['zoomModal','confirmModal','formModal'].forEach(id=>{
+    const el=document.getElementById(id);if(el.classList.contains('active'))closeModal(id);
+  });
   if(e.key==='Enter'&&document.getElementById('formModal').classList.contains('active')){
     if(document.activeElement?.tagName==='INPUT'&&document.activeElement.type!=='checkbox')submitForm();
   }
