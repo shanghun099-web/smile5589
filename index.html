@@ -31,8 +31,11 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 .hinfo{flex:1;}
 .hinfo h1{font-size:13px;font-weight:700;color:var(--text);letter-spacing:.07em;text-transform:uppercase;}
 .hinfo p{font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:1px;}
+.header-actions{display:flex;align-items:center;gap:6px;flex-shrink:0;}
 .add-rgn-btn{display:flex;align-items:center;gap:4px;padding:8px 13px;background:linear-gradient(135deg,var(--amber),#d97706);color:#0a0a0e;font-weight:700;font-size:12px;font-family:var(--sans);border:none;border-radius:9px;cursor:pointer;white-space:nowrap;flex-shrink:0;}
 .add-rgn-btn:active{opacity:.8;}
+.backup-btn{width:34px;height:34px;background:var(--s3);border:1px solid var(--border2);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;flex-shrink:0;transition:border-color .2s,background .2s;}
+.backup-btn:active{background:var(--border2);}
 
 /* SEARCH */
 .swrap{position:relative;padding:10px 16px 8px;flex-shrink:0;}
@@ -41,36 +44,26 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 .swrap input::placeholder{color:var(--text3);}
 .si{position:absolute;left:29px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:14px;pointer-events:none;}
 
-/* SCROLL — normal, unblocked */
+/* SCROLL */
 .cscroll{flex:1;overflow-y:scroll;overflow-x:hidden;-webkit-overflow-scrolling:touch;scroll-snap-type:y proximity;padding:4px 16px 50px;}
 .cscroll::-webkit-scrollbar{width:3px;}
 .cscroll::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
-/* While dragging, disable scroll snap so ghost moves freely */
 body.dragging .cscroll{scroll-snap-type:none;}
 
 /* DRAG HANDLE */
 .dh{
-  align-self:stretch;
-  display:flex;align-items:center;justify-content:center;
-  flex-shrink:0;touch-action:none;
-  -webkit-tap-highlight-color:transparent;user-select:none;
-  cursor:grab;color:var(--text3);font-size:17px;letter-spacing:-.5px;
-  transition:color .15s,background .15s;
+  align-self:stretch;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;touch-action:none;-webkit-tap-highlight-color:transparent;user-select:none;
+  cursor:grab;color:var(--text3);font-size:17px;letter-spacing:-.5px;transition:color .15s,background .15s;
 }
 .dh.rh{width:36px;border-right:1px solid var(--border);}
 .dh.ch{width:30px;border-right:1px solid var(--border);}
 .dh.kh{width:28px;}
-/* Highlight during long-press countdown */
 .dh.pressing{color:var(--amber);background:rgba(245,158,11,.1);}
-/* Hide during search */
 .cscroll.searching .dh{opacity:0;pointer-events:none;}
 
 /* DROP INDICATOR */
-.drop-line{
-  height:3px;
-  background:linear-gradient(90deg,transparent,var(--amber) 15%,var(--amber) 85%,transparent);
-  border-radius:3px;margin:2px 0;pointer-events:none;flex-shrink:0;
-}
+.drop-line{height:3px;background:linear-gradient(90deg,transparent,var(--amber) 15%,var(--amber) 85%,transparent);border-radius:3px;margin:2px 0;pointer-events:none;flex-shrink:0;}
 
 /* EMPTY */
 .empty-state{text-align:center;padding:60px 20px 20px;}
@@ -186,14 +179,28 @@ body.dragging .cscroll{scroll-snap-type:none;}
 .zcls{padding:13px 16px;background:var(--s3);color:var(--text2);font-weight:600;font-size:13px;border:1px solid var(--border2);border-radius:11px;cursor:pointer;}
 .zhnt{font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:14px;}
 
-/* DRAG GHOST — floats above everything */
-#drag-ghost{
-  position:fixed;z-index:400;pointer-events:none;
-  border-radius:12px;
-  box-shadow:0 16px 48px rgba(0,0,0,.75),0 0 0 1.5px rgba(245,158,11,.5);
-  transform:scale(1.03) rotate(.5deg);
-  opacity:.9;display:none;
-}
+/* 백업 모달 */
+.bkbox{width:100%;max-width:340px;background:var(--s2);border:1px solid var(--border3);border-radius:20px;padding:26px 22px 22px;box-shadow:0 20px 60px rgba(0,0,0,.7);transform:scale(.93) translateY(16px);transition:transform .25s cubic-bezier(.34,1.56,.64,1);}
+.movl.active .bkbox{transform:scale(1) translateY(0);}
+.bk-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px;display:flex;align-items:center;gap:8px;}
+.bk-desc{font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:20px;line-height:1.7;}
+.bk-row{display:flex;flex-direction:column;gap:10px;}
+.bk-btn{width:100%;padding:14px 16px;border-radius:12px;border:none;font-size:13px;font-weight:700;font-family:var(--sans);cursor:pointer;display:flex;align-items:center;gap:10px;transition:opacity .15s;}
+.bk-btn:active{opacity:.8;}
+.bk-btn.export{background:linear-gradient(135deg,var(--amber),#d97706);color:#0a0a0e;}
+.bk-btn.import{background:var(--s3);color:var(--text);border:1px solid var(--border2);}
+.bk-btn .bk-ico{font-size:18px;flex-shrink:0;}
+.bk-btn .bk-txt{text-align:left;}
+.bk-btn .bk-txt span{display:block;font-size:10px;font-weight:400;opacity:.7;margin-top:2px;font-family:var(--mono);}
+.bk-close{width:100%;padding:11px;background:transparent;border:1px solid var(--border2);border-radius:11px;color:var(--text3);font-size:13px;font-family:var(--sans);cursor:pointer;margin-top:8px;}
+.bk-close:active{background:var(--border2);}
+
+/* 토스트 */
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--s3);border:1px solid var(--green);color:var(--green);padding:10px 20px;border-radius:50px;font-size:12px;font-family:var(--mono);font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:600;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* DRAG GHOST */
+#drag-ghost{position:fixed;z-index:400;pointer-events:none;border-radius:12px;box-shadow:0 16px 48px rgba(0,0,0,.75),0 0 0 1.5px rgba(245,158,11,.5);transform:scale(1.03) rotate(.5deg);opacity:.9;display:none;}
 </style>
 </head>
 <body>
@@ -205,7 +212,10 @@ body.dragging .cscroll{scroll-snap-type:none;}
         <h1>출입코드 노트</h1>
         <p>⠿ 꾹 누르기 = 순서변경 · 탭 = 복사</p>
       </div>
-      <button class="add-rgn-btn" onclick="openModal('aR')">＋ 지역 추가</button>
+      <div class="header-actions">
+        <button class="backup-btn" onclick="openBackupModal()" title="백업/복원">💾</button>
+        <button class="add-rgn-btn" onclick="openModal('aR')">＋ 지역 추가</button>
+      </div>
     </div>
   </div>
   <div class="swrap">
@@ -215,6 +225,7 @@ body.dragging .cscroll{scroll-snap-type:none;}
   <div class="cscroll" id="contentRoot"></div>
 </div>
 
+<!-- FORM MODAL -->
 <div class="movl" id="formModal" onclick="ovcl(event,'formModal')">
   <div class="mbox" onclick="event.stopPropagation()">
     <div class="mtitle" id="fmTitle"></div>
@@ -226,6 +237,7 @@ body.dragging .cscroll{scroll-snap-type:none;}
   </div>
 </div>
 
+<!-- CONFIRM MODAL -->
 <div class="movl" id="confirmModal" onclick="ovcl(event,'confirmModal')">
   <div class="cbox" onclick="event.stopPropagation()">
     <div class="cico">🗑️</div>
@@ -237,6 +249,7 @@ body.dragging .cscroll{scroll-snap-type:none;}
   </div>
 </div>
 
+<!-- ZOOM MODAL -->
 <div class="movl" id="zoomModal" onclick="ovcl(event,'zoomModal')">
   <div class="zbox" onclick="event.stopPropagation()">
     <div class="zadr" id="zAdr"></div>
@@ -250,18 +263,69 @@ body.dragging .cscroll{scroll-snap-type:none;}
   </div>
 </div>
 
+<!-- 백업 모달 -->
+<div class="movl" id="backupModal" onclick="ovcl(event,'backupModal')">
+  <div class="bkbox" onclick="event.stopPropagation()">
+    <div class="bk-title">💾 백업 · 복원</div>
+    <div class="bk-desc">백업: 모든 데이터를 JSON 파일로 저장<br>복원: 저장한 파일로 데이터 되살리기</div>
+    <div class="bk-row">
+      <button class="bk-btn export" onclick="exportBackup()">
+        <span class="bk-ico">📤</span>
+        <span class="bk-txt">백업 저장하기<span>현재 데이터를 .json 파일로 다운로드</span></span>
+      </button>
+      <label class="bk-btn import">
+        <span class="bk-ico">📥</span>
+        <span class="bk-txt">백업 불러오기<span>저장한 .json 파일로 복원</span></span>
+        <input type="file" accept=".json" style="display:none" onchange="importBackup(this.files[0]); this.value='';">
+      </label>
+    </div>
+    <button class="bk-close" onclick="closeModal('backupModal')">닫기</button>
+  </div>
+</div>
+
+<!-- 토스트 -->
+<div class="toast" id="toast"></div>
 <div id="drag-ghost"></div>
 
 <script>
-// ══════════════════════════════════════════════
-//  UTILS
-// ══════════════════════════════════════════════
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-// ══════════════════════════════════════════════
-//  DATA
-// ══════════════════════════════════════════════
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2400);
+}
+
+function openBackupModal(){
+  document.getElementById('backupModal').classList.add('active');
+  document.body.style.overflow='hidden';
+}
+function exportBackup(){
+  const payload={version:1,exportedAt:new Date().toISOString(),data:data};
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='출입코드_백업_'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();URL.revokeObjectURL(a.href);
+  closeModal('backupModal');showToast('✓ 백업 파일이 저장됐어요');
+}
+function importBackup(file){
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=(e)=>{
+    try{
+      const parsed=JSON.parse(e.target.result);
+      const restored=parsed.version===1?parsed.data:parsed;
+      if(!restored.regions||!Array.isArray(restored.regions)){showToast('⚠️ 올바른 백업 파일이 아닙니다');return;}
+      if(!confirm('백업 파일을 복원할까요?\n\n지역 '+restored.regions.length+'개가 불러와집니다.\n현재 데이터는 덮어씌워집니다.'))return;
+      data=restored;save();openR=new Set();openC=new Set();
+      closeModal('backupModal');render();showToast('✓ 복원 완료 — 지역 '+restored.regions.length+'개');
+    }catch(err){showToast('⚠️ 파일을 읽을 수 없어요');}
+  };
+  reader.readAsText(file);
+}
+
 const DFLT={regions:[{id:'rg1',name:'대치동',complexes:[
   {id:'cx1',name:'대치현대',addr:'삼성로64길 5',codes:[
     {id:'k001',section:'',label:'공동 현관',sublabel:'',value:'##9077',isGlobal:true},
@@ -357,9 +421,6 @@ function fR(id){return data.regions.find(x=>x.id===id);}
 function fC(rid,cid){return fR(rid)?.complexes.find(x=>x.id===cid);}
 function fK(rid,cid,kid){return fC(rid,cid)?.codes.find(x=>x.id===kid);}
 
-// ══════════════════════════════════════════════
-//  RENDER
-// ══════════════════════════════════════════════
 function render(){
   const root=document.getElementById('contentRoot');
   if(!data.regions.length){
@@ -456,247 +517,128 @@ function handleSearch(v){
   render();
 }
 
-// ══════════════════════════════════════════════
-//  DRAG & DROP  —  key fix: passive listeners
-//  until drag activates; only block scroll after
-// ══════════════════════════════════════════════
 const DND={
-  // state
-  active:false,
-  type:null, id:null, rid:null, cid:null,
-  src:null, ghost:null, indicator:null,
-  dropBefore:null, offY:0,
-  // internal
-  _timer:null, _startY:0, _startX:0,
-  _scrollDir:0, _raf:null,
-  // bound handlers (saved so we can removeEventListener)
-  _onMoveBound:null, _onEndBound:null, _onCancelBound:null,
+  active:false,type:null,id:null,rid:null,cid:null,
+  src:null,ghost:null,indicator:null,dropBefore:null,offY:0,
+  _timer:null,_startY:0,_startX:0,_scrollDir:0,_raf:null,
+  _onMoveBound:null,_onEndBound:null,_onCancelBound:null,
 
-  // ── Called on touchstart of a handle ──────
-  begin(e, type, id, rid, cid){
-    if(this.active) return;
-    const t = e.touches[0];
-    this.type=type; this.id=id; this.rid=rid; this.cid=cid;
-    this._startY = t.clientY;
-    this._startX = t.clientX;
-
-    // Find card ancestor
-    let el = e.currentTarget;
-    while(el){
-      if(el.classList.contains('region-card')||el.classList.contains('complex-card')||el.classList.contains('code-row')) break;
-      el = el.parentElement;
-    }
-    this.src = el;
-
-    // Highlight the handle immediately
-    e.currentTarget.classList.add('pressing');
-    this._pressHandle = e.currentTarget;
-
-    // Passive move listener – only watches for scroll-intent to cancel
-    this._earlyMove = (ev) => {
-      const dy = Math.abs(ev.touches[0].clientY - this._startY);
-      const dx = Math.abs(ev.touches[0].clientX - this._startX);
-      // If user scrolls more than 8px in Y before timeout → cancel
-      if(dy > 8 || dx > 8){
-        clearTimeout(this._timer);
-        this._timer = null;
-        this._pressHandle?.classList.remove('pressing');
-        document.removeEventListener('touchmove', this._earlyMove);
-      }
+  begin(e,type,id,rid,cid){
+    if(this.active)return;
+    const t=e.touches[0];
+    this.type=type;this.id=id;this.rid=rid;this.cid=cid;
+    this._startY=t.clientY;this._startX=t.clientX;
+    let el=e.currentTarget;
+    while(el){if(el.classList.contains('region-card')||el.classList.contains('complex-card')||el.classList.contains('code-row'))break;el=el.parentElement;}
+    this.src=el;
+    e.currentTarget.classList.add('pressing');this._pressHandle=e.currentTarget;
+    this._earlyMove=(ev)=>{
+      const dy=Math.abs(ev.touches[0].clientY-this._startY);
+      const dx=Math.abs(ev.touches[0].clientX-this._startX);
+      if(dy>8||dx>8){clearTimeout(this._timer);this._timer=null;this._pressHandle?.classList.remove('pressing');document.removeEventListener('touchmove',this._earlyMove);}
     };
-    document.addEventListener('touchmove', this._earlyMove, {passive:true});
-
-    this._timer = setTimeout(()=>{
-      document.removeEventListener('touchmove', this._earlyMove);
-      this._activate(t);
-    }, 420);
+    document.addEventListener('touchmove',this._earlyMove,{passive:true});
+    this._timer=setTimeout(()=>{document.removeEventListener('touchmove',this._earlyMove);this._activate(t);},420);
   },
 
-  // ── Long press confirmed → activate drag ──
   _activate(touch){
-    this.active = true;
-    if(navigator.vibrate) navigator.vibrate(30);
+    this.active=true;if(navigator.vibrate)navigator.vibrate(30);
     this._pressHandle?.classList.remove('pressing');
-
-    const rect = this.src.getBoundingClientRect();
-    this.offY = touch.clientY - rect.top;
-
-    // Build ghost
-    const ghost = document.getElementById('drag-ghost');
-    const clone = this.src.cloneNode(true);
+    const rect=this.src.getBoundingClientRect();this.offY=touch.clientY-rect.top;
+    const ghost=document.getElementById('drag-ghost');
+    const clone=this.src.cloneNode(true);
     clone.querySelectorAll('.rg-body,.cx-body,.add-row-btn').forEach(b=>b.remove());
-    clone.style.cssText='width:100%;';
-    ghost.innerHTML = '';
-    ghost.appendChild(clone);
+    clone.style.cssText='width:100%;';ghost.innerHTML='';ghost.appendChild(clone);
     ghost.style.cssText=`display:block;left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;`;
-    this.ghost = ghost;
-
-    // Dim source
-    this.src.classList.add('drag-placeholder');
-
-    // Drop indicator
-    this.indicator = document.createElement('div');
-    this.indicator.className = 'drop-line';
-
-    // No scroll snap while dragging
+    this.ghost=ghost;this.src.classList.add('drag-placeholder');
+    this.indicator=document.createElement('div');this.indicator.className='drop-line';
     document.body.classList.add('dragging');
-
-    // NOW attach non-passive move handler (to block scroll)
-    this._onMoveBound  = (e) => this._onMove(e);
-    this._onEndBound   = ()  => this._onEnd();
-    this._onCancelBound= ()  => this._onCancel();
-    document.addEventListener('touchmove',   this._onMoveBound,   {passive:false});
-    document.addEventListener('touchend',    this._onEndBound,    {passive:true});
-    document.addEventListener('touchcancel', this._onCancelBound, {passive:true});
+    this._onMoveBound=(e)=>this._onMove(e);this._onEndBound=()=>this._onEnd();this._onCancelBound=()=>this._onCancel();
+    document.addEventListener('touchmove',this._onMoveBound,{passive:false});
+    document.addEventListener('touchend',this._onEndBound,{passive:true});
+    document.addEventListener('touchcancel',this._onCancelBound,{passive:true});
   },
 
   _onMove(e){
-    e.preventDefault(); // now safe — blocks scroll only during active drag
-    const t = e.touches[0];
-    const cy = t.clientY;
-
-    // Move ghost
-    this.ghost.style.top = (cy - this.offY) + 'px';
-
-    // Auto-scroll
-    const sc = document.getElementById('contentRoot');
-    const sr = sc.getBoundingClientRect();
-    const zone = 90;
-    if(cy < sr.top + zone)       this._scrollDir = -1;
-    else if(cy > sr.bottom - zone) this._scrollDir =  1;
-    else                           this._scrollDir =  0;
-    this._runScroll(sc);
-
-    // Drop indicator
-    this._findDrop(cy);
+    e.preventDefault();const t=e.touches[0];const cy=t.clientY;
+    this.ghost.style.top=(cy-this.offY)+'px';
+    const sc=document.getElementById('contentRoot');const sr=sc.getBoundingClientRect();const zone=90;
+    if(cy<sr.top+zone)this._scrollDir=-1;else if(cy>sr.bottom-zone)this._scrollDir=1;else this._scrollDir=0;
+    this._runScroll(sc);this._findDrop(cy);
   },
 
   _runScroll(sc){
-    if(this._scrollDir === 0){
-      if(this._raf){ cancelAnimationFrame(this._raf); this._raf=null; }
-      return;
-    }
-    if(this._raf) return;
-    const step = ()=>{
-      sc.scrollTop += this._scrollDir * 6;
-      this._raf = this._scrollDir !== 0 ? requestAnimationFrame(step) : null;
-    };
-    this._raf = requestAnimationFrame(step);
+    if(this._scrollDir===0){if(this._raf){cancelAnimationFrame(this._raf);this._raf=null;}return;}
+    if(this._raf)return;
+    const step=()=>{sc.scrollTop+=this._scrollDir*6;this._raf=this._scrollDir!==0?requestAnimationFrame(step):null;};
+    this._raf=requestAnimationFrame(step);
   },
 
   _getSiblings(){
-    if(this.type==='region'){
-      const root=document.getElementById('contentRoot');
-      return{container:root, siblings:[...root.children].filter(c=>c.classList.contains('region-card'))};
-    } else if(this.type==='complex'){
-      const rb=document.getElementById('rc_'+this.rid)?.querySelector('.rg-body');
-      return{container:rb, siblings:rb?[...rb.children].filter(c=>c.classList.contains('complex-card')):[]};
-    } else {
-      const cb=document.getElementById('cc_'+this.cid)?.querySelector('.cx-body');
-      return{container:cb, siblings:cb?[...cb.children].filter(c=>c.classList.contains('code-row')):[]};
-    }
+    if(this.type==='region'){const root=document.getElementById('contentRoot');return{container:root,siblings:[...root.children].filter(c=>c.classList.contains('region-card'))};}
+    else if(this.type==='complex'){const rb=document.getElementById('rc_'+this.rid)?.querySelector('.rg-body');return{container:rb,siblings:rb?[...rb.children].filter(c=>c.classList.contains('complex-card')):[]};}
+    else{const cb=document.getElementById('cc_'+this.cid)?.querySelector('.cx-body');return{container:cb,siblings:cb?[...cb.children].filter(c=>c.classList.contains('code-row')):[]};}
   },
 
   _findDrop(cy){
-    const{container,siblings}=this._getSiblings();
-    if(!container) return;
-    if(this.indicator.parentNode) this.indicator.parentNode.removeChild(this.indicator);
-
+    const{container,siblings}=this._getSiblings();if(!container)return;
+    if(this.indicator.parentNode)this.indicator.parentNode.removeChild(this.indicator);
     let insertBefore=null;
-    for(const sib of siblings){
-      if(sib===this.src) continue;
-      const r=sib.getBoundingClientRect();
-      if(cy < r.top + r.height/2){ insertBefore=sib; break; }
-    }
+    for(const sib of siblings){if(sib===this.src)continue;const r=sib.getBoundingClientRect();if(cy<r.top+r.height/2){insertBefore=sib;break;}}
     this.dropBefore=insertBefore;
-
-    if(insertBefore){
-      container.insertBefore(this.indicator, insertBefore);
-    } else {
-      const btn=container.querySelector('.add-row-btn');
-      btn ? container.insertBefore(this.indicator,btn) : container.appendChild(this.indicator);
-    }
+    if(insertBefore){container.insertBefore(this.indicator,insertBefore);}
+    else{const btn=container.querySelector('.add-row-btn');btn?container.insertBefore(this.indicator,btn):container.appendChild(this.indicator);}
   },
 
-  _onEnd(){
-    this._reorder();
-    this._cleanup();
-    save();
-    render();
-  },
-
-  _onCancel(){
-    this._cleanup();
-    render();
-  },
+  _onEnd(){this._reorder();this._cleanup();save();render();},
+  _onCancel(){this._cleanup();render();},
 
   _reorder(){
     let arr;
-    if(this.type==='region')          arr=data.regions;
-    else if(this.type==='complex')    arr=fR(this.rid)?.complexes;
-    else                              arr=fC(this.rid,this.cid)?.codes;
-    if(!arr) return;
-    const fi=arr.findIndex(x=>x.id===this.id);
-    if(fi===-1) return;
-    const [item]=arr.splice(fi,1);
-    if(this.dropBefore?.dataset?.id){
-      const ti=arr.findIndex(x=>x.id===this.dropBefore.dataset.id);
-      arr.splice(ti!==-1?ti:arr.length, 0, item);
-    } else {
-      arr.push(item);
-    }
+    if(this.type==='region')arr=data.regions;
+    else if(this.type==='complex')arr=fR(this.rid)?.complexes;
+    else arr=fC(this.rid,this.cid)?.codes;
+    if(!arr)return;
+    const fi=arr.findIndex(x=>x.id===this.id);if(fi===-1)return;
+    const[item]=arr.splice(fi,1);
+    if(this.dropBefore?.dataset?.id){const ti=arr.findIndex(x=>x.id===this.dropBefore.dataset.id);arr.splice(ti!==-1?ti:arr.length,0,item);}
+    else arr.push(item);
   },
 
   _cleanup(){
-    clearTimeout(this._timer); this._timer=null;
-    if(this._raf){ cancelAnimationFrame(this._raf); this._raf=null; }
+    clearTimeout(this._timer);this._timer=null;
+    if(this._raf){cancelAnimationFrame(this._raf);this._raf=null;}
     this._scrollDir=0;
-    document.removeEventListener('touchmove',   this._onMoveBound,   {passive:false});
-    document.removeEventListener('touchend',    this._onEndBound);
-    document.removeEventListener('touchcancel', this._onCancelBound);
-    document.removeEventListener('touchmove',   this._earlyMove);
+    document.removeEventListener('touchmove',this._onMoveBound,{passive:false});
+    document.removeEventListener('touchend',this._onEndBound);
+    document.removeEventListener('touchcancel',this._onCancelBound);
+    document.removeEventListener('touchmove',this._earlyMove);
     this._pressHandle?.classList.remove('pressing');
-    if(this.ghost){ this.ghost.style.display='none'; this.ghost.innerHTML=''; }
-    if(this.indicator?.parentNode) this.indicator.parentNode.removeChild(this.indicator);
-    if(this.src) this.src.classList.remove('drag-placeholder');
+    if(this.ghost){this.ghost.style.display='none';this.ghost.innerHTML='';}
+    if(this.indicator?.parentNode)this.indicator.parentNode.removeChild(this.indicator);
+    if(this.src)this.src.classList.remove('drag-placeholder');
     document.body.classList.remove('dragging');
-    this.active=false; this.type=null; this.id=null; this.rid=null; this.cid=null;
-    this.src=null; this.ghost=null; this.indicator=null; this.dropBefore=null;
-    this._onMoveBound=null; this._onEndBound=null; this._onCancelBound=null;
-    this._pressHandle=null;
+    this.active=false;this.type=null;this.id=null;this.rid=null;this.cid=null;
+    this.src=null;this.ghost=null;this.indicator=null;this.dropBefore=null;
+    this._onMoveBound=null;this._onEndBound=null;this._onCancelBound=null;this._pressHandle=null;
   }
 };
 
 function attachHandles(){
   document.querySelectorAll('.dh').forEach(el=>{
-    el.addEventListener('touchstart', e=>{
-      const d=el.dataset;
-      DND.begin(e, d.type, d.id, d.rid||null, d.cid||null);
-    },{passive:true});
+    el.addEventListener('touchstart',e=>{const d=el.dataset;DND.begin(e,d.type,d.id,d.rid||null,d.cid||null);},{passive:true});
   });
 }
 
-// ══════════════════════════════════════════════
-//  MODAL
-// ══════════════════════════════════════════════
 let mCtx={};
-
 function openModal(type,ctx){
   mCtx={type,...(ctx||{})};
   let title='',fields='';
-  if(type==='aR'){
-    title='<span>🏘️</span> 지역 추가';
-    fields=fi('rn','지역명','예: 일원동, 개포동, 도곡동...','');
-  } else if(type==='eR'){
-    const r=fR(mCtx.r);title='<span>✏️</span> 지역 편집';
-    fields=fi('rn','지역명','',r?.name||'');
-  } else if(type==='aC'){
-    title='<span>🏢</span> 단지 추가';
-    fields=fi('cn','단지명','예: 대치현대, 래미하이스턴...','')+fi('ca','주소 (선택)','예: 삼성로64길 5','');
-  } else if(type==='eC'){
-    const cx=fC(mCtx.r,mCtx.c);title='<span>✏️</span> 단지 편집';
-    fields=fi('cn','단지명','',cx?.name||'')+fi('ca','주소','',cx?.addr||'');
-  } else if(type==='aK'){
+  if(type==='aR'){title='<span>🏘️</span> 지역 추가';fields=fi('rn','지역명','예: 일원동, 개포동, 도곡동...','');}
+  else if(type==='eR'){const r=fR(mCtx.r);title='<span>✏️</span> 지역 편집';fields=fi('rn','지역명','',r?.name||'');}
+  else if(type==='aC'){title='<span>🏢</span> 단지 추가';fields=fi('cn','단지명','예: 대치현대, 래미하이스턴...','')+fi('ca','주소 (선택)','예: 삼성로64길 5','');}
+  else if(type==='eC'){const cx=fC(mCtx.r,mCtx.c);title='<span>✏️</span> 단지 편집';fields=fi('cn','단지명','',cx?.name||'')+fi('ca','주소','',cx?.addr||'');}
+  else if(type==='aK'){
     title='<span>🔐</span> 코드 추가';
     fields=fi('ks','섹션 구분 (선택)','예: 영동대로, 공동현관...','')+
       `<div class="fhint" style="margin-top:-10px;margin-bottom:12px;">코드 위에 소제목을 붙일 때 사용</div>`+
@@ -722,36 +664,18 @@ function submitForm(){
   const v=id=>(document.getElementById(id)?.value||'').trim();
   const c=id=>document.getElementById(id)?.checked||false;
   const shake=id=>{const e=document.getElementById(id);if(!e)return;e.style.borderColor='var(--red)';e.style.boxShadow='0 0 0 3px rgba(248,113,113,.15)';setTimeout(()=>{e.style.borderColor='';e.style.boxShadow='';},1500);e.focus();};
-
-  if(t==='aR'){
-    const n=v('rn');if(!n)return shake('rn');
-    const id=uid();data.regions.push({id,name:n,complexes:[]});openR.add(id);
-  } else if(t==='eR'){
-    const n=v('rn');if(!n)return shake('rn');const r=fR(mCtx.r);if(r)r.name=n;
-  } else if(t==='aC'){
-    const n=v('cn'),a=v('ca');if(!n)return shake('cn');
-    const r=fR(mCtx.r);if(r){const id=uid();r.complexes.push({id,name:n,addr:a,codes:[]});openC.add(id);}
-  } else if(t==='eC'){
-    const n=v('cn'),a=v('ca');if(!n)return shake('cn');
-    const cx=fC(mCtx.r,mCtx.c);if(cx){cx.name=n;cx.addr=a;}
-  } else if(t==='aK'){
-    const val=v('kv');if(!val)return shake('kv');
-    const cx=fC(mCtx.r,mCtx.c);
-    if(cx)cx.codes.push({id:uid(),section:v('ks'),label:v('kl'),sublabel:v('kb'),value:val,isGlobal:c('kg')});
-  } else if(t==='eK'){
-    const val=v('kv');if(!val)return shake('kv');
-    const cd=fK(mCtx.r,mCtx.c,mCtx.k);
-    if(cd){cd.section=v('ks');cd.label=v('kl');cd.sublabel=v('kb');cd.value=val;cd.isGlobal=c('kg');}
-  }
+  if(t==='aR'){const n=v('rn');if(!n)return shake('rn');const id=uid();data.regions.push({id,name:n,complexes:[]});openR.add(id);}
+  else if(t==='eR'){const n=v('rn');if(!n)return shake('rn');const r=fR(mCtx.r);if(r)r.name=n;}
+  else if(t==='aC'){const n=v('cn'),a=v('ca');if(!n)return shake('cn');const r=fR(mCtx.r);if(r){const id=uid();r.complexes.push({id,name:n,addr:a,codes:[]});openC.add(id);}}
+  else if(t==='eC'){const n=v('cn'),a=v('ca');if(!n)return shake('cn');const cx=fC(mCtx.r,mCtx.c);if(cx){cx.name=n;cx.addr=a;}}
+  else if(t==='aK'){const val=v('kv');if(!val)return shake('kv');const cx=fC(mCtx.r,mCtx.c);if(cx)cx.codes.push({id:uid(),section:v('ks'),label:v('kl'),sublabel:v('kb'),value:val,isGlobal:c('kg')});}
+  else if(t==='eK'){const val=v('kv');if(!val)return shake('kv');const cd=fK(mCtx.r,mCtx.c,mCtx.k);if(cd){cd.section=v('ks');cd.label=v('kl');cd.sublabel=v('kb');cd.value=val;cd.isGlobal=c('kg');}}
   save();closeModal('formModal');render();
 }
 
 function closeModal(id){document.getElementById(id).classList.remove('active');document.body.style.overflow='';}
 function ovcl(e,id){if(e.target===document.getElementById(id))closeModal(id);}
 
-// ══════════════════════════════════════════════
-//  CONFIRM DELETE
-// ══════════════════════════════════════════════
 function cdR(rid){
   const r=fR(rid);if(!r)return;
   document.getElementById('confMsg').innerHTML=`<strong>${esc(r.name)}</strong> 지역과 모든 단지·코드를 삭제합니다.`;
@@ -771,9 +695,6 @@ function cdK(rid,cid,kid){
   document.getElementById('confirmModal').classList.add('active');document.body.style.overflow='hidden';
 }
 
-// ══════════════════════════════════════════════
-//  ZOOM
-// ══════════════════════════════════════════════
 let zVal='',zRowId='';
 function showZ(kid,rid,cid){
   const cd=fK(rid,cid,kid);if(!cd)return;
@@ -792,11 +713,8 @@ function execZCopy(){
   setTimeout(()=>closeModal('zoomModal'),700);
 }
 
-// ══════════════════════════════════════════════
-//  KEYBOARD
-// ══════════════════════════════════════════════
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape')['zoomModal','confirmModal','formModal'].forEach(id=>{
+  if(e.key==='Escape')['zoomModal','confirmModal','formModal','backupModal'].forEach(id=>{
     const el=document.getElementById(id);if(el.classList.contains('active'))closeModal(id);
   });
   if(e.key==='Enter'&&document.getElementById('formModal').classList.contains('active')){
