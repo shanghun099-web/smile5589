@@ -2,2024 +2,727 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#1a1a2e">
-<title>📊 배송 관리자</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>출입코드 노트</title>
+<meta name="theme-color" content="#0a0a0e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="출입코드">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{
-  --bg:#0d0f1a;--card:#131625;--card2:#0f1120;--border:#1e2240;
-  --text:#e8eaf6;--sub:#5c6080;--sub2:#3a3f60;
-  --accent:#6c63ff;--accent2:#8b83ff;--accent3:#b8b5ff;
-  --green:#00d4aa;--green2:#00f5c4;
-  --orange:#ffb74d;--orange2:#ff9800;
-  --red:#ff4757;--teal:#00bcd4;--teal2:#5eead4;
-  --pink:#ff6b81;--pink2:#ff879a;
+  --bg:#0a0a0e;--s1:#101015;--s2:#16161e;--s3:#1e1e28;
+  --border:#1e1e2c;--border2:#2a2a3c;--border3:#363650;
+  --amber:#f59e0b;--amber2:#fcd34d;--amber-dim:#7c4f06;
+  --blue:#60a5fa;--blue-dim:#1e3a5f;
+  --green:#34d399;--green2:#6ee7b7;
+  --red:#f87171;
+  --text:#e8e8f0;--text2:#8888a8;--text3:#3a3a5a;
+  --mono:'IBM Plex Mono',monospace;--sans:'Noto Sans KR',sans-serif;
 }
-html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;overflow:hidden}
-#app{display:flex;flex-direction:column;height:100vh;height:-webkit-fill-available}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);-webkit-tap-highlight-color:transparent;overscroll-behavior:none;}
+.app{display:flex;flex-direction:column;height:100dvh;height:100vh;max-width:560px;margin:0 auto;}
 
-/* ── 로그인 ── */
-.login-wrap{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
-.login-wrap.hide{display:none}
-.login-logo{font-size:52px;margin-bottom:10px}
-.login-title{font-size:26px;font-weight:900;color:#fff;margin-bottom:4px}
-.login-sub{font-size:11px;color:var(--sub);margin-bottom:32px;letter-spacing:2px}
-.login-card{width:100%;max-width:340px;background:var(--card);border-radius:20px;padding:26px;border:1px solid var(--border)}
-.lf{margin-bottom:14px}
-.lf label{display:block;font-size:10px;color:var(--sub);font-weight:700;letter-spacing:0.5px;margin-bottom:6px}
-.lf input{width:100%;background:var(--card2);border:1.5px solid var(--border);border-radius:12px;padding:13px 16px;font-size:16px;color:var(--text);outline:none;font-family:inherit;-webkit-appearance:none;transition:border 0.2s}
-.lf input:focus{border-color:var(--accent)}
-.btn-login{width:100%;padding:15px;border:none;border-radius:14px;font-size:16px;font-weight:900;cursor:pointer;font-family:inherit;background:linear-gradient(135deg,var(--accent),#8b83ff);color:#fff;box-shadow:0 4px 20px rgba(108,99,255,0.4);margin-top:8px;transition:transform 0.1s}
-.btn-login:active{transform:scale(0.97)}
-.login-err{font-size:12px;color:var(--red);text-align:center;margin-top:12px;font-weight:700;min-height:18px}
+/* TOPBAR */
+.topbar{flex-shrink:0;padding:14px 16px 0;}
+.header{display:flex;align-items:center;gap:10px;padding-bottom:12px;border-bottom:1px solid var(--border);}
+.hicon{width:32px;height:32px;background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;box-shadow:0 2px 12px rgba(245,158,11,.25);}
+.hinfo{flex:1;}
+.hinfo h1{font-size:13px;font-weight:700;color:var(--text);letter-spacing:.07em;text-transform:uppercase;}
+.hinfo p{font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:1px;}
+.header-actions{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.add-rgn-btn{display:flex;align-items:center;gap:4px;padding:8px 13px;background:linear-gradient(135deg,var(--amber),#d97706);color:#0a0a0e;font-weight:700;font-size:12px;font-family:var(--sans);border:none;border-radius:9px;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+.add-rgn-btn:active{opacity:.8;}
+.backup-btn{width:34px;height:34px;background:var(--s3);border:1px solid var(--border2);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;flex-shrink:0;transition:border-color .2s,background .2s;}
+.backup-btn:active{background:var(--border2);}
 
-/* ── 공통 헤더 ── */
-.header{padding:46px 18px 14px;flex-shrink:0;position:relative;overflow:hidden;border-bottom:1px solid var(--border)}
-.header.admin-mode{background:linear-gradient(135deg,#1a1a3e 0%,#0d0f2a 100%)}
-.header.worker-mode{background:linear-gradient(135deg,#0a1f1a 0%,#051510 100%)}
-.header::before{content:'';position:absolute;top:-40px;right:-30px;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(108,99,255,0.12) 0%,transparent 70%)}
-.header-row{display:flex;align-items:flex-end;justify-content:space-between;position:relative;z-index:1}
-.header-label{font-size:10px;letter-spacing:3px;margin-bottom:3px;font-weight:500}
-.admin-mode .header-label{color:var(--accent3)}
-.worker-mode .header-label{color:var(--teal2)}
-.header-title{font-size:22px;font-weight:900;color:#fff}
-.header-date{font-size:10px;color:var(--sub);margin-top:2px}
-.header-actions{display:flex;gap:8px;align-items:flex-end}
-.hbtn{border-radius:12px;width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-size:17px;cursor:pointer;transition:all 0.15s;border:none}
-.admin-mode .hbtn{background:rgba(108,99,255,0.15);border:1.5px solid rgba(108,99,255,0.3)}
-.worker-mode .hbtn{background:rgba(0,212,170,0.15);border:1.5px solid rgba(0,212,170,0.3)}
-.hbtn:active{transform:scale(0.91)}
-.logout-btn{font-size:11px;padding:6px 10px;border-radius:8px;cursor:pointer;font-family:inherit;font-weight:700;border:none}
-.admin-mode .logout-btn{background:rgba(108,99,255,0.1);color:var(--accent3)}
-.worker-mode .logout-btn{background:rgba(0,212,170,0.1);color:var(--teal2)}
+/* SEARCH */
+.swrap{position:relative;padding:10px 16px 8px;flex-shrink:0;}
+.swrap input{width:100%;background:var(--s2);border:1px solid var(--border2);border-radius:10px;padding:10px 16px 10px 40px;color:var(--text);font-size:14px;font-family:var(--sans);outline:none;transition:border-color .2s,box-shadow .2s;}
+.swrap input:focus{border-color:var(--amber);box-shadow:0 0 0 3px rgba(245,158,11,.1);}
+.swrap input::placeholder{color:var(--text3);}
+.si{position:absolute;left:29px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:14px;pointer-events:none;}
 
-/* ── 요약바 ── */
-.summary-bar{display:grid;gap:6px;padding:10px 14px;flex-shrink:0;background:var(--card2);border-bottom:1px solid var(--border)}
-.summary-bar.cols3{grid-template-columns:repeat(3,1fr)}
-.sum-item{text-align:center;padding:9px 4px;background:var(--card);border-radius:10px;border-top:2px solid var(--accent)}
-.sum-item.g{border-top-color:var(--green)}
-.sum-item.t{border-top-color:var(--teal)}
-.sum-item.o{border-top-color:var(--orange)}
-.sum-val{font-size:14px;font-weight:900;color:var(--accent3);line-height:1.2}
-.sum-item.g .sum-val{color:var(--green2)}
-.sum-item.t .sum-val{color:var(--teal2)}
-.sum-item.o .sum-val{color:var(--orange2)}
-.sum-lbl{font-size:9px;color:var(--sub);margin-top:3px}
+/* SCROLL */
+.cscroll{flex:1;overflow-y:scroll;overflow-x:hidden;-webkit-overflow-scrolling:touch;scroll-snap-type:y proximity;padding:4px 16px 50px;}
+.cscroll::-webkit-scrollbar{width:3px;}
+.cscroll::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+body.dragging .cscroll{scroll-snap-type:none;}
 
-/* ── 탭 ── */
-.tabs{display:flex;padding:10px 14px 0;gap:4px;flex-shrink:0;background:var(--card2);overflow-x:auto;}
-.tab{flex:1;min-width:65px;padding:10px 0;border:none;font-size:11px;font-weight:700;cursor:pointer;transition:all 0.2s;font-family:inherit;border-radius:10px 10px 0 0;border-bottom:2px solid transparent;white-space:nowrap}
-.tab.active.admin{background:var(--card);color:var(--accent2);border-bottom-color:var(--accent)}
-.tab.active.worker{background:var(--card);color:var(--teal2);border-bottom-color:var(--teal)}
-.tab:not(.active){background:transparent;color:var(--sub)}
+/* DRAG HANDLE */
+.dh{
+  align-self:stretch;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;touch-action:none;-webkit-tap-highlight-color:transparent;user-select:none;
+  cursor:grab;color:var(--text3);font-size:17px;letter-spacing:-.5px;transition:color .15s,background .15s;
+}
+.dh.rh{width:36px;border-right:1px solid var(--border);}
+.dh.ch{width:30px;border-right:1px solid var(--border);}
+.dh.kh{width:28px;}
+.dh.pressing{color:var(--amber);background:rgba(245,158,11,.1);}
+.cscroll.searching .dh{opacity:0;pointer-events:none;}
 
-/* ── 콘텐츠 ── */
-.content{flex:1;overflow-y:auto;padding:14px;-webkit-overflow-scrolling:touch;background:var(--card)}
+/* DROP INDICATOR */
+.drop-line{height:3px;background:linear-gradient(90deg,transparent,var(--amber) 15%,var(--amber) 85%,transparent);border-radius:3px;margin:2px 0;pointer-events:none;flex-shrink:0;}
 
-/* ── 폼 공통 ── */
-.field{margin-bottom:12px}
-.field label{display:block;font-size:10px;color:var(--sub);font-weight:700;letter-spacing:0.5px;margin-bottom:5px}
-.field input,.field select{width:100%;background:var(--card2);border:1.5px solid var(--border);border-radius:10px;padding:11px 13px;font-size:15px;color:var(--text);outline:none;font-family:inherit;-webkit-appearance:none;transition:border 0.2s}
-.field input:focus,.field select:focus{border-color:var(--accent)}
-.btn-primary{width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:900;cursor:pointer;font-family:inherit;background:linear-gradient(135deg,var(--accent),#8b83ff);color:#fff;box-shadow:0 4px 20px rgba(108,99,255,0.3);transition:transform 0.1s;margin-bottom:10px}
-.btn-primary.green{background:linear-gradient(135deg,#00a882,#00d4aa);box-shadow:0 4px 20px rgba(0,212,170,0.3);color:#001a14}
-.btn-primary.teal{background:linear-gradient(135deg,#007a6a,#00bcd4);box-shadow:0 4px 20px rgba(0,188,212,0.3);color:#001a14}
-.btn-primary.orange{background:linear-gradient(135deg,var(--orange2),var(--orange));box-shadow:0 4px 20px rgba(255,152,0,0.3);color:#1a0f00}
-.btn-primary:active{transform:scale(0.97)}
-.btn-secondary{width:100%;padding:12px;border:1.5px solid var(--border);border-radius:12px;font-size:13px;color:var(--sub);background:transparent;cursor:pointer;font-family:inherit;margin-bottom:8px}
+/* EMPTY */
+.empty-state{text-align:center;padding:60px 20px 20px;}
+.empty-state .eico{font-size:40px;margin-bottom:14px;}
+.empty-state p{color:var(--text3);font-size:13px;line-height:1.8;}
+.empty-state strong{color:var(--amber);}
+.no-results{text-align:center;padding:50px 20px;color:var(--text3);font-size:12px;font-family:var(--mono);}
 
-/* ── 관리자: 배달원 카드 ── */
-.worker-card{background:var(--card2);border-radius:14px;padding:14px;margin-bottom:10px;border-left:4px solid var(--accent);display:flex;align-items:center;gap:12px}
-.worker-avatar{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#fff;flex-shrink:0}
-.worker-avatar.admin-av{background:linear-gradient(135deg,var(--accent),#8b83ff)}
-.worker-avatar.worker-av{background:linear-gradient(135deg,var(--teal),var(--teal2))}
-.worker-info{flex:1;min-width:0}
-.worker-name{font-size:15px;font-weight:900}
-.worker-prices{font-size:11px;color:var(--sub);margin-top:3px;line-height:1.4}
-.worker-btns{display:flex;gap:6px;flex-shrink:0;flex-direction:column}
-.wbtn{padding:7px 10px;border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;width:34px;height:30px;display:flex;align-items:center;justify-content:center}
-.wbtn-edit{background:rgba(108,99,255,0.15);color:var(--accent2)}
-.wbtn-del{background:rgba(255,71,87,0.12);color:var(--red)}
+/* REGION CARD */
+.region-card{scroll-snap-align:start;margin-bottom:14px;border-radius:16px;overflow:hidden;border:1px solid var(--border);transition:border-color .2s,box-shadow .15s;}
+.region-card.open{border-color:var(--border3);box-shadow:0 4px 24px rgba(0,0,0,.5);}
+.region-card.drag-placeholder{opacity:.2;pointer-events:none;}
+.rg-hdr{display:flex;align-items:center;background:var(--s1);min-height:60px;user-select:none;}
+.rg-bar{width:4px;align-self:stretch;flex-shrink:0;background:linear-gradient(180deg,var(--amber),var(--amber-dim));opacity:.6;transition:opacity .2s;}
+.region-card.open .rg-bar{opacity:1;}
+.rg-clickable{display:flex;align-items:center;gap:10px;flex:1;padding:12px 10px 12px 14px;min-width:0;cursor:pointer;}
+.rg-ico{width:36px;height:36px;border-radius:10px;background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.25);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.region-card.open .rg-ico{background:rgba(245,158,11,.2);}
+.rg-name{font-size:15px;font-weight:700;color:var(--text);}
+.rg-meta{font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:2px;}
+.rg-acts{display:flex;align-items:center;gap:4px;padding:0 10px 0 0;flex-shrink:0;}
+.abt{width:32px;height:32px;border:1px solid var(--border2);border-radius:8px;background:var(--s3);color:var(--text2);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.abt:active{transform:scale(.9);}
+.abt.add{color:var(--amber);border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.08);}
+.abt.del{color:var(--red);border-color:rgba(248,113,113,.3);background:rgba(248,113,113,.06);}
+.chv{color:var(--text3);font-size:11px;transition:transform .25s;margin-left:2px;flex-shrink:0;}
+.region-card.open .chv.r{transform:rotate(180deg);color:var(--amber);}
+.rg-body{display:none;background:var(--bg);padding:8px 10px 10px;}
+.region-card.open .rg-body{display:block;}
 
-/* ── 배달원 선택 드롭다운 ── */
-.ws-wrap { position: relative; }
-.ws-select { width: 100%; appearance: none; background: linear-gradient(135deg, var(--card2), #0a0c16); border: 1.5px solid var(--border); border-radius: 16px; padding: 15px 48px 15px 18px; font-size: 15px; font-weight: 900; color: var(--accent3); cursor: pointer; outline: none; transition: all 0.2s; font-family: inherit; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-.ws-select:focus { border-color: var(--accent); box-shadow: 0 4px 20px rgba(108,99,255,0.15); color: var(--text); }
-.ws-icon { position: absolute; right: 18px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--sub); font-size: 12px; }
+/* COMPLEX CARD */
+.complex-card{border-radius:12px;border:1px solid var(--border);margin-bottom:8px;overflow:hidden;transition:border-color .2s;}
+.complex-card.open{border-color:var(--border2);box-shadow:0 2px 14px rgba(0,0,0,.4);}
+.complex-card.drag-placeholder{opacity:.2;pointer-events:none;}
+.cx-hdr{display:flex;align-items:center;background:var(--s2);min-height:50px;user-select:none;}
+.cx-bar{width:3px;align-self:stretch;flex-shrink:0;background:linear-gradient(180deg,var(--blue),var(--blue-dim));opacity:.5;transition:opacity .2s;}
+.complex-card.open .cx-bar{opacity:1;}
+.cx-clickable{display:flex;align-items:center;gap:9px;flex:1;padding:10px 8px 10px 12px;min-width:0;cursor:pointer;}
+.cx-ico{width:30px;height:30px;border-radius:8px;background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.2);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.complex-card.open .cx-ico{background:rgba(96,165,250,.18);}
+.cx-col{flex:1;min-width:0;}
+.cx-name{font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cx-addr{font-size:10px;color:var(--text2);font-family:var(--mono);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cx-acts{display:flex;align-items:center;gap:3px;padding:0 8px 0 0;}
+.asm{width:28px;height:28px;border:1px solid var(--border2);border-radius:7px;background:var(--s3);color:var(--text2);font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.asm:active{transform:scale(.88);}
+.asm.add{color:var(--blue);border-color:rgba(96,165,250,.3);background:rgba(96,165,250,.08);}
+.asm.del{color:var(--red);border-color:rgba(248,113,113,.3);background:rgba(248,113,113,.06);}
+.chv.c{color:var(--text3);font-size:10px;transition:transform .2s;}
+.complex-card.open .chv.c{transform:rotate(180deg);color:var(--blue);}
+.cx-body{display:none;background:var(--s1);padding:8px 10px 10px;}
+.complex-card.open .cx-body{display:block;}
 
-/* ── 일별/기록/통계 ── */
-.date-nav{display:flex;align-items:center;justify-content:space-between;background:var(--card2);border-radius:12px;padding:10px 14px;margin-bottom:14px;border:1.5px solid var(--border)}
-.date-nav-btn{background:transparent;border:none;color:var(--sub);font-size:20px;cursor:pointer;padding:2px 8px;line-height:1}
-.date-nav-label{font-size:14px;font-weight:900;color:var(--text)}
-.date-nav-sub{font-size:10px;color:var(--sub);text-align:center;margin-top:2px}
-.daily-worker-row{background:var(--card2);border-radius:14px;padding:13px 14px;margin-bottom:8px;border:1.5px solid var(--border);transition:border-color 0.2s}
-.daily-worker-row.has-data{border-color:rgba(108,99,255,0.4)}
-.daily-row-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-.daily-avatar{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--accent),#8b83ff);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:#fff;flex-shrink:0}
-.daily-name{font-size:14px;font-weight:700;flex:1}
-.daily-total-badge{font-size:12px;font-weight:900;color:var(--green2);background:rgba(0,212,170,0.1);padding:3px 9px;border-radius:20px}
-.daily-inputs{display:grid;grid-template-columns:repeat(3, 1fr);gap:6px}
-.daily-field label{display:block;font-size:9px;color:var(--sub);font-weight:700;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.daily-field input{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:9px;padding:10px 4px;font-size:20px;font-weight:900;color:var(--text);text-align:center;outline:none;font-family:inherit;-webkit-appearance:none;transition:border 0.2s}
-.daily-field input:focus{border-color:var(--accent);background:var(--card2)}
-.daily-field-sub{font-size:9px;color:var(--sub);text-align:center;margin-top:4px;min-height:14px;white-space:nowrap}
-.my-input-header{background:linear-gradient(135deg,rgba(0,188,212,0.12),rgba(0,188,212,0.04));border:1.5px solid rgba(0,188,212,0.2);border-radius:14px;padding:16px;margin-bottom:14px}
-.my-input-name{font-size:18px;font-weight:900;color:var(--teal2);margin-bottom:4px}
-.my-input-sub{font-size:11px;color:var(--sub)}
-.my-qty-grid{display:grid;grid-template-columns:repeat(3, 1fr);gap:8px;margin-bottom:14px}
-.my-qty-box{background:var(--card2);border-radius:14px;padding:14px 8px;border:1.5px solid var(--border);text-align:center}
-.my-qty-label{font-size:10px;font-weight:700;margin-bottom:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.my-qty-label.a{color:var(--orange2)}
-.my-qty-label.b{color:var(--accent2)}
-.my-qty-label.c{color:var(--pink2)}
-.my-qty-input{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:14px 4px;font-size:26px;font-weight:900;color:var(--text);text-align:center;outline:none;font-family:inherit;-webkit-appearance:none;transition:border 0.2s}
-.my-qty-input:focus{border-color:var(--teal)}
-.my-calc-box{background:linear-gradient(135deg,#0a1f1a,#061410);border:1.5px solid rgba(0,188,212,0.2);border-radius:14px;padding:14px;margin-bottom:14px}
-.my-calc-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:12px}
-.my-calc-lbl{color:var(--sub)}
-.my-calc-val{font-weight:700}
-.my-calc-sep{border:none;border-top:1px solid rgba(0,188,212,0.15);margin:8px 0}
-.my-calc-total{font-size:22px;font-weight:900;color:var(--teal2)}
-.rec-day-card{background:var(--card2);border-radius:14px;padding:14px;margin-bottom:10px;border:1.5px solid var(--border)}
-.rec-day-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-.rec-day-date{font-size:15px;font-weight:900}
-.rec-day-total{font-size:13px;font-weight:900;color:var(--green2)}
-.rec-worker-row{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg);border-radius:9px;margin-bottom:4px}
-.rec-worker-name{font-size:12px;font-weight:700;flex:1}
-.rec-worker-qty{font-size:10px;color:var(--sub);margin-right:6px;text-align:right}
-.rec-worker-pay{font-size:13px;font-weight:900;color:var(--accent3)}
-.rec-btns{display:flex;gap:6px;margin-top:10px}
-.rec-btn{flex:1;padding:8px;border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit}
-.rec-btn-edit{background:rgba(108,99,255,0.15);color:var(--accent2)}
-.rec-btn-del{background:rgba(255,71,87,0.12);color:var(--red)}
-.my-rec-card{background:var(--card2);border-radius:14px;padding:14px;margin-bottom:8px;border-left:4px solid var(--teal)}
-.my-rec-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-.my-rec-date{font-size:14px;font-weight:900;color:var(--teal2)}
-.my-rec-pay{font-size:15px;font-weight:900;color:var(--green2)}
-.period-tabs{display:flex;gap:6px;margin-bottom:12px}
-.period-tab{flex:1;padding:9px 0;border:1.5px solid var(--border);border-radius:10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;background:transparent;color:var(--sub);transition:all 0.2s}
-.period-tab.active{background:var(--accent);border-color:var(--accent);color:#fff}
-.period-tab.active.worker-tab{background:var(--teal);border-color:var(--teal);color:#001a14}
-.month-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-.month-nav-btn{background:var(--card2);border:1.5px solid var(--border);border-radius:10px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;color:var(--sub)}
-.month-nav-title{font-size:16px;font-weight:900}
-.stat-summary{background:linear-gradient(135deg,#131625,#0f1120);border:1.5px solid rgba(108,99,255,0.25);border-radius:14px;padding:16px;margin-bottom:12px}
-.stat-summary.worker-stat{background:linear-gradient(135deg,#0a1f1a,#061410);border-color:rgba(0,188,212,0.25)}
-.stat-title{font-size:10px;letter-spacing:0.5px;margin-bottom:12px;font-weight:700}
-.stat-title.admin{color:var(--accent3)}
-.stat-title.worker{color:var(--teal2)}
-.stat-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:12px}
-.stat-row-lbl{color:var(--sub)}
-.stat-row-val{font-weight:700}
-.stat-sep{border:none;border-top:1px solid var(--border);margin:8px 0}
-.stat-total{font-size:22px;font-weight:900;color:var(--green2);margin-top:4px}
-.worker-stat-card{background:var(--card2);border-radius:14px;padding:13px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer}
-.wsc-rank{font-size:22px;font-weight:900;color:var(--sub2);width:28px;text-align:center;flex-shrink:0}
-.wsc-avatar{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#8b83ff);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;color:#fff;flex-shrink:0}
-.wsc-info{flex:1;min-width:0}
-.wsc-name{font-size:14px;font-weight:900}
-.wsc-pay{text-align:right}
-.wsc-gross{font-size:15px;font-weight:900;color:var(--accent3)}
-.wsc-net{font-size:11px;color:var(--green2);margin-top:2px}
-.wsc-qty{font-size:10px;color:var(--sub);margin-top:1px}
-.back-btn{display:flex;align-items:center;gap:6px;background:var(--card2);border:1.5px solid var(--border);border-radius:10px;padding:9px 14px;font-size:13px;font-weight:700;color:var(--sub);cursor:pointer;margin-bottom:14px;font-family:inherit}
-.detail-header{background:linear-gradient(135deg,rgba(108,99,255,0.15),rgba(108,99,255,0.05));border:1.5px solid rgba(108,99,255,0.2);border-radius:14px;padding:16px;margin-bottom:12px}
-.detail-day-row{background:var(--card2);border-radius:10px;padding:11px 13px;margin-bottom:6px;display:flex;align-items:center;gap:10px}
-.ddr-date{font-size:12px;font-weight:700;flex:1}
-.ddr-pay{font-size:13px;font-weight:900;color:var(--accent3)}
-.ddr-net{font-size:10px;color:var(--green2);text-align:right}
+/* SECTION LABEL */
+.sec-lbl{font-size:10px;font-weight:700;color:var(--amber);letter-spacing:.13em;text-transform:uppercase;font-family:var(--mono);padding:8px 4px 5px;display:flex;align-items:center;gap:5px;}
+.sec-lbl::before{content:'▸';font-size:9px;}
 
-/* ── 출입코드 노트 (이중 폴더 & 스마트 파서 지원) ── */
-.cn-wrap { padding-bottom: 20px; }
-.cn-search { width: 100%; padding: 12px 16px 12px 40px; background: var(--card2) url('data:image/svg+xml;utf8,<svg fill="%235c6080" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>') no-repeat 12px center/18px; border: 1.5px solid var(--border); border-radius: 12px; color: var(--text); font-size: 14px; outline: none; transition: border 0.2s; margin-bottom: 14px; font-family: inherit; }
-.cn-search:focus { border-color: var(--orange); }
+/* CODE ROW */
+.code-row{display:flex;align-items:center;background:var(--s2);border:1px solid var(--border);border-radius:10px;margin-bottom:5px;position:relative;overflow:hidden;}
+.code-row.global{background:rgba(245,158,11,.05);border-color:rgba(245,158,11,.18);}
+.code-row.copied{border-color:var(--green)!important;background:rgba(52,211,153,.06)!important;}
+.code-row.drag-placeholder{opacity:.2;pointer-events:none;}
+.code-main{flex:1;min-width:0;cursor:pointer;padding:10px 8px 10px 10px;}
+.code-lbl{font-size:11px;color:var(--text2);line-height:1.5;}
+.code-sub{font-size:10px;color:var(--blue);font-weight:600;display:block;margin-bottom:1px;}
+.code-val{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--green2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.03em;}
+.code-row.global .code-val{color:var(--amber2);}
+.code-acts{display:flex;gap:3px;padding:0 8px 0 0;flex-shrink:0;}
+.copy-hint{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:11px;color:var(--green);font-weight:700;font-family:var(--mono);background:rgba(10,10,14,.92);padding:3px 12px;border-radius:6px;opacity:0;pointer-events:none;transition:opacity .15s;white-space:nowrap;}
+.code-row.copied .copy-hint{opacity:1;}
+.add-row-btn{width:100%;padding:9px;border:1px dashed var(--border2);border-radius:9px;background:transparent;color:var(--text3);font-size:12px;font-family:var(--sans);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:border-color .15s,color .15s;margin-top:4px;}
+.add-row-btn.amber-btn{border-color:rgba(245,158,11,.22);color:rgba(245,158,11,.5);}
+.add-row-btn:active{border-color:var(--amber);color:var(--amber);}
 
-/* 대분류 (폴더) */
-.cn-folder { background: var(--card2); border: 1.5px solid var(--border); border-radius: 14px; margin-bottom: 12px; overflow: hidden; }
-.cn-folder-head { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; border-left: 4px solid var(--orange); background: linear-gradient(90deg, rgba(255,152,0,0.08) 0%, transparent 100%); cursor: pointer; user-select: none; }
-.cn-folder-title { font-size: 16px; font-weight: 900; display: flex; align-items: center; gap: 8px; color: var(--text); }
-.cn-folder-icon { background: rgba(255,152,0,0.2); color: var(--orange2); width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+/* MODALS */
+.movl{position:fixed;inset:0;background:rgba(5,5,10,.88);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s;}
+.movl.active{opacity:1;pointer-events:all;}
+.mbox{width:100%;max-width:420px;background:var(--s2);border:1px solid var(--border3);border-radius:18px;padding:24px 20px 20px;box-shadow:0 20px 60px rgba(0,0,0,.7);transform:scale(.93) translateY(16px);transition:transform .25s cubic-bezier(.34,1.56,.64,1);max-height:90vh;overflow-y:auto;}
+.movl.active .mbox{transform:scale(1) translateY(0);}
+.mtitle{font-size:15px;font-weight:700;color:var(--text);margin-bottom:18px;display:flex;align-items:center;gap:8px;}
+.fg{margin-bottom:14px;}
+.flbl{font-size:10px;font-weight:700;color:var(--text2);letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px;display:block;font-family:var(--mono);}
+.finp{width:100%;background:var(--s3);border:1px solid var(--border2);border-radius:9px;padding:11px 13px;color:var(--text);font-size:14px;font-family:var(--sans);outline:none;transition:border-color .2s,box-shadow .2s;}
+.finp:focus{border-color:var(--amber);box-shadow:0 0 0 3px rgba(245,158,11,.1);}
+.finp::placeholder{color:var(--text3);}
+.fhint{font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:4px;}
+.fchk{display:flex;align-items:center;gap:10px;padding:11px 13px;background:var(--s3);border:1px solid var(--border2);border-radius:9px;cursor:pointer;}
+.fchk input[type=checkbox]{width:16px;height:16px;accent-color:var(--amber);}
+.fchk label{font-size:13px;color:var(--text2);cursor:pointer;}
+.macts{display:flex;gap:8px;margin-top:20px;}
+.bpri{flex:1;padding:13px;background:linear-gradient(135deg,var(--amber),#d97706);color:#0a0a0e;font-weight:700;font-size:14px;font-family:var(--sans);border:none;border-radius:11px;cursor:pointer;}
+.bpri:active{opacity:.85;}
+.bsec{padding:13px 18px;background:var(--s3);color:var(--text2);font-weight:600;font-size:13px;font-family:var(--sans);border:1px solid var(--border2);border-radius:11px;cursor:pointer;}
+.bsec:active{background:var(--border2);}
+.cbox{width:100%;max-width:320px;background:var(--s2);border:1px solid var(--border3);border-radius:18px;padding:26px 22px 20px;box-shadow:0 20px 60px rgba(0,0,0,.7);transform:scale(.93);transition:transform .25s cubic-bezier(.34,1.56,.64,1);}
+.movl.active .cbox{transform:scale(1);}
+.cico{font-size:34px;text-align:center;margin-bottom:12px;}
+.cmsg{font-size:14px;color:var(--text);text-align:center;line-height:1.65;margin-bottom:20px;}
+.cmsg strong{color:var(--red);}
+.cacts{display:flex;gap:8px;}
+.bdng{flex:1;padding:13px;background:linear-gradient(135deg,var(--red),#dc2626);color:#fff;font-weight:700;font-size:14px;font-family:var(--sans);border:none;border-radius:11px;cursor:pointer;}
+.bdng:active{opacity:.85;}
+.zbox{width:100%;max-width:360px;background:var(--s2);border:1px solid var(--border3);border-radius:20px;padding:28px 24px 22px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.7);transform:scale(.9) translateY(20px);transition:transform .25s cubic-bezier(.34,1.56,.64,1);}
+.movl.active .zbox{transform:scale(1) translateY(0);}
+.zadr{font-size:11px;color:var(--text2);font-family:var(--mono);margin-bottom:6px;}
+.zsub{font-size:13px;color:var(--blue);font-weight:600;margin-bottom:18px;min-height:18px;}
+.zcod{font-family:var(--mono);font-size:34px;font-weight:700;color:var(--green2);letter-spacing:.05em;line-height:1.2;padding:16px;background:var(--bg);border-radius:12px;border:1px solid var(--border2);margin-bottom:20px;word-break:break-all;text-shadow:0 0 20px rgba(110,231,183,.25);}
+.zcod.global{color:var(--amber2);text-shadow:0 0 20px rgba(252,211,77,.25);}
+.zacts{display:flex;gap:8px;}
+.zcpy{flex:1;padding:13px;background:linear-gradient(135deg,var(--amber),#d97706);color:#0a0a0e;font-weight:700;font-size:14px;border:none;border-radius:11px;cursor:pointer;}
+.zcpy.done{background:linear-gradient(135deg,var(--green),#10b981);}
+.zcpy:active{opacity:.85;}
+.zcls{padding:13px 16px;background:var(--s3);color:var(--text2);font-weight:600;font-size:13px;border:1px solid var(--border2);border-radius:11px;cursor:pointer;}
+.zhnt{font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:14px;}
 
-/* 중분류 (하위 폴더) */
-.cn-subfolder { background: var(--card); border-top: 1px solid var(--border); }
-.cn-subfolder-head { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px 12px 24px; border-left: 4px solid var(--teal); background: rgba(0, 188, 212, 0.04); cursor: pointer; user-select: none; }
-.cn-subfolder-title { font-size: 14px; font-weight: 800; display: flex; align-items: center; gap: 6px; color: var(--teal2); }
+/* 백업 모달 */
+.bkbox{width:100%;max-width:340px;background:var(--s2);border:1px solid var(--border3);border-radius:20px;padding:26px 22px 22px;box-shadow:0 20px 60px rgba(0,0,0,.7);transform:scale(.93) translateY(16px);transition:transform .25s cubic-bezier(.34,1.56,.64,1);}
+.movl.active .bkbox{transform:scale(1) translateY(0);}
+.bk-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px;display:flex;align-items:center;gap:8px;}
+.bk-desc{font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:20px;line-height:1.7;}
+.bk-row{display:flex;flex-direction:column;gap:10px;}
+.bk-btn{width:100%;padding:14px 16px;border-radius:12px;border:none;font-size:13px;font-weight:700;font-family:var(--sans);cursor:pointer;display:flex;align-items:center;gap:10px;transition:opacity .15s;}
+.bk-btn:active{opacity:.8;}
+.bk-btn.export{background:linear-gradient(135deg,var(--amber),#d97706);color:#0a0a0e;}
+.bk-btn.import{background:var(--s3);color:var(--text);border:1px solid var(--border2);}
+.bk-btn .bk-ico{font-size:18px;flex-shrink:0;}
+.bk-btn .bk-txt{text-align:left;}
+.bk-btn .bk-txt span{display:block;font-size:10px;font-weight:400;opacity:.7;margin-top:2px;font-family:var(--mono);}
+.bk-close{width:100%;padding:11px;background:transparent;border:1px solid var(--border2);border-radius:11px;color:var(--text3);font-size:13px;font-family:var(--sans);cursor:pointer;margin-top:8px;}
+.bk-close:active{background:var(--border2);}
 
-/* 공통 액션 버튼 (순서변경, 추가, 수정, 삭제) */
-.cn-actions { display: flex; gap: 4px; align-items: center; }
-.cn-btn { width: 28px; height: 28px; border-radius: 8px; border: none; font-size: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer; background: rgba(255,255,255,0.05); color: var(--sub); transition: all 0.2s; }
-.cn-btn:hover { background: rgba(255,255,255,0.1); color: var(--text); }
-.cn-btn.add { color: var(--orange2); background: rgba(255,152,0,0.1); }
-.cn-btn.move { font-size: 12px; background: transparent; }
+/* 토스트 */
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--s3);border:1px solid var(--green);color:var(--green);padding:10px 20px;border-radius:50px;font-size:12px;font-family:var(--mono);font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:600;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
-/* 아이템 (개별 주소/코드) */
-.cn-items { display: none; padding: 0; background: var(--bg); }
-.cn-subfolder.open .cn-items { display: block; }
-.cn-folder.open .cn-subfolders { display: block; }
-.cn-subfolders { display: none; }
-.cn-folder.open.search-mode .cn-subfolders, .cn-subfolder.open.search-mode .cn-items { display: block !important; }
-
-.cn-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px 12px 32px; border-top: 1px solid var(--border); cursor: pointer; transition: background 0.2s; }
-.cn-item-addr { font-size: 13px; font-weight: 700; margin-bottom: 4px; color: var(--text); }
-.cn-item-code { font-size: 15px; font-weight: 900; color: var(--green2); letter-spacing: 0.5px; }
-.cn-empty { padding: 20px; text-align: center; color: var(--sub); font-size: 12px; }
-
-/* 스마트 파서 모달용 */
-.parser-textarea { width: 100%; height: 150px; background: var(--card2); border: 1.5px solid var(--border); border-radius: 12px; padding: 12px; font-size: 13px; color: var(--text); outline: none; resize: none; font-family: inherit; margin-bottom: 12px; line-height: 1.5; }
-.parser-textarea:focus { border-color: var(--teal); }
-
-/* ── 복사 방식 카드 라디오 버튼 ── */
-.radio-card input { display: none; }
-.radio-card .rc-content { display: flex; align-items: center; gap: 12px; background: var(--card2); border: 1.5px solid var(--border); border-radius: 12px; padding: 16px; cursor: pointer; transition: all 0.2s; }
-.radio-card .rc-icon { font-size: 22px; filter: grayscale(1); opacity: 0.5; transition: all 0.2s; }
-.radio-card .rc-title { font-size: 14px; font-weight: 900; color: var(--sub); transition: all 0.2s; margin-bottom: 2px; }
-.radio-card .rc-desc { font-size: 11px; color: var(--sub); line-height: 1.3; }
-.radio-card input:checked + .rc-content { border-color: var(--teal); background: rgba(0, 188, 212, 0.08); }
-.radio-card input:checked + .rc-content .rc-icon { filter: none; opacity: 1; }
-.radio-card input:checked + .rc-content .rc-title { color: var(--teal2); }
-.radio-card.danger input:checked + .rc-content { border-color: var(--red); background: rgba(255, 71, 87, 0.08); }
-.radio-card.danger input:checked + .rc-content .rc-title { color: var(--red); }
-
-/* ── 모달/오버레이 ── */
-.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:3000;align-items:center;justify-content:center}
-.overlay.show{display:flex}
-.dialog{background:var(--card);border-radius:18px;padding:24px;width:290px;text-align:center;border:1px solid var(--border)}
-.dialog h3{font-size:16px;margin-bottom:8px}
-.dialog p{font-size:13px;color:var(--sub);margin-bottom:20px;line-height:1.5}
-.dialog-btns{display:flex;gap:10px}
-.dialog-btns button{flex:1;padding:13px;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit; transition:opacity 0.2s}
-.dialog-btns button:active{opacity:0.7}
-.dbtn-cancel{background:var(--card2);color:var(--sub)}
-
-.bsoverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:2000;align-items:flex-end;justify-content:center}
-.bsoverlay.show{display:flex}
-.bsheet{background:var(--card);border-radius:22px 22px 0 0;padding:22px 18px 36px;width:100%;max-width:500px;border-top:1px solid var(--border); max-height: 90vh; overflow-y: auto;}
-.bs-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 18px}
-.bs-title{font-size:15px;font-weight:900;margin-bottom:4px}
-.bs-sub{font-size:11px;color:var(--sub);margin-bottom:18px}
-.bk-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
-.bk-btn{padding:14px 10px;border:none;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;text-align:center;line-height:1.6}
-.bk-btn:active{transform:scale(0.96)}
-.bk-export{background:linear-gradient(135deg,#1a3a5c,#1e4a7a);color:#7bbfff;border:1.5px solid #2a5a9a}
-.bk-import{background:linear-gradient(135deg,#1a3a1a,#1e4a1e);color:#7fd67f;border:1.5px solid #2a6a2a}
-.bk-row{width:100%;padding:13px;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:10px;border:none}
-.bk-csv{background:rgba(0,212,170,0.1);color:var(--green2);border:1.5px solid rgba(0,212,170,0.3)}
-.bk-copy{background:rgba(108,99,255,0.1);color:var(--accent3);border:1.5px solid rgba(108,99,255,0.3)}
-.bk-reset{background:rgba(255,71,87,0.1);color:var(--red);border:1.5px solid rgba(255,71,87,0.3)}
-.bk-close{background:transparent;color:var(--sub);border:1.5px solid var(--border)}
-.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--card2);border:1px solid var(--accent);color:var(--accent3);padding:11px 22px;border-radius:28px;font-size:13px;font-weight:700;z-index:9999;pointer-events:none;opacity:0;transition:opacity 0.3s;white-space:nowrap} 
-.toast.show{opacity:1}
-.loading{display:flex;align-items:center;justify-content:center;height:200px;flex-direction:column;gap:12px}
-.spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.loading-txt{font-size:12px;color:var(--sub)}
-.empty{text-align:center;color:var(--sub2);padding:50px 0;font-size:13px;line-height:2.4}
-.sec-title{font-size:11px;color:var(--sub);font-weight:700;letter-spacing:0.5px;margin-bottom:10px}
-.input-subtabs{display:flex;gap:6px;margin-bottom:12px}
-.input-subtab{flex:1;padding:9px 0;border:1.5px solid var(--border);border-radius:10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;background:transparent;color:var(--sub);transition:all 0.2s}
-.input-subtab.active{background:var(--accent);border-color:var(--accent);color:#fff}
+/* DRAG GHOST */
+#drag-ghost{position:fixed;z-index:400;pointer-events:none;border-radius:12px;box-shadow:0 16px 48px rgba(0,0,0,.75),0 0 0 1.5px rgba(245,158,11,.5);transform:scale(1.03) rotate(.5deg);opacity:.9;display:none;}
 </style>
 </head>
 <body>
-
-<div class="login-wrap" id="login-wrap">
-  <div class="login-logo">📊</div>
-  <div class="login-title">배송 관리자</div>
-  <div class="login-sub">DELIVERY MANAGER</div>
-  <div class="login-card">
-    <div class="lf"><label>아이디</label><input type="text" id="l-id" placeholder="아이디 입력" autocomplete="username"></div>
-    <div class="lf"><label>비밀번호</label><input type="password" id="l-pw" placeholder="비밀번호 입력" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"></div>
-    <button class="btn-login" onclick="doLogin()">🔐 로그인</button>
-    <div class="login-err" id="l-err"></div>
-  </div>
-</div>
-
-<div id="app" style="display:none;flex-direction:column;height:100vh;height:-webkit-fill-available">
-  <div class="header" id="main-header">
-    <div class="header-row">
-      <div>
-        <div class="header-label" id="h-label">DELIVERY MANAGER</div>
-        <div class="header-title" id="h-title">배송 관리자</div>
-        <div class="header-date" id="h-date"></div>
+<div class="app">
+  <div class="topbar">
+    <div class="header">
+      <div class="hicon">🔑</div>
+      <div class="hinfo">
+        <h1>출입코드 노트</h1>
+        <p>⠿ 꾹 누르기 = 순서변경 · 탭 = 복사</p>
       </div>
-      
       <div class="header-actions">
-        <button class="logout-btn" id="logout-btn" onclick="doLogout()">로그아웃</button>
-        <div class="hbtn" onclick="openBackup()">💾</div>
-        <div class="hbtn" id="btn-settings" onclick="openSettings()">⚙️</div>
-      </div>
-      
-    </div>
-  </div>
-  <div class="summary-bar cols3" id="summary-bar">
-    <div class="sum-item"><div class="sum-val" id="s1">-</div><div class="sum-lbl" id="s1l">-</div></div>
-    <div class="sum-item g"><div class="sum-val" id="s2">-</div><div class="sum-lbl" id="s2l">-</div></div>
-    <div class="sum-item t"><div class="sum-val" id="s3">-</div><div class="sum-lbl" id="s3l">-</div></div>
-  </div>
-  <div class="tabs" id="tabs-wrap"></div>
-  <div class="content" id="content"></div>
-</div>
-
-<div class="bsoverlay" id="worker-sheet" onclick="if(event.target===this)closeWorkerSheet()">
-  <div class="bsheet">
-    <div class="bs-handle"></div>
-    <div class="bs-title" id="ws-title">👤 배달원 추가</div>
-    <div class="bs-sub">이름, 지역, 로그인 정보를 입력하세요</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
-        <div class="field" style="margin-bottom:0"><label>이름</label><input type="text" id="ws-name" placeholder="홍길동" maxlength="10"></div>
-        <div class="field" style="margin-bottom:0"><label>담당 지역</label><input type="text" id="ws-region" placeholder="구리시 갈매동"></div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
-      <div class="field" style="margin-bottom:0"><label>로그인 아이디</label><input type="text" id="ws-id" placeholder="worker1"></div>
-      <div class="field" style="margin-bottom:0"><label>비밀번호</label><input type="text" id="ws-pw" placeholder="1234"></div>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:6px;margin-bottom:16px">
-      <div class="field" style="margin-bottom:0"><label id="lbl-ws-pa">🅰 물품A 단가</label><input type="number" id="ws-pa" inputmode="numeric" placeholder="1400"></div>
-      <div class="field" style="margin-bottom:0"><label id="lbl-ws-pb">🅱 물품B 단가</label><input type="number" id="ws-pb" inputmode="numeric" placeholder="1200"></div>
-      <div class="field" style="margin-bottom:0"><label id="lbl-ws-pc" style="color:var(--pink2)">🅲 물품C 단가</label><input type="number" id="ws-pc" inputmode="numeric" placeholder="1000"></div>
-    </div>
-    <button class="btn-primary" onclick="saveWorker()">💾 저장</button>
-    <button class="btn-secondary" onclick="closeWorkerSheet()">취소</button>
-  </div>
-</div>
-
-<div class="bsoverlay" id="settings-sheet" onclick="if(event.target===this)this.classList.remove('show')">
-  <div class="bsheet">
-    <div class="bs-handle"></div>
-    <div class="bs-title">⚙️ 앱 설정</div>
-    <div class="bs-sub">개인 설정 및 기기 설정을 변경합니다.</div>
-    
-    <div id="admin-settings-area" style="display:none; margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid var(--border)">
-      <div class="sec-title">👑 관리자 계정 변경</div>
-      <div class="field"><label>새 관리자 아이디</label><input type="text" id="set-admin-id"></div>
-      <div class="field"><label>새 비밀번호</label><input type="password" id="set-admin-pw"></div>
-    </div>
-
-    <div class="sec-title">📝 화면에 표시할 물품 이름</div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px">
-      <div class="field"><label style="color:var(--orange2)">🅰 A 이름</label><input type="text" id="set-name-a" placeholder="오네"></div>
-      <div class="field"><label style="color:var(--accent2)">🅱 B 이름</label><input type="text" id="set-name-b" placeholder="오네 책"></div>
-      <div class="field"><label style="color:var(--pink2)">🅲 C 이름</label><input type="text" id="set-name-c" placeholder="딜리"></div>
-    </div>
-
-    <button class="btn-primary" onclick="saveSettings()">💾 변경 저장</button>
-    <button class="btn-secondary" onclick="document.getElementById('settings-sheet').classList.remove('show')">닫기</button>
-  </div>
-</div>
-
-<div class="bsoverlay" id="code-edit-sheet" onclick="if(event.target===this)this.classList.remove('show')">
-  <div class="bsheet">
-    <div class="bs-handle"></div>
-    <div class="bs-title" id="ce-title">항목 추가</div>
-    <div class="bs-sub" id="ce-sub">정보를 입력해주세요</div>
-    
-    <div id="ce-folder-fields" style="display:none">
-        <div class="field"><label>대분류(지역/단지명)</label><input type="text" id="ce-fname" placeholder="예: 일원동, 힐스테이트"></div>
-    </div>
-    
-    <div id="ce-subfolder-fields" style="display:none">
-        <div class="field"><label>중분류(세부단지/동)</label><input type="text" id="ce-sfname" placeholder="예: 1단지, 101동"></div>
-    </div>
-
-    <div id="ce-item-fields" style="display:none">
-        <div class="field"><label>상세주소/호수</label><input type="text" id="ce-iaddr" placeholder="예: 101호"></div>
-        <div class="field"><label>출입코드</label><input type="text" id="ce-icode" placeholder="예: 종1234, 301#0000"></div>
-    </div>
-
-    <button class="btn-primary orange" onclick="saveCodeEntry()">💾 저장</button>
-    <button class="btn-secondary" onclick="document.getElementById('code-edit-sheet').classList.remove('show')">취소</button>
-  </div>
-</div>
-
-<div class="bsoverlay" id="smart-parser-sheet" onclick="if(event.target===this)this.classList.remove('show')">
-  <div class="bsheet">
-    <div class="bs-handle"></div>
-    <div class="bs-title">⚡ 스마트 텍스트 일괄 등록</div>
-    <div class="bs-sub">저장할 위치를 선택하고 텍스트를 붙여넣으세요.</div>
-
-    <div style="display:flex; gap:10px; margin-bottom:12px;">
-      <div class="field" style="flex:1; margin-bottom:0;">
-        <label>대분류 (폴더)</label>
-        <select id="sp-folder-sel" class="ws-select" style="padding:10px; font-size:13px;" onchange="updateSmartParserSubFolders()"></select>
-      </div>
-      <div class="field" style="flex:1; margin-bottom:0;">
-        <label>중분류 (하위폴더)</label>
-        <select id="sp-subfolder-sel" class="ws-select" style="padding:10px; font-size:13px;"></select>
+        <button class="backup-btn" onclick="openBackupModal()" title="백업/복원">💾</button>
+        <button class="add-rgn-btn" onclick="openModal('aR')">＋ 지역 추가</button>
       </div>
     </div>
-
-    <textarea id="sp-textarea" class="parser-textarea" placeholder="예시:&#10;101동 101호 1234*&#10;101동 102호 #4567&#10;(주소와 코드를 띄어쓰기로 구분하여 여러 줄 입력)"></textarea>
-
-    <button class="btn-primary teal" onclick="executeSmartParser()">🚀 일괄 등록 실행</button>
-    <button class="btn-secondary" onclick="document.getElementById('smart-parser-sheet').classList.remove('show')">닫기</button>
   </div>
+  <div class="swrap">
+    <span class="si">🔍</span>
+    <input type="text" id="searchInput" placeholder="지역·단지·주소·코드 검색..." autocomplete="off" autocorrect="off" spellcheck="false" oninput="handleSearch(this.value)">
+  </div>
+  <div class="cscroll" id="contentRoot"></div>
 </div>
 
-<div class="bsoverlay" id="code-sync-sheet" onclick="if(event.target===this)this.classList.remove('show')">
-  <div class="bsheet">
-    <div class="bs-handle"></div>
-    <div class="bs-title">🔄 출입코드 전달 및 병합</div>
-    <div class="bs-sub">코드를 복사하거나, 여러 사람의 코드를 하나로 합칩니다.</div>
-
-    <div class="field">
-      <label>📤 원본 (가져올 데이터)</label>
-      <select id="sync-source" class="ws-select" style="padding-left:14px; font-weight:700"></select>
-    </div>
-    <div class="field" style="text-align:center; color:var(--sub); margin: -4px 0 8px;">▼</div>
-    <div class="field">
-      <label>📥 대상 (기록을 받을 배달원)</label>
-      <select id="sync-target" class="ws-select" style="padding-left:14px; font-weight:700"></select>
-    </div>
-
-    <div class="field">
-      <label>⚙️ 복사 방식 선택</label>
-      <div style="display:flex; flex-direction:column; gap:8px; margin-top:6px;">
-        <label class="radio-card">
-          <input type="radio" name="sync-mode" value="merge" checked>
-          <div class="rc-content">
-            <div class="rc-icon">➕</div>
-            <div class="rc-text">
-              <div class="rc-title">기존 항목에 추가 (병합)</div>
-              <div class="rc-desc">대상의 기존 코드를 유지하며 새 코드를 덧붙입니다.</div>
-            </div>
-          </div>
-        </label>
-        <label class="radio-card danger">
-          <input type="radio" name="sync-mode" value="overwrite">
-          <div class="rc-content">
-            <div class="rc-icon">🗑️</div>
-            <div class="rc-text">
-              <div class="rc-title">모두 지우고 덮어쓰기</div>
-              <div class="rc-desc">대상의 기존 코드를 완전히 삭제하고 새로 씁니다.</div>
-            </div>
-          </div>
-        </label>
-      </div>
-    </div>
-
-    <button class="btn-primary teal" style="margin-top:14px" onclick="executeCodeSync()">🚀 실행하기</button>
-    <button class="btn-secondary" onclick="document.getElementById('code-sync-sheet').classList.remove('show')">닫기</button>
-  </div>
-</div>
-
-<div class="bsoverlay" id="backup-sheet" onclick="if(event.target===this)this.classList.remove('show')">
-  <div class="bsheet">
-    <div class="bs-handle"></div>
-    <div class="bs-title">💾 데이터 백업 / 관리</div>
-    <div class="bs-sub" id="backup-sub">-</div>
-    <div class="bk-grid">
-      <button class="bk-btn bk-export" onclick="exportData()">📤 JSON 저장<br><span style="font-size:10px;opacity:0.8">전체 백업 (출입코드 포함)</span></button>
-      <button class="bk-btn bk-import" onclick="document.getElementById('import-file').click()">📥 불러오기<br><span style="font-size:10px;opacity:0.8">전체 복원</span></button>
-    </div>
-    <button class="bk-row bk-copy" id="copy-btn" onclick="copyCode()">📋 전체 코드 복사</button>
-    <button class="bk-row bk-csv" id="csv-btn" onclick="exportCSV()">📊 CSV 내보내기 (월별 정산표)</button>
-    <button class="bk-row bk-reset" id="reset-btn" onclick="askReset()">🗑 전체 초기화</button>
-    <button class="bk-row bk-close" onclick="document.getElementById('backup-sheet').classList.remove('show')">닫기</button>
-  </div>
-</div>
-
-<div class="overlay" id="confirm-overlay">
-  <div class="dialog">
-    <h3 id="dlg-title">확인</h3>
-    <p id="dlg-msg">진행하시겠습니까?</p>
-    <div class="dialog-btns">
-      <button class="dbtn-cancel" onclick="closeConfirm()">취소</button>
-      <button id="dlg-ok" style="color:#fff;" onclick="doConfirm()">실행</button>
+<!-- FORM MODAL -->
+<div class="movl" id="formModal" onclick="ovcl(event,'formModal')">
+  <div class="mbox" onclick="event.stopPropagation()">
+    <div class="mtitle" id="fmTitle"></div>
+    <div id="fmFields"></div>
+    <div class="macts">
+      <button class="bsec" onclick="closeModal('formModal')">취소</button>
+      <button class="bpri" onclick="submitForm()">저장</button>
     </div>
   </div>
 </div>
 
-<input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
+<!-- CONFIRM MODAL -->
+<div class="movl" id="confirmModal" onclick="ovcl(event,'confirmModal')">
+  <div class="cbox" onclick="event.stopPropagation()">
+    <div class="cico">🗑️</div>
+    <div class="cmsg" id="confMsg"></div>
+    <div class="cacts">
+      <button class="bsec" onclick="closeModal('confirmModal')">취소</button>
+      <button class="bdng" id="confOkBtn">삭제</button>
+    </div>
+  </div>
+</div>
+
+<!-- ZOOM MODAL -->
+<div class="movl" id="zoomModal" onclick="ovcl(event,'zoomModal')">
+  <div class="zbox" onclick="event.stopPropagation()">
+    <div class="zadr" id="zAdr"></div>
+    <div class="zsub" id="zSub"></div>
+    <div class="zcod" id="zCod"></div>
+    <div class="zacts">
+      <button class="zcpy" id="zCpyBtn" onclick="execZCopy()">📋 복사하기</button>
+      <button class="zcls" onclick="closeModal('zoomModal')">닫기</button>
+    </div>
+    <div class="zhnt">바깥 탭하면 닫힙니다</div>
+  </div>
+</div>
+
+<!-- 백업 모달 -->
+<div class="movl" id="backupModal" onclick="ovcl(event,'backupModal')">
+  <div class="bkbox" onclick="event.stopPropagation()">
+    <div class="bk-title">💾 백업 · 복원</div>
+    <div class="bk-desc">백업: 모든 데이터를 JSON 파일로 저장<br>복원: 저장한 파일로 데이터 되살리기</div>
+    <div class="bk-row">
+      <button class="bk-btn export" onclick="exportBackup()">
+        <span class="bk-ico">📤</span>
+        <span class="bk-txt">백업 저장하기<span>현재 데이터를 .json 파일로 다운로드</span></span>
+      </button>
+      <label class="bk-btn import">
+        <span class="bk-ico">📥</span>
+        <span class="bk-txt">백업 불러오기<span>저장한 .json 파일로 복원</span></span>
+        <input type="file" accept=".json" style="display:none" onchange="importBackup(this.files[0]); this.value='';">
+      </label>
+    </div>
+    <button class="bk-close" onclick="closeModal('backupModal')">닫기</button>
+  </div>
+</div>
+
+<!-- 토스트 -->
 <div class="toast" id="toast"></div>
+<div id="drag-ghost"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-// ══════════════════════════════════════════
-//  Supabase 연결
-// ══════════════════════════════════════════
-const SUPA_URL = 'https://vvivcdwmommvgvbpxwxk.supabase.co';
-const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ2aXZjZHdtb21tdmd2YnB4d3hrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMTY1MzcsImV4cCI6MjA4OTY5MjUzN30.bjHhtHjO0kmb6lKu9cyZea8n1lYz9IoMuXFD2CKz9oE';
-const db = window.supabase.createClient(SUPA_URL, SUPA_KEY);
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-// ══════════════════════════════════════════
-//  공통 상태 및 유틸리티
-// ══════════════════════════════════════════
-const TAX = 0.033;
-const DAYS = ['일','월','화','수','목','금','토'];
-let currentUser = null;
-let workers = [];      // { id, name, region, loginId, priceA, priceB, priceC, codes: [] }
-let dailyRecords = []; // 일별 수량
-let tab = '';
-let isLoading = false;
-let confirmAction = null;
-let editWorkerId = null;
-
-let itemNames = JSON.parse(localStorage.getItem('mgr-item-names')) || { a: '오네', b: '오네 책', c: '딜리' };
-
-let adminInputDate = today();
-let adminInputData = {};
-let adminInputMode = 'date';
-let statPeriod = 'month', statYear = new Date().getFullYear(), statMonth = new Date().getMonth();
-let detailWorkerId = null;
-let adminSelectedCodeWorkerId = '';
-
-let myTab = 'input';
-let myInputDate = today();
-let myQtyA = '', myQtyB = '', myQtyC = '';
-let myStatPeriod = 'month', myStatYear = new Date().getFullYear(), myStatMonth = new Date().getMonth();
-
-let codeSearchQuery = '';
-let codeEditMode = '', codeEditFolderId = null, codeEditSubFolderId = null, codeEditItemId = null;
-
-function today() {
-  const d = new Date();
-  const yy = d.getFullYear();
-  const mm = String(d.getMonth() + 1).padStart(2, '0');
-  const dd = String(d.getDate()).padStart(2, '0');
-  return `${yy}-${mm}-${dd}`;
-}
-function won(n){ return Number(n).toLocaleString()+'원'; }
-function wonShort(n){ return n>=10000?Math.round(n/1000)/10+'만원':won(n); }
-function fmtDate(dateStr){ 
-  const [y,m,d] = dateStr.split('-'); 
-  return `${Number(m)}월 ${Number(d)}일`; 
-}
-function fmtDay(dateStr){ 
-  const [y,m,d] = dateStr.split('-');
-  const dateObj = new Date(y, m-1, d);
-  return DAYS[dateObj.getDay()]+'요일'; 
-}
-function av(name){ return name?name[0]:'?'; }
-function calcPay(w, qA, qB, qC){
-  const a=Number(qA)||0, b=Number(qB)||0, c=Number(qC)||0;
-  const gross = (a*(w.priceA||0)) + (b*(w.priceB||0)) + (c*(w.priceC||0));
-  const net = Math.round(gross*(1-TAX));
-  return {a, b, c, qty: a+b+c, gross, net};
-}
-
-// ══════════════════════════════════════════
-//  로그인 / 로그아웃
-// ══════════════════════════════════════════
-function doLogin(){
-  const id = document.getElementById('l-id').value.trim();
-  const pw = document.getElementById('l-pw').value;
-  const errEl = document.getElementById('l-err');
-  if(!id||!pw){ errEl.textContent='아이디와 비밀번호를 입력해주세요'; return; }
-  
-  const adminAcc = JSON.parse(localStorage.getItem('mgr-admin-acc')) || { id:'admin', pw:'admin1234', role:'admin', name:'관리자' };
-  
-  if (id === adminAcc.id && pw === adminAcc.pw) {
-    currentUser = adminAcc;
-    finishLogin();
-  } else {
-    checkWorkerLogin(id, pw, errEl);
-  }
-}
-
-async function checkWorkerLogin(id, pw, errEl) {
-    errEl.textContent = '확인 중...';
-    try {
-        const { data, error } = await db.from('workers').select('*').eq('login_id', id).single();
-        if (error || !data) throw new Error('ID_NOT_FOUND');
-        currentUser = { id: data.login_id, role: 'worker', name: data.name, workerId: data.id };
-        finishLogin();
-    } catch(e) {
-        errEl.textContent='❌ 아이디 또는 비밀번호가 틀렸어요';
-    }
-}
-
-function finishLogin() {
-  sessionStorage.setItem('mgr-user', JSON.stringify(currentUser));
-  document.getElementById('login-wrap').classList.add('hide');
-  document.getElementById('app').style.display = 'flex';
-  setupUI();
-  loadAll();
-}
-
-function doLogout(){
-  currentUser = null;
-  sessionStorage.removeItem('mgr-user');
-  document.getElementById('login-wrap').classList.remove('hide');
-  document.getElementById('app').style.display = 'none';
-  document.getElementById('l-id').value='';
-  document.getElementById('l-pw').value='';
-  document.getElementById('l-err').textContent='';
-}
-
-// ══════════════════════════════════════════
-//  UI 설정 (역할별)
-// ══════════════════════════════════════════
-function setupUI(){
-  const isAdmin = currentUser.role === 'admin';
-  const header = document.getElementById('main-header');
-  header.className = 'header ' + (isAdmin?'admin-mode':'worker-mode');
-  
-  document.getElementById('h-label').textContent = isAdmin ? '📊 ADMIN' : '🚗 DELIVERY';
-  document.getElementById('h-title').textContent = isAdmin ? '배송 관리자' : currentUser.name+'님';
-  document.getElementById('h-date').textContent = new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
-
-  const btnSettings = document.getElementById('btn-settings');
-  if (btnSettings) {
-      btnSettings.style.display = isAdmin ? 'flex' : 'none';
-  }
-
-  const tabsWrap = document.getElementById('tabs-wrap');
-  if(isAdmin){
-    tab = 'daily';
-    tabsWrap.innerHTML = `
-      <button class="tab active admin" id="tab-daily" onclick="switchTab('daily')">📋 일별입력</button>
-      <button class="tab" id="tab-records" onclick="switchTab('records')">📁 기록</button>
-      <button class="tab" id="tab-stats" onclick="switchTab('stats')">📊 정산</button>
-      <button class="tab" id="tab-workers" onclick="switchTab('workers')">👥 배달원</button>
-      <button class="tab" id="tab-codes" onclick="switchTab('codes')">🔑 출입코드</button>`;
-    document.getElementById('csv-btn').style.display='block';
-    document.getElementById('reset-btn').style.display='block';
-    document.getElementById('copy-btn').style.display='block';
-  } else {
-    myTab = 'input';
-    tabsWrap.innerHTML = `
-      <button class="tab active worker" id="tab-my-input" onclick="switchMyTab('input')">✏️ 오늘 입력</button>
-      <button class="tab" id="tab-my-records" onclick="switchMyTab('records')">📋 내 기록</button>
-      <button class="tab" id="tab-my-stats" onclick="switchMyTab('stats')">📊 통계</button>
-      <button class="tab" id="tab-my-codes" onclick="switchMyTab('codes')">🔑 노트</button>`;
-    document.getElementById('csv-btn').style.display='none';
-    document.getElementById('reset-btn').style.display='none';
-    document.getElementById('copy-btn').style.display='none';
-  }
-}
-
-// ══════════════════════════════════════════
-//  데이터 로드
-// ══════════════════════════════════════════
-async function loadAll(){
-  isLoading=true; render();
-  try {
-    const {data:w,error:we}=await db.from('workers').select('*').order('id');
-    if(we) throw we;
-    
-    workers=(w||[]).map(x=>({
-        id:x.id, name:x.name, 
-        priceA:x.price_a||0, priceB:x.price_b||0, priceC:x.price_c||0, 
-        loginId:x.login_id||'', region: x.region||'', codes: x.access_codes||[]
-    }));
-
-    const {data:r,error:re}=await db.from('daily_records').select('*').order('work_date',{ascending:false});
-    if(re) throw re;
-    const map={};
-    (r||[]).forEach(row=>{
-      const d=row.work_date;
-      if(!map[d]) map[d]={date:d,data:{}};
-      map[d].data[row.worker_id]={qtyA:String(row.qty_a||0),qtyB:String(row.qty_b||0),qtyC:String(row.qty_c||0)};
-    });
-    dailyRecords=Object.values(map).sort((a,b)=>b.date.localeCompare(a.date));
-  } catch(e){ 
-      console.error(e);
-      showToast('❌ 로드 실패: '+e.message); 
-  }
-  isLoading=false;
-  updateSummary();
-  render();
-}
-
-function updateSummary(){
-  if(!currentUser) return;
-  const isAdmin = currentUser.role==='admin';
-  const m = today().slice(0,7);
-  if(isAdmin){
-    document.getElementById('s1').textContent=workers.length+'명';
-    document.getElementById('s1l').textContent='등록 배달원';
-    const mRecs=dailyRecords.filter(r=>r.date.startsWith(m));
-    let mTotal=0;
-    mRecs.forEach(r=>Object.keys(r.data||{}).forEach(wid=>{
-      const w=workers.find(x=>x.id===Number(wid));
-      if(w) mTotal+=calcPay(w,r.data[wid].qtyA,r.data[wid].qtyB,r.data[wid].qtyC).gross;
-    }));
-    document.getElementById('s2').textContent=wonShort(mTotal);
-    document.getElementById('s2l').textContent='이번 달 총액';
-    const tRec=dailyRecords.find(r=>r.date===today());
-    let tQty=0;
-    if(tRec) Object.values(tRec.data||{}).forEach(d=>{tQty+=(Number(d.qtyA)||0)+(Number(d.qtyB)||0)+(Number(d.qtyC)||0);});
-    document.getElementById('s3').textContent=tQty.toLocaleString()+'건';
-    document.getElementById('s3l').textContent='오늘 총 배송';
-  } else {
-    const w=workers.find(x=>x.id===currentUser.workerId);
-    const mRecs=dailyRecords.filter(r=>r.date.startsWith(m)&&r.data?.[currentUser.workerId]);
-    const mQty=mRecs.reduce((s,r)=>s+(Number(r.data[currentUser.workerId]?.qtyA)||0)+(Number(r.data[currentUser.workerId]?.qtyB)||0)+(Number(r.data[currentUser.workerId]?.qtyC)||0),0);
-    const tRec=dailyRecords.find(r=>r.date===today());
-    const tD=tRec?.data?.[currentUser.workerId];
-    const tQty=tD?(Number(tD.qtyA)||0)+(Number(tD.qtyB)||0)+(Number(tD.qtyC)||0):0;
-    document.getElementById('s1').textContent=mRecs.length+'일';
-    document.getElementById('s1l').textContent='이번 달 배송일';
-    document.getElementById('s2').textContent=mQty.toLocaleString()+'건';
-    document.getElementById('s2l').textContent='이번 달 배송량';
-    document.getElementById('s3').textContent=tQty.toLocaleString()+'건';
-    document.getElementById('s3l').textContent='오늘 배송량';
-  }
-}
-
-function switchTab(t){
-  tab=t; detailWorkerId=null;
-  ['daily','records','stats','workers', 'codes'].forEach(x=>{
-    const el=document.getElementById('tab-'+x);
-    if(el) el.className='tab'+(x===t?' active admin':'');
-  });
-  render();
-}
-function switchMyTab(t){
-  myTab=t;
-  ['my-input','my-records','my-stats', 'my-codes'].forEach(x=>{
-    const el=document.getElementById('tab-'+x);
-    if(el) el.className='tab'+(x.replace('my-','')===(t)?(' active worker'):'');
-  });
-  render();
-}
-
-function render(){
-  const c=document.getElementById('content');
-  if(!currentUser){ c.innerHTML=''; return; }
-  if(isLoading){ c.innerHTML=`<div class="loading"><div class="spinner"></div><div class="loading-txt">데이터 불러오는 중...</div></div>`; return; }
-  
-  if(currentUser.role==='admin'){
-    if(tab==='daily') c.innerHTML=renderAdminDaily();
-    else if(tab==='records') c.innerHTML=renderAdminRecords();
-    else if(tab==='stats') c.innerHTML=detailWorkerId?renderWorkerDetail():renderAdminStats();
-    else if(tab==='workers') c.innerHTML=renderAdminWorkers();
-    else if(tab==='codes') c.innerHTML=renderAdminCodes();
-    
-    if(tab==='daily') bindAdminDailyEvents();
-    if(tab==='codes') bindCodeSearchEvent();
-  } else {
-    if(myTab==='input') c.innerHTML=renderMyInput();
-    else if(myTab==='records') c.innerHTML=renderMyRecords();
-    else if(myTab==='stats') c.innerHTML=renderMyStats();
-    else if(myTab==='codes') c.innerHTML=renderMyCodes();
-    
-    if(myTab==='input') bindMyInputEvents();
-    if(myTab==='codes') bindCodeSearchEvent();
-  }
-}
-
-// ══════════════════════════════════════════
-//  공통 설정
-// ══════════════════════════════════════════
-function openSettings() {
-  const isAdmin = currentUser.role === 'admin';
-  document.getElementById('admin-settings-area').style.display = isAdmin ? 'block' : 'none';
-  
-  if(isAdmin) {
-    const acc = JSON.parse(localStorage.getItem('mgr-admin-acc')) || {id:'admin', pw:'admin1234'};
-    document.getElementById('set-admin-id').value = acc.id;
-    document.getElementById('set-admin-pw').value = acc.pw;
-  }
-  
-  document.getElementById('set-name-a').value = itemNames.a;
-  document.getElementById('set-name-b').value = itemNames.b;
-  document.getElementById('set-name-c').value = itemNames.c;
-  
-  document.getElementById('settings-sheet').classList.add('show');
-}
-
-function saveSettings() {
-  const isAdmin = currentUser.role === 'admin';
-  
-  if(isAdmin) {
-    const id = document.getElementById('set-admin-id').value.trim();
-    const pw = document.getElementById('set-admin-pw').value.trim();
-    if(!id || !pw) { showToast('아이디와 비밀번호를 입력해주세요'); return; }
-    localStorage.setItem('mgr-admin-acc', JSON.stringify({id, pw, role:'admin', name:'관리자'}));
-    currentUser.id = id; currentUser.pw = pw;
-    sessionStorage.setItem('mgr-user', JSON.stringify(currentUser));
-  }
-
-  const nameA = document.getElementById('set-name-a').value.trim() || '물품 A';
-  const nameB = document.getElementById('set-name-b').value.trim() || '물품 B';
-  const nameC = document.getElementById('set-name-c').value.trim() || '물품 C';
-  
-  itemNames = { a: nameA, b: nameB, c: nameC };
-  localStorage.setItem('mgr-item-names', JSON.stringify(itemNames));
-  
-  showToast('✅ 설정이 저장되었습니다.');
-  document.getElementById('settings-sheet').classList.remove('show');
-  render();
-}
-
-// ══════════════════════════════════════════
-//  관리자: 배달원 관리
-// ══════════════════════════════════════════
-function renderAdminWorkers(){
-  const addBtn=`<button class="btn-primary" onclick="openWorkerSheet(null)" style="margin-bottom:16px">+ 배달원 추가</button>`;
-  if(!workers.length) return addBtn+`<div class="empty">👥 배달원이 없어요</div>`;
-  
-  return addBtn+workers.map(w=>`<div class="worker-card">
-    <div class="worker-avatar admin-av">${av(w.name)}</div>
-    <div class="worker-info">
-      <div class="worker-name">${w.name} ${w.region? `<span style="font-size:10px;font-weight:normal;color:var(--sub);margin-left:4px">📍${w.region}</span>`:''}</div>
-      <div class="worker-prices">🔑 ${w.loginId||'미설정'} <br> 🅰 ${(w.priceA||0).toLocaleString()} · 🅱 ${(w.priceB||0).toLocaleString()} · 🅲 ${(w.priceC||0).toLocaleString()}</div>
-    </div>
-    <div class="worker-btns">
-      <button class="wbtn wbtn-edit" onclick="openWorkerSheet(${w.id})">✏️</button>
-      <button class="wbtn wbtn-del" onclick="askDeleteWorker(${w.id})">🗑</button>
-    </div>
-  </div>`).join('')+'<div style="height:20px"></div>';
-}
-
-function openWorkerSheet(id){
-  editWorkerId=id;
-  document.getElementById('ws-title').textContent=id?'👤 배달원 수정':'👤 배달원 추가';
-  document.getElementById('lbl-ws-pa').textContent = `🅰 ${itemNames.a} 단가`;
-  document.getElementById('lbl-ws-pb').textContent = `🅱 ${itemNames.b} 단가`;
-  document.getElementById('lbl-ws-pc').textContent = `🅲 ${itemNames.c} 단가`;
-
-  const w=id?workers.find(x=>x.id===id):null;
-  document.getElementById('ws-name').value=w?.name||'';
-  document.getElementById('ws-region').value=w?.region||'';
-  document.getElementById('ws-id').value=w?.loginId||'';
-  document.getElementById('ws-pw').value='';
-  document.getElementById('ws-pa').value=w?.priceA||'';
-  document.getElementById('ws-pb').value=w?.priceB||'';
-  document.getElementById('ws-pc').value=w?.priceC||'';
-  document.getElementById('worker-sheet').classList.add('show');
-  setTimeout(()=>document.getElementById('ws-name').focus(),300);
-}
-function closeWorkerSheet(){ document.getElementById('worker-sheet').classList.remove('show'); editWorkerId=null; }
-
-async function saveWorker(){
-  const name=document.getElementById('ws-name').value.trim();
-  const region=document.getElementById('ws-region').value.trim();
-  const loginId=document.getElementById('ws-id').value.trim();
-  const pw=document.getElementById('ws-pw').value.trim();
-  const pa=Number(document.getElementById('ws-pa').value)||0;
-  const pb=Number(document.getElementById('ws-pb').value)||0;
-  const pc=Number(document.getElementById('ws-pc').value)||0;
-
-  if(!name){ showToast('⚠️ 이름을 입력해주세요'); return; }
-  try {
-    if(editWorkerId){
-      const upd={name, region, price_a:pa, price_b:pb, price_c:pc};
-      if(loginId) upd.login_id=loginId;
-      const {error}=await db.from('workers').update(upd).eq('id',editWorkerId);
-      if(error) throw error;
-      workers=workers.map(w=>w.id===editWorkerId?{...w,name,region,priceA:pa,priceB:pb,priceC:pc,loginId:loginId||w.loginId}:w);
-      showToast('✅ 수정 완료');
-    } else {
-      const ins={name, region, price_a:pa, price_b:pb, price_c:pc};
-      if(loginId) ins.login_id=loginId;
-      const {data,error}=await db.from('workers').insert(ins).select().single();
-      if(error) throw error;
-      workers.push({id:data.id,name,region,priceA:pa,priceB:pb,priceC:pc,loginId:loginId||'', codes:[]});
-      showToast('✅ 배달원 추가 완료');
-    }
-    closeWorkerSheet(); updateSummary(); render();
-  } catch(e){ showToast('❌ 저장 실패: '+e.message); }
-}
-
-function askDeleteWorker(id){
-  const w=workers.find(x=>x.id===id);
-  openConfirm('🗑 배달원 삭제',`${w?.name}님을 삭제할까요?`,'삭제',async()=>{
-    try{
-      await db.from('workers').delete().eq('id',id);
-      workers=workers.filter(x=>x.id!==id);
-      updateSummary(); render(); showToast('🗑 삭제됨');
-    }catch(e){ showToast('❌ '+e.message); }
-  });
-}
-
-// ══════════════════════════════════════════
-//  출입코드 마이그레이션 & 구조 처리
-// ══════════════════════════════════════════
-function migrateCodeData(codes) {
-    if (!codes) return [];
-    return codes.map(folder => {
-        if (folder.items && !folder.subFolders) {
-            folder.subFolders = [{
-                id: 'sf_' + Date.now() + Math.random().toString(36).substr(2,5),
-                name: '기본(미분류)',
-                items: folder.items || []
-            }];
-            delete folder.items;
-        }
-        if (!folder.subFolders) folder.subFolders = [];
-        return folder;
-    });
-}
-
-function getCodeWorker(wid) {
-    if (wid === 'admin') {
-        return { id: 'admin', name: '👑 관리자 마스터', codes: JSON.parse(localStorage.getItem('mgr-admin-codes')) || [] };
-    }
-    return workers.find(x => x.id == wid);
-}
-
-function renderCodeNoteCore(workerTarget) {
-    if(!workerTarget) return `<div class="empty">조회할 대상을 선택해주세요</div>`;
-    
-    let folders = migrateCodeData(workerTarget.codes || []);
-    
-    if(codeSearchQuery) {
-        const q = codeSearchQuery.toLowerCase();
-        let filtered = [];
-        folders.forEach(f => {
-            let filteredSubFolders = [];
-            f.subFolders.forEach(sf => {
-                const mItems = sf.items.filter(i => i.addr.toLowerCase().includes(q) || i.code.toLowerCase().includes(q));
-                if (sf.name.toLowerCase().includes(q) || mItems.length > 0) {
-                    filteredSubFolders.push({ ...sf, items: mItems.length > 0 ? mItems : sf.items });
-                }
-            });
-            if (f.name.toLowerCase().includes(q) || filteredSubFolders.length > 0) {
-                filtered.push({ ...f, subFolders: filteredSubFolders.length > 0 ? filteredSubFolders : f.subFolders });
-            }
-        });
-        folders = filtered;
-    }
-
-    let html = `
-    <div class="cn-wrap">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px">
-        <div style="font-size:16px; font-weight:900; color:var(--orange2)">🔑 ${workerTarget.name} 노트</div>
-        <div style="display:flex; gap:6px;">
-            <button class="btn-primary teal" style="width:auto; padding:8px 10px; margin:0; font-size:12px" onclick="openSmartParser()">⚡ 일괄등록</button>
-            <button class="btn-primary orange" style="width:auto; padding:8px 10px; margin:0; font-size:12px" onclick="openCodeEdit(null, null, null, 'add-folder')">+ 폴더 추가</button>
-        </div>
-      </div>
-      <input type="text" class="cn-search" id="code-search-input" value="${codeSearchQuery}" placeholder="주소, 단지, 코드 검색...">
-    `;
-
-    if(!folders.length) {
-        html += `<div class="cn-empty">${codeSearchQuery ? '검색 결과가 없습니다' : '등록된 출입코드가 없습니다.<br>+ 버튼을 눌러 폴더를 먼저 추가하세요.'}</div>`;
-    } else {
-        html += folders.map((f, fIdx) => `
-          <div class="cn-folder ${codeSearchQuery ? 'open search-mode' : ''}" id="cf-${f.id}">
-            <div class="cn-folder-head" onclick="this.parentElement.classList.toggle('open')">
-              <div class="cn-folder-title"><div class="cn-folder-icon">📁</div>${f.name}</div>
-              <div class="cn-actions" onclick="event.stopPropagation()">
-                <button class="cn-btn move" onclick="moveCodeNode('${f.id}', null, null, -1)">▲</button>
-                <button class="cn-btn move" onclick="moveCodeNode('${f.id}', null, null, 1)">▼</button>
-                <button class="cn-btn add" onclick="openCodeEdit('${f.id}', null, null, 'add-subfolder')">+하위</button>
-                <button class="cn-btn" onclick="openCodeEdit('${f.id}', null, null, 'edit-folder')">✏️</button>
-                <button class="cn-btn" onclick="askDeleteCodeNode('${f.id}', null, null)">🗑</button>
-              </div>
-            </div>
-            
-            <div class="cn-subfolders">
-              ${f.subFolders.map((sf, sfIdx) => `
-                <div class="cn-subfolder ${codeSearchQuery ? 'open search-mode' : ''}">
-                    <div class="cn-subfolder-head" onclick="this.parentElement.classList.toggle('open')">
-                        <div class="cn-subfolder-title">📂 ${sf.name} <span style="font-size:10px;color:var(--sub);font-weight:400">(${sf.items.length})</span></div>
-                        <div class="cn-actions" onclick="event.stopPropagation()">
-                            <button class="cn-btn move" onclick="moveCodeNode('${f.id}', '${sf.id}', null, -1)">▲</button>
-                            <button class="cn-btn move" onclick="moveCodeNode('${f.id}', '${sf.id}', null, 1)">▼</button>
-                            <button class="cn-btn add" style="color:var(--teal2); background:rgba(0,188,212,0.1)" onclick="openCodeEdit('${f.id}', '${sf.id}', null, 'add-item')">+항목</button>
-                            <button class="cn-btn" onclick="openCodeEdit('${f.id}', '${sf.id}', null, 'edit-subfolder')">✏️</button>
-                            <button class="cn-btn" onclick="askDeleteCodeNode('${f.id}', '${sf.id}', null)">🗑</button>
-                        </div>
-                    </div>
-                    <div class="cn-items">
-                        ${sf.items.map((i, iIdx) => `
-                            <div class="cn-item" onclick="navigator.clipboard.writeText('${i.code}');showToast('📋 복사 완료');">
-                                <div>
-                                    <div class="cn-item-addr">${i.addr}</div>
-                                    <div class="cn-item-code">${i.code}</div>
-                                </div>
-                                <div class="cn-actions" onclick="event.stopPropagation()">
-                                    <button class="cn-btn move" onclick="moveCodeNode('${f.id}', '${sf.id}', '${i.id}', -1)">▲</button>
-                                    <button class="cn-btn move" onclick="moveCodeNode('${f.id}', '${sf.id}', '${i.id}', 1)">▼</button>
-                                    <button class="cn-btn" onclick="openCodeEdit('${f.id}', '${sf.id}', '${i.id}', 'edit-item')">✏️</button>
-                                    <button class="cn-btn" onclick="askDeleteCodeNode('${f.id}', '${sf.id}', '${i.id}')">🗑</button>
-                                </div>
-                            </div>
-                        `).join('')}
-                        ${sf.items.length === 0 ? `<div style="padding:12px;text-align:center;font-size:11px;color:var(--sub)">등록된 코드가 없습니다.</div>` : ''}
-                    </div>
-                </div>
-              `).join('')}
-              ${f.subFolders.length === 0 ? `<div style="padding:16px;text-align:center;font-size:11px;color:var(--sub)">하위 폴더가 없습니다. +하위 버튼을 눌러 추가하세요.</div>` : ''}
-            </div>
-          </div>
-        `).join('');
-    }
-    
-    html += `</div>`;
-    return html;
-}
-
-function bindCodeSearchEvent() {
-    const input = document.getElementById('code-search-input');
-    if(input) {
-        input.addEventListener('input', (e) => {
-            codeSearchQuery = e.target.value.trim();
-            render();
-            setTimeout(() => {
-                const newInp = document.getElementById('code-search-input');
-                if(newInp) { newInp.focus(); newInp.setSelectionRange(codeSearchQuery.length, codeSearchQuery.length); }
-            }, 10);
-        });
-    }
-}
-
-// ══════════════════════════════════════════
-//  출입코드 UI 연동 (관리자/배달원)
-// ══════════════════════════════════════════
-function renderAdminCodes(){
-  let selectHtml = `<div style="display:flex; gap:10px; margin-bottom:18px; align-items:center;">
-      <div class="ws-wrap" style="flex:1; margin-bottom:0;">
-          <select id="admin-code-worker-sel" class="ws-select" onchange="adminSelectedCodeWorkerId=this.value; codeSearchQuery=''; render()">
-              <option value="" style="color:var(--sub)">👤 조회할 대상을 선택하세요</option>
-              <option value="admin" ${adminSelectedCodeWorkerId=='admin'?'selected':''} style="color:var(--orange2)">👑 관리자 (마스터 노트)</option>
-              ${workers.map(w => `<option value="${w.id}" ${adminSelectedCodeWorkerId==w.id?'selected':''} style="color:var(--text)">${w.name} ${w.region?`(${w.region})`:''}</option>`).join('')}
-          </select>
-          <div class="ws-icon">▼</div>
-      </div>
-      <button class="btn-primary" style="width:auto; margin:0; padding:0 18px; border-radius:16px; background:linear-gradient(135deg,#007a6a,#00bcd4); font-size:13px;" onclick="openCodeSyncSheet()">🔄 전달/통합</button>
-  </div>`;
-
-  const target = getCodeWorker(adminSelectedCodeWorkerId);
-  return selectHtml + (target ? renderCodeNoteCore(target) : '');
-}
-
-function renderMyCodes(){
-  const target = getCodeWorker(currentUser.workerId);
-  return renderCodeNoteCore(target);
-}
-
-// ══════════════════════════════════════════
-//  출입코드 전달 및 스마트 파서
-// ══════════════════════════════════════════
-function openCodeSyncSheet() {
-    const src = document.getElementById('sync-source');
-    const tgt = document.getElementById('sync-target');
-    
-    const workerOptions = workers.map(w => `<option value="${w.id}" style="color:var(--text)">${w.name} ${w.region?`(${w.region})`:''}</option>`).join('');
-    const adminOption = `<option value="admin" style="color:var(--orange2)">👑 관리자 (마스터 노트)</option>`;
-    
-    src.innerHTML = `<option value="ALL" style="color:var(--teal2)">🌟 모든 배달원의 코드 전체 (통합)</option>` + adminOption + workerOptions;
-    tgt.innerHTML = `<option value="" style="color:var(--sub)">대상을 선택하세요</option>` + adminOption + workerOptions;
-    
-    if(adminSelectedCodeWorkerId) tgt.value = adminSelectedCodeWorkerId;
-    
-    document.getElementById('code-sync-sheet').classList.add('show');
-}
-
-async function executeCodeSync() {
-    const srcId = document.getElementById('sync-source').value;
-    const tgtId = document.getElementById('sync-target').value;
-    const mode = document.querySelector('input[name="sync-mode"]:checked').value;
-    
-    if(!tgtId) { showToast('⚠️ 대상을 선택해주세요'); return; }
-    if(srcId === tgtId) { showToast('⚠️ 원본과 대상이 같습니다'); return; }
-    
-    const targetW = getCodeWorker(tgtId);
-    if(!targetW) return;
-
-    let sourceCodes = [];
-    if(srcId === 'ALL') {
-       workers.forEach(w => {
-           if(w.id != tgtId) { 
-               migrateCodeData(w.codes).forEach(f => sourceCodes.push(JSON.parse(JSON.stringify(f))));
-           }
-       });
-       if(tgtId !== 'admin') {
-           migrateCodeData(JSON.parse(localStorage.getItem('mgr-admin-codes')) || []).forEach(f => sourceCodes.push(JSON.parse(JSON.stringify(f))));
-       }
-    } else if(srcId === 'admin') {
-       sourceCodes = migrateCodeData(JSON.parse(localStorage.getItem('mgr-admin-codes')) || []);
-    } else {
-       const w = workers.find(x => x.id == srcId);
-       if(w) sourceCodes = JSON.parse(JSON.stringify(migrateCodeData(w.codes)));
-    }
-
-    if(sourceCodes.length === 0) {
-        showToast('⚠️ 가져올 원본 코드가 없습니다!'); 
-        return;
-    }
-
-    const confirmMsg = mode === 'overwrite' ? 
-        `${targetW.name}의 기존 코드가 모두 삭제되고 덮어씌워집니다.\n진행할까요?` : 
-        `${targetW.name} 노트에 코드를 병합합니다.\n진행할까요?`;
-        
-    document.getElementById('code-sync-sheet').classList.remove('show');
-
-    openConfirm('🔄 코드 복사/통합', confirmMsg, '실행하기', async () => {
-        let newCodes = mode === 'overwrite' ? [] : JSON.parse(JSON.stringify(migrateCodeData(targetW.codes)));
-
-        sourceCodes.forEach(sf => {
-           let tf = newCodes.find(f => f.name === sf.name);
-           if (!tf) {
-               tf = { id: 'f_' + Date.now() + Math.random().toString(36).substr(2,5), name: sf.name, subFolders: [] };
-               newCodes.push(tf);
-           }
-           sf.subFolders.forEach(ssf => {
-               let tsf = tf.subFolders.find(s => s.name === ssf.name);
-               if (!tsf) {
-                   tsf = { id: 'sf_' + Date.now() + Math.random().toString(36).substr(2,5), name: ssf.name, items: [] };
-                   tf.subFolders.push(tsf);
-               }
-               ssf.items.forEach(si => {
-                   if (!tsf.items.find(i => i.addr === si.addr && i.code === si.code)) {
-                       tsf.items.push({ id: 'i_' + Date.now() + Math.random().toString(36).substr(2,5), addr: si.addr, code: si.code });
-                   }
-               });
-           });
-        });
-
-        await syncCodesToDB(tgtId, newCodes);
-    }, mode === 'overwrite');
-}
-
-// [스마트 파서 로직]
-function openSmartParser() {
-    const wid = getActiveCodeWorkerId();
-    const w = getCodeWorker(wid);
-    if (!w || !w.codes || w.codes.length === 0) {
-        showToast('⚠️ 폴더를 먼저 생성해주세요.'); return;
-    }
-    
-    const folders = migrateCodeData(w.codes);
-    const folderSel = document.getElementById('sp-folder-sel');
-    folderSel.innerHTML = folders.map(f => `<option value="${f.id}">${f.name}</option>`).join('');
-    
-    updateSmartParserSubFolders();
-    document.getElementById('sp-textarea').value = '';
-    document.getElementById('smart-parser-sheet').classList.add('show');
-}
-
-function updateSmartParserSubFolders() {
-    const wid = getActiveCodeWorkerId();
-    const w = getCodeWorker(wid);
-    const folders = migrateCodeData(w.codes);
-    const folderId = document.getElementById('sp-folder-sel').value;
-    
-    const targetFolder = folders.find(f => f.id === folderId);
-    const subSel = document.getElementById('sp-subfolder-sel');
-    
-    if (targetFolder && targetFolder.subFolders.length > 0) {
-        subSel.innerHTML = targetFolder.subFolders.map(sf => `<option value="${sf.id}">${sf.name}</option>`).join('');
-    } else {
-        subSel.innerHTML = `<option value="">하위폴더 없음</option>`;
-    }
-}
-
-function executeSmartParser() {
-    const wid = getActiveCodeWorkerId();
-    const w = getCodeWorker(wid);
-    const folderId = document.getElementById('sp-folder-sel').value;
-    const subFolderId = document.getElementById('sp-subfolder-sel').value;
-    const text = document.getElementById('sp-textarea').value.trim();
-
-    if (!subFolderId) { showToast('⚠️ 저장할 하위폴더가 없습니다.'); return; }
-    if (!text) { showToast('⚠️ 텍스트를 입력해주세요.'); return; }
-
-    let newCodes = JSON.parse(JSON.stringify(migrateCodeData(w.codes)));
-    const f = newCodes.find(x => x.id === folderId);
-    const sf = f.subFolders.find(x => x.id === subFolderId);
-
-    const lines = text.split('\n');
-    let addCount = 0;
-
-    lines.forEach(line => {
-        const cleaned = line.trim();
-        if (!cleaned) return;
-        
-        const parts = cleaned.split(/\s+/);
-        if (parts.length >= 2) {
-            const code = parts.pop();
-            const addr = parts.join(' ');
-            sf.items.push({ id: 'i_' + Date.now() + Math.random().toString(36).substr(2,5), addr: addr, code: code });
-            addCount++;
-        }
-    });
-
-    if (addCount > 0) {
-        syncCodesToDB(wid, newCodes);
-        document.getElementById('smart-parser-sheet').classList.remove('show');
-        showToast(`✅ ${addCount}개 항목 일괄 등록 완료`);
-    } else {
-        showToast('⚠️ 파싱할 수 있는 형식의 텍스트가 없습니다.');
-    }
-}
-
-// ══════════════════════════════════════════
-//  출입코드 DB 조작 및 에디터 로직 (이중 폴더 지원)
-// ══════════════════════════════════════════
-function getActiveCodeWorkerId() {
-    if(currentUser.role === 'admin') return adminSelectedCodeWorkerId;
-    return currentUser.workerId;
-}
-
-async function syncCodesToDB(workerId, newCodes) {
-    showToast('저장 중...');
-    if (workerId === 'admin') {
-        localStorage.setItem('mgr-admin-codes', JSON.stringify(newCodes));
-        showToast('✅ 관리자 노트에 저장 완료');
-        render();
-        return;
-    }
-    try {
-        const {error} = await db.from('workers').update({access_codes: newCodes}).eq('id', workerId);
-        if(error) throw error;
-        const w = workers.find(x => x.id == workerId);
-        if(w) w.codes = newCodes;
-        showToast('✅ 처리 완료');
-        render();
-    } catch(e) {
-        showToast('❌ 오류: ' + e.message);
-    }
-}
-
-function moveCodeNode(folderId, subFolderId, itemId, direction) {
-    const wid = getActiveCodeWorkerId();
-    const w = getCodeWorker(wid);
-    if (!w) return;
-    
-    let newCodes = JSON.parse(JSON.stringify(migrateCodeData(w.codes)));
-    let targetArray = null;
-    let targetIndex = -1;
-
-    if (itemId) {
-        const f = newCodes.find(x => x.id === folderId);
-        const sf = f.subFolders.find(x => x.id === subFolderId);
-        targetArray = sf.items;
-        targetIndex = targetArray.findIndex(x => x.id === itemId);
-    } else if (subFolderId) {
-        const f = newCodes.find(x => x.id === folderId);
-        targetArray = f.subFolders;
-        targetIndex = targetArray.findIndex(x => x.id === subFolderId);
-    } else {
-        targetArray = newCodes;
-        targetIndex = targetArray.findIndex(x => x.id === folderId);
-    }
-
-    if (targetIndex !== -1 && targetIndex + direction >= 0 && targetIndex + direction < targetArray.length) {
-        const temp = targetArray[targetIndex];
-        targetArray[targetIndex] = targetArray[targetIndex + direction];
-        targetArray[targetIndex + direction] = temp;
-        syncCodesToDB(wid, newCodes);
-    }
-}
-
-function openCodeEdit(folderId, subFolderId, itemId, mode) {
-    codeEditMode = mode;
-    codeEditFolderId = folderId;
-    codeEditSubFolderId = subFolderId;
-    codeEditItemId = itemId;
-    
-    const wid = getActiveCodeWorkerId();
-    const w = getCodeWorker(wid);
-    if(!w) return;
-    
-    document.getElementById('ce-folder-fields').style.display = 'none';
-    document.getElementById('ce-subfolder-fields').style.display = 'none';
-    document.getElementById('ce-item-fields').style.display = 'none';
-    
-    document.getElementById('ce-fname').value = '';
-    document.getElementById('ce-sfname').value = '';
-    document.getElementById('ce-iaddr').value = '';
-    document.getElementById('ce-icode').value = '';
-
-    const newCodes = migrateCodeData(w.codes);
-
-    if(mode === 'add-folder') {
-        document.getElementById('ce-title').textContent = '새 폴더 추가';
-        document.getElementById('ce-sub').textContent = '지역, 아파트명 등을 입력하세요';
-        document.getElementById('ce-folder-fields').style.display = 'block';
-        setTimeout(()=>document.getElementById('ce-fname').focus(), 300);
-    } 
-    else if(mode === 'edit-folder') {
-        const f = newCodes.find(x => x.id == folderId);
-        document.getElementById('ce-title').textContent = '폴더명 수정';
-        document.getElementById('ce-sub').textContent = '새로운 폴더명을 입력하세요';
-        document.getElementById('ce-folder-fields').style.display = 'block';
-        document.getElementById('ce-fname').value = f.name;
-        setTimeout(()=>document.getElementById('ce-fname').focus(), 300);
-    }
-    else if(mode === 'add-subfolder') {
-        document.getElementById('ce-title').textContent = '하위 폴더 추가';
-        document.getElementById('ce-sub').textContent = '단지, 동 이름 등을 입력하세요';
-        document.getElementById('ce-subfolder-fields').style.display = 'block';
-        setTimeout(()=>document.getElementById('ce-sfname').focus(), 300);
-    }
-    else if(mode === 'edit-subfolder') {
-        const f = newCodes.find(x => x.id == folderId);
-        const sf = f.subFolders.find(x => x.id == subFolderId);
-        document.getElementById('ce-title').textContent = '하위 폴더명 수정';
-        document.getElementById('ce-sub').textContent = '새로운 이름을 입력하세요';
-        document.getElementById('ce-subfolder-fields').style.display = 'block';
-        document.getElementById('ce-sfname').value = sf.name;
-        setTimeout(()=>document.getElementById('ce-sfname').focus(), 300);
-    }
-    else if(mode === 'add-item') {
-        document.getElementById('ce-title').textContent = '새 주소/코드 추가';
-        document.getElementById('ce-sub').textContent = '상세 주소와 출입코드를 입력하세요';
-        document.getElementById('ce-item-fields').style.display = 'block';
-        setTimeout(()=>document.getElementById('ce-iaddr').focus(), 300);
-    }
-    else if(mode === 'edit-item') {
-        const f = newCodes.find(x => x.id == folderId);
-        const sf = f.subFolders.find(x => x.id == subFolderId);
-        const i = sf.items.find(x => x.id == itemId);
-        document.getElementById('ce-title').textContent = '주소/코드 수정';
-        document.getElementById('ce-sub').textContent = '수정할 내용을 입력하세요';
-        document.getElementById('ce-item-fields').style.display = 'block';
-        document.getElementById('ce-iaddr').value = i.addr;
-        document.getElementById('ce-icode').value = i.code;
-        setTimeout(()=>document.getElementById('ce-iaddr').focus(), 300);
-    }
-    document.getElementById('code-edit-sheet').classList.add('show');
-}
-
-function saveCodeEntry() {
-    const wid = getActiveCodeWorkerId();
-    const w = getCodeWorker(wid);
-    if(!w) return;
-    let newCodes = JSON.parse(JSON.stringify(migrateCodeData(w.codes))); 
-
-    if(codeEditMode.includes('folder') && !codeEditMode.includes('sub')) {
-        const name = document.getElementById('ce-fname').value.trim();
-        if(!name) { showToast('이름을 입력하세요'); return; }
-        if(codeEditMode === 'add-folder') {
-            newCodes.push({ id: 'f_'+Date.now(), name: name, subFolders: [] });
-        } else {
-            const f = newCodes.find(x => x.id == codeEditFolderId);
-            if(f) f.name = name;
-        }
-    } 
-    else if(codeEditMode.includes('subfolder')) {
-        const name = document.getElementById('ce-sfname').value.trim();
-        if(!name) { showToast('이름을 입력하세요'); return; }
-        const f = newCodes.find(x => x.id == codeEditFolderId);
-        if(f) {
-            if(codeEditMode === 'add-subfolder') {
-                f.subFolders.push({ id: 'sf_'+Date.now(), name: name, items: [] });
-            } else {
-                const sf = f.subFolders.find(x => x.id == codeEditSubFolderId);
-                if(sf) sf.name = name;
-            }
-        }
-    }
-    else {
-        const addr = document.getElementById('ce-iaddr').value.trim();
-        const code = document.getElementById('ce-icode').value.trim();
-        if(!addr || !code) { showToast('주소와 코드를 모두 입력하세요'); return; }
-        const f = newCodes.find(x => x.id == codeEditFolderId);
-        if(!f) return;
-        const sf = f.subFolders.find(x => x.id == codeEditSubFolderId);
-        if(!sf) return;
-
-        if(codeEditMode === 'add-item') {
-            sf.items.push({ id: 'i_'+Date.now(), addr: addr, code: code });
-        } else {
-            const i = sf.items.find(x => x.id == codeEditItemId);
-            if(i) { i.addr = addr; i.code = code; }
-        }
-    }
-    document.getElementById('code-edit-sheet').classList.remove('show');
-    syncCodesToDB(wid, newCodes);
-}
-
-function askDeleteCodeNode(folderId, subFolderId, itemId) {
-    let msg = '';
-    if (itemId) msg = '이 주소와 코드를 삭제하시겠습니까?';
-    else if (subFolderId) msg = '하위 폴더와 안의 모든 내용을 삭제할까요?';
-    else msg = '폴더와 안의 모든 내용을 삭제할까요?';
-
-    openConfirm('🗑 삭제 확인', msg, '삭제', () => {
-        const wid = getActiveCodeWorkerId();
-        const w = getCodeWorker(wid);
-        if(!w) return;
-        let newCodes = JSON.parse(JSON.stringify(migrateCodeData(w.codes)));
-        
-        if (itemId) {
-            const f = newCodes.find(x => x.id == folderId);
-            const sf = f.subFolders.find(x => x.id == subFolderId);
-            sf.items = sf.items.filter(x => x.id != itemId);
-        } else if (subFolderId) {
-            const f = newCodes.find(x => x.id == folderId);
-            f.subFolders = f.subFolders.filter(x => x.id != subFolderId);
-        } else {
-            newCodes = newCodes.filter(x => x.id != folderId);
-        }
-        syncCodesToDB(wid, newCodes);
-    });
-}
-
-// ══════════════════════════════════════════
-//  관리자: 일별 입력 
-// ══════════════════════════════════════════
-function renderAdminDaily(){
-  if(!workers.length) return `<div class="empty">👥 먼저 배달원을 등록해주세요<br><span style="font-size:12px">👥 배달원 탭에서 추가하세요</span></div>`;
-  const rec=dailyRecords.find(r=>r.date===adminInputDate);
-  const isEdit=!!rec;
-  const recData=rec?.data||{};
-  const dow=fmtDay(adminInputDate);
-  const subTabs=`<div class="input-subtabs">
-    <button class="input-subtab ${adminInputMode==='date'?'active':''}" onclick="adminInputMode='date';adminInputData={};render()">📅 날짜별</button>
-    <button class="input-subtab ${adminInputMode==='worker'?'active':''}" onclick="adminInputMode='worker';render()">👤 배달원별</button>
-  </div>`;
-  if(adminInputMode==='worker') return subTabs+renderAdminWorkerMode();
-  return subTabs+`
-    <div class="date-nav">
-      <button class="date-nav-btn" onclick="changeAdminDate(-1)">◀</button>
-      <div style="text-align:center">
-        <div class="date-nav-label">${fmtDate(adminInputDate)} (${dow})</div>
-        <div class="date-nav-sub">${isEdit?'✏️ 수정 중':'새 기록'}</div>
-      </div>
-      <button class="date-nav-btn" onclick="changeAdminDate(1)">▶</button>
-    </div>
-    ${workers.map(w=>{
-      const prev=recData[w.id]||{};
-      const qa=adminInputData[w.id]?.qtyA??prev.qtyA??'';
-      const qb=adminInputData[w.id]?.qtyB??prev.qtyB??'';
-      const qc=adminInputData[w.id]?.qtyC??prev.qtyC??'';
-      const p=calcPay(w,qa,qb,qc);
-      return `<div class="daily-worker-row ${p.qty>0?'has-data':''}" id="dwr-${w.id}">
-        <div class="daily-row-top">
-          <div class="daily-avatar">${av(w.name)}</div>
-          <div class="daily-name">${w.name} ${w.region? `<span style="font-size:10px;color:var(--sub);margin-left:4px">📍${w.region}</span>`:''}</div>
-          ${p.qty>0?`<div class="daily-total-badge">${won(p.gross)}</div>`:''}
-        </div>
-        <div class="daily-inputs">
-          <div class="daily-field">
-            <label style="color:var(--orange2)">🅰 ${itemNames.a} (${(w.priceA||0).toLocaleString()}원)</label>
-            <input type="number" id="qa-${w.id}" value="${qa}" placeholder="0" inputmode="numeric" min="0">
-            <div class="daily-field-sub" id="sub-a-${w.id}">${qa?won(Number(qa)*(w.priceA||0)):''}</div>
-          </div>
-          <div class="daily-field">
-            <label style="color:var(--accent2)">🅱 ${itemNames.b} (${(w.priceB||0).toLocaleString()}원)</label>
-            <input type="number" id="qb-${w.id}" value="${qb}" placeholder="0" inputmode="numeric" min="0">
-            <div class="daily-field-sub" id="sub-b-${w.id}">${qb?won(Number(qb)*(w.priceB||0)):''}</div>
-          </div>
-          <div class="daily-field">
-            <label style="color:var(--pink2)">🅲 ${itemNames.c} (${(w.priceC||0).toLocaleString()}원)</label>
-            <input type="number" id="qc-${w.id}" value="${qc}" placeholder="0" inputmode="numeric" min="0">
-            <div class="daily-field-sub" id="sub-c-${w.id}">${qc?won(Number(qc)*(w.priceC||0)):''}</div>
-          </div>
-        </div>
-      </div>`;
-    }).join('')}
-    <div style="height:8px"></div>
-    <button class="btn-primary green" onclick="saveAdminDaily()">${isEdit?'✏️ 수정 저장':'💾 저장하기'}</button>
-    ${isEdit?`<button class="btn-secondary" onclick="askDeleteRecord('${adminInputDate}')">🗑 이 날 기록 삭제</button>`:''}
-    <div style="height:20px"></div>`;
-}
-
-function renderAdminWorkerMode(){
-  if(!workers.length) return `<div class="empty">배달원이 없어요</div>`;
-  return `<div class="sec-title">배달원 선택 후 날짜별 수량 수정</div>
-  ${workers.map(w=>{
-    const mRec=dailyRecords.filter(r=>r.date.startsWith(today().slice(0,7))&&r.data?.[w.id]);
-    const mQty=mRec.reduce((s,r)=>s+(Number(r.data[w.id]?.qtyA)||0)+(Number(r.data[w.id]?.qtyB)||0)+(Number(r.data[w.id]?.qtyC)||0),0);
-    const mGross=mRec.reduce((s,r)=>s+calcPay(w,r.data[w.id]?.qtyA,r.data[w.id]?.qtyB,r.data[w.id]?.qtyC).gross,0);
-    return `<div class="worker-card" style="cursor:pointer" onclick="adminInputMode='date';adminInputDate='${today()}';adminInputData={};render()">
-      <div class="daily-avatar">${av(w.name)}</div>
-      <div style="flex:1">
-        <div style="font-size:14px;font-weight:900">${w.name} ${w.region? `<span style="font-size:10px;font-weight:normal;color:var(--sub);margin-left:4px">📍${w.region}</span>`:''}</div>
-        <div style="font-size:11px;color:var(--sub);margin-top:2px">이번 달 ${mQty.toLocaleString()}건 · ${won(mGross)}</div>
-      </div>
-      <div style="font-size:12px;color:var(--sub)">탭하여 입력 ▶</div>
-    </div>`;
-  }).join('')}`;
-}
-
-function bindAdminDailyEvents(){
-  workers.forEach(w=>{
-    ['qa','qb','qc'].forEach(prefix=>{
-      const el=document.getElementById(`${prefix}-${w.id}`);
-      if(!el) return;
-      el.addEventListener('input',()=>{
-        if(!adminInputData[w.id]) adminInputData[w.id]={qtyA:'',qtyB:'',qtyC:''};
-        if(prefix==='qa') adminInputData[w.id].qtyA=el.value;
-        else if(prefix==='qb') adminInputData[w.id].qtyB=el.value;
-        else adminInputData[w.id].qtyC=el.value;
-        const qA=document.getElementById(`qa-${w.id}`)?.value||'';
-        const qB=document.getElementById(`qb-${w.id}`)?.value||'';
-        const qC=document.getElementById(`qc-${w.id}`)?.value||'';
-        const p=calcPay(w,qA,qB,qC);
-        
-        const subA=document.getElementById(`sub-a-${w.id}`);
-        const subB=document.getElementById(`sub-b-${w.id}`);
-        const subC=document.getElementById(`sub-c-${w.id}`);
-        if(subA) subA.textContent=qA?won(Number(qA)*(w.priceA||0)):'';
-        if(subB) subB.textContent=qB?won(Number(qB)*(w.priceB||0)):'';
-        if(subC) subC.textContent=qC?won(Number(qC)*(w.priceC||0)):'';
-        
-        const row=document.getElementById(`dwr-${w.id}`);
-        if(row) row.classList.toggle('has-data',p.qty>0);
-        const badge=document.querySelector(`#dwr-${w.id} .daily-total-badge`);
-        if(p.qty>0){
-          if(badge) badge.textContent=won(p.gross);
-          else{
-            const nm=document.querySelector(`#dwr-${w.id} .daily-name`);
-            if(nm){ const b=document.createElement('div'); b.className='daily-total-badge'; b.textContent=won(p.gross); nm.after(b); }
-          }
-        } else if(badge) badge.remove();
-      });
-    });
-  });
-}
-
-function changeAdminDate(dir){
-  const [y, m, d] = adminInputDate.split('-').map(Number);
-  const dateObj = new Date(y, m - 1, d + dir);
-  const yy = dateObj.getFullYear();
-  const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
-  const dd = String(dateObj.getDate()).padStart(2, '0');
-  adminInputDate = `${yy}-${mm}-${dd}`;
-  adminInputData={}; render();
-}
-
-async function saveAdminDaily(){
-  const data={};
-  workers.forEach(w=>{
-    const qa=document.getElementById(`qa-${w.id}`)?.value||'';
-    const qb=document.getElementById(`qb-${w.id}`)?.value||'';
-    const qc=document.getElementById(`qc-${w.id}`)?.value||'';
-    if(qa||qb||qc) data[w.id]={qtyA:qa,qtyB:qb,qtyC:qc};
-  });
-  if(!Object.keys(data).length){ showToast('⚠️ 수량을 입력해주세요'); return; }
-  showToast('💾 저장 중...');
-  try {
-    await saveDailyToDB(adminInputDate,data);
-    const idx=dailyRecords.findIndex(r=>r.date===adminInputDate);
-    if(idx>=0) dailyRecords[idx].data=data;
-    else dailyRecords.unshift({date:adminInputDate,data});
-    dailyRecords.sort((a,b)=>b.date.localeCompare(a.date));
-    adminInputData={}; updateSummary();
-    showToast('✅ 저장 완료!'); switchTab('records');
-  } catch(e){ showToast('❌ 저장 실패: '+e.message); }
-}
-
-function renderAdminRecords(){
-  if(!dailyRecords.length) return `<div class="empty">📁 아직 기록이 없어요</div>`;
-  return dailyRecords.map(r=>{
-    let totalGross=0, rows='';
-    Object.entries(r.data||{}).forEach(([wid,d])=>{
-      const w=workers.find(x=>x.id===Number(wid)); if(!w) return;
-      const p=calcPay(w,d.qtyA,d.qtyB,d.qtyC);
-      totalGross+=p.gross;
-      if(p.qty>0) rows+=`<div class="rec-worker-row">
-        <div class="daily-avatar" style="width:28px;height:28px;border-radius:7px;font-size:12px">${av(w.name)}</div>
-        <div class="rec-worker-name">${w.name}</div>
-        <div class="rec-worker-qty">🅰${p.a} 🅱${p.b} 🅲${p.c}</div>
-        <div class="rec-worker-pay">${won(p.gross)}</div>
-      </div>`;
-    });
-    return `<div class="rec-day-card">
-      <div class="rec-day-head">
-        <div><div class="rec-day-date">${fmtDate(r.date)} <span style="font-size:11px;color:var(--sub)">${fmtDay(r.date)}</span></div></div>
-        <div class="rec-day-total">${won(totalGross)}</div>
-      </div>
-      <div>${rows||'<div style="font-size:12px;color:var(--sub2)">수량 없음</div>'}</div>
-      <div class="rec-btns">
-        <button class="rec-btn rec-btn-edit" onclick="adminInputDate='${r.date}';adminInputData={};switchTab('daily')">✏️ 수정</button>
-        <button class="rec-btn rec-btn-del" onclick="askDeleteRecord('${r.date}')">🗑 삭제</button>
-      </div>
-    </div>`;
-  }).join('')+'<div style="height:20px"></div>';
-}
-
-function askDeleteRecord(date){
-  openConfirm('🗑 기록 삭제',`${fmtDate(date)} 기록을 삭제할까요?`,'삭제',async()=>{
-    try{
-      await db.from('daily_records').delete().eq('work_date',date);
-      dailyRecords=dailyRecords.filter(r=>r.date!==date);
-      updateSummary(); render(); showToast('🗑 삭제됨');
-    }catch(e){ showToast('❌ '+e.message); }
-  });
-}
-
-function renderAdminStats(){
-  const pBar=`<div class="period-tabs">
-    <button class="period-tab ${statPeriod==='month'?'active':''}" onclick="statPeriod='month';render()">🗓 월별</button>
-    <button class="period-tab ${statPeriod==='all'?'active':''}" onclick="statPeriod='all';render()">📊 전체</button>
-  </div>`;
-  if(!dailyRecords.length||!workers.length) return pBar+`<div class="empty">📊 기록이 쌓이면 정산이 보여요!</div>`;
-  let filtered=[], navHtml='', title='';
-  if(statPeriod==='month'){
-    const ym=`${statYear}-${String(statMonth+1).padStart(2,'0')}`;
-    filtered=dailyRecords.filter(r=>r.date.startsWith(ym));
-    title=`${statYear}년 ${statMonth+1}월 정산`;
-    navHtml=`<div class="month-nav">
-      <div class="month-nav-btn" onclick="statMonth--;if(statMonth<0){statMonth=11;statYear--;}render()">◀</div>
-      <div class="month-nav-title">${statYear}년 ${statMonth+1}월</div>
-      <div class="month-nav-btn" onclick="statMonth++;if(statMonth>11){statMonth=0;statYear++;}render()">▶</div>
-    </div>`;
-  } else { filtered=dailyRecords; title='전체 정산'; }
-  if(!filtered.length) return pBar+navHtml+`<div class="empty" style="padding:40px 0">해당 기간에 기록이 없어요</div>`;
-  const totals={};
-  workers.forEach(w=>{ totals[w.id]={w,qty:0,qtyA:0,qtyB:0,qtyC:0,gross:0,net:0,days:0}; });
-  let gGross=0,gNet=0,gQty=0;
-  filtered.forEach(r=>{
-    Object.entries(r.data||{}).forEach(([wid,d])=>{
-      const w=workers.find(x=>x.id===Number(wid));
-      if(!w||!totals[w.id]) return;
-      const p=calcPay(w,d.qtyA,d.qtyB,d.qtyC);
-      if(p.qty>0){
-        totals[w.id].qty+=p.qty; totals[w.id].qtyA+=p.a; totals[w.id].qtyB+=p.b; totals[w.id].qtyC+=p.c;
-        totals[w.id].gross+=p.gross; totals[w.id].net+=p.net; totals[w.id].days++;
-        gGross+=p.gross; gNet+=p.net; gQty+=p.qty;
-      }
-    });
-  });
-  const sorted=Object.values(totals).filter(x=>x.gross>0).sort((a,b)=>b.gross-a.gross);
-  return pBar+navHtml+`
-    <div class="stat-summary">
-      <div class="stat-title admin">💰 ${title} 요약</div>
-      <div class="stat-row"><span class="stat-row-lbl">📦 총 배송량</span><span class="stat-row-val">${gQty.toLocaleString()}건</span></div>
-      <div class="stat-row"><span class="stat-row-lbl">📅 기록일수</span><span class="stat-row-val">${filtered.length}일</span></div>
-      <div class="stat-row"><span class="stat-row-lbl">👥 활동 배달원</span><span class="stat-row-val">${sorted.length}명</span></div>
-      <hr class="stat-sep">
-      <div class="stat-total">${won(gGross)}</div>
-      <div style="font-size:13px;font-weight:900;color:var(--green2);margin-top:4px">실수령 합계: ${won(gNet)}</div>
-      <div style="font-size:10px;color:var(--red);margin-top:3px">세금(3.3%): -${won(gGross-gNet)}</div>
-    </div>
-    <div class="sec-title">개인별 정산 <span style="font-weight:400;color:var(--sub2)">(탭하면 상세)</span></div>
-    ${sorted.map((t,i)=>`<div class="worker-stat-card" onclick="detailWorkerId=${t.w.id};render()">
-      <div class="wsc-rank">${i+1}</div>
-      <div class="wsc-avatar">${av(t.w.name)}</div>
-      <div class="wsc-info"><div class="wsc-name">${t.w.name}</div><div class="wsc-detail">🅰${t.qtyA.toLocaleString()} · 🅱${t.qtyB.toLocaleString()} · 🅲${t.qtyC.toLocaleString()}</div></div>
-      <div class="wsc-pay"><div class="wsc-gross">${won(t.gross)}</div><div class="wsc-net">실수령 ${won(t.net)}</div></div>
-    </div>`).join('')}
-    <div style="height:20px"></div>`;
-}
-
-function renderWorkerDetail(){
-  const w=workers.find(x=>x.id===detailWorkerId); if(!w) return '';
-  const ym=statPeriod==='month'?`${statYear}-${String(statMonth+1).padStart(2,'0')}`:null;
-  const filtered=ym?dailyRecords.filter(r=>r.date.startsWith(ym)):dailyRecords;
-  const days=filtered.filter(r=>r.data?.[w.id]);
-  let tG=0,tN=0,tA=0,tB=0,tC=0;
-  days.forEach(r=>{ const p=calcPay(w,r.data[w.id].qtyA,r.data[w.id].qtyB,r.data[w.id].qtyC); tG+=p.gross;tN+=p.net;tA+=p.a;tB+=p.b;tC+=p.c; });
-  return `<button class="back-btn" onclick="detailWorkerId=null;render()">◀ 목록으로</button>
-    <div class="detail-header">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
-        <div class="wsc-avatar" style="width:46px;height:46px;font-size:20px">${av(w.name)}</div>
-        <div><div style="font-size:18px;font-weight:900">${w.name}</div><div style="font-size:11px;color:var(--sub);margin-top:3px">🅰 ${(w.priceA||0).toLocaleString()} · 🅱 ${(w.priceB||0).toLocaleString()} · 🅲 ${(w.priceC||0).toLocaleString()}</div></div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-        <div style="background:rgba(0,0,0,0.2);border-radius:10px;padding:10px 12px"><div style="font-size:9px;color:var(--sub)">총 지급액</div><div style="font-size:17px;font-weight:900;color:var(--accent3)">${won(tG)}</div></div>
-        <div style="background:rgba(0,0,0,0.2);border-radius:10px;padding:10px 12px"><div style="font-size:9px;color:var(--sub)">실수령</div><div style="font-size:17px;font-weight:900;color:var(--green2)">${won(tN)}</div></div>
-        <div style="background:rgba(0,0,0,0.2);border-radius:10px;padding:10px 12px"><div style="font-size:9px;color:var(--sub)">총 배송량</div><div style="font-size:16px;font-weight:900">${(tA+tB+tC).toLocaleString()}건</div></div>
-        <div style="background:rgba(0,0,0,0.2);border-radius:10px;padding:10px 12px"><div style="font-size:9px;color:var(--sub)">세금공제(3.3%)</div><div style="font-size:16px;font-weight:900;color:var(--red)">-${won(tG-tN)}</div></div>
-      </div>
-    </div>
-    <div class="sec-title">일별 상세 (${days.length}일)</div>
-    ${days.map(r=>{ const p=calcPay(w,r.data[w.id].qtyA,r.data[w.id].qtyB,r.data[w.id].qtyC);
-      return `<div class="detail-day-row">
-        <div><div class="ddr-date">${fmtDate(r.date)} <span style="font-size:10px;color:var(--sub)">${fmtDay(r.date)}</span></div><div class="ddr-qty">🅰${p.a} 🅱${p.b} 🅲${p.c}</div></div>
-        <div style="text-align:right"><div class="ddr-pay">${won(p.gross)}</div><div class="ddr-net">실수령 ${won(p.net)}</div></div>
-      </div>`;
-    }).join('')}
-    ${!days.length?`<div class="empty" style="padding:30px 0">해당 기간 기록 없음</div>`:''}
-    <div style="height:20px"></div>`;
-}
-
-// ══════════════════════════════════════════
-//  배달원: 오늘 입력
-// ══════════════════════════════════════════
-function renderMyInput(){
-  const w=workers.find(x=>x.id===currentUser.workerId);
-  if(!w) return `<div class="empty">⚠️ 배달원 정보를 찾을 수 없어요<br><span style="font-size:12px">관리자에게 문의하세요</span></div>`;
-  const rec=dailyRecords.find(r=>r.date===myInputDate);
-  const prev=rec?.data?.[w.id]||{};
-  const qa=myQtyA!==''?myQtyA:(prev.qtyA||'');
-  const qb=myQtyB!==''?myQtyB:(prev.qtyB||'');
-  const qc=myQtyC!==''?myQtyC:(prev.qtyC||'');
-  const p=calcPay(w,qa,qb,qc);
-  const dow=fmtDay(myInputDate);
-
-  return `
-    <div class="my-input-header">
-      <div class="my-input-name">안녕하세요, ${w.name}님 👋</div>
-      <div class="my-input-sub">오늘의 배송 수량을 입력해주세요</div>
-    </div>
-    <div class="date-nav" style="margin-bottom:14px">
-      <button class="date-nav-btn" onclick="myQtyA='';myQtyB='';myQtyC='';changeMyDate(-1)">◀</button>
-      <div style="text-align:center">
-        <div class="date-nav-label">${fmtDate(myInputDate)} (${dow})</div>
-        <div class="date-nav-sub">${rec?.data?.[w.id]?'✏️ 기존 기록':'새 기록'}</div>
-      </div>
-      <button class="date-nav-btn" onclick="myQtyA='';myQtyB='';myQtyC='';changeMyDate(1)">▶</button>
-    </div>
-    <div class="my-qty-grid">
-      <div class="my-qty-box">
-        <div class="my-qty-label a">🅰 ${itemNames.a}</div>
-        <input class="my-qty-input" type="number" id="my-qa" value="${qa}" placeholder="0" inputmode="numeric" min="0">
-      </div>
-      <div class="my-qty-box">
-        <div class="my-qty-label b">🅱 ${itemNames.b}</div>
-        <input class="my-qty-input" type="number" id="my-qb" value="${qb}" placeholder="0" inputmode="numeric" min="0">
-      </div>
-      <div class="my-qty-box">
-        <div class="my-qty-label c">🅲 ${itemNames.c}</div>
-        <input class="my-qty-input" type="number" id="my-qc" value="${qc}" placeholder="0" inputmode="numeric" min="0">
-      </div>
-    </div>
-    ${p.qty>0?`<div class="my-calc-box">
-      <div class="my-calc-row"><span class="my-calc-lbl">📦 총 배송</span><span class="my-calc-val">${p.qty.toLocaleString()}건</span></div>
-      <hr class="my-calc-sep">
-      <div style="font-size:10px;color:var(--sub);margin-bottom:4px">예상 수령액</div>
-      <div class="my-calc-total">${won(p.gross)}</div>
-      <div style="font-size:11px;color:var(--teal2);margin-top:4px">실수령 (3.3% 공제): ${won(p.net)}</div>
-    </div>`:''}
-    <button class="btn-primary teal" onclick="saveMyRecord()">💾 저장하기</button>
-    <div style="height:20px"></div>`;
-}
-
-function bindMyInputEvents(){
-  const w=workers.find(x=>x.id===currentUser.workerId); if(!w) return;
-  const updateCalc = () => {
-      myQtyA=document.getElementById('my-qa')?.value||'';
-      myQtyB=document.getElementById('my-qb')?.value||'';
-      myQtyC=document.getElementById('my-qc')?.value||'';
-      const p=calcPay(w,myQtyA,myQtyB,myQtyC);
-      refreshMyCalc(p);
-  };
-  document.getElementById('my-qa')?.addEventListener('input', updateCalc);
-  document.getElementById('my-qb')?.addEventListener('input', updateCalc);
-  document.getElementById('my-qc')?.addEventListener('input', updateCalc);
-}
-
-function refreshMyCalc(p){
-  const box=document.querySelector('.my-calc-box');
-  if(p.qty>0){
-    if(box){
-      box.querySelector('.my-calc-total').textContent=won(p.gross);
-      const rows=box.querySelectorAll('.my-calc-val');
-      if(rows[0]) rows[0].textContent=p.qty.toLocaleString()+'건';
-      box.querySelector('[style*="teal2"]').textContent=`실수령 (3.3% 공제): ${won(p.net)}`;
-    } else {
-      const btn=document.querySelector('.btn-primary.teal');
-      if(btn){
-        const div=document.createElement('div');
-        div.className='my-calc-box';
-        div.innerHTML=`<div class="my-calc-row"><span class="my-calc-lbl">📦 총 배송</span><span class="my-calc-val">${p.qty.toLocaleString()}건</span></div>
-        <hr class="my-calc-sep">
-        <div style="font-size:10px;color:var(--sub);margin-bottom:4px">예상 수령액</div>
-        <div class="my-calc-total">${won(p.gross)}</div>
-        <div style="font-size:11px;color:var(--teal2);margin-top:4px">실수령 (3.3% 공제): ${won(p.net)}</div>`;
-        btn.before(div);
-      }
-    }
-  } else if(box) box.remove();
-}
-
-function changeMyDate(dir){
-  const [y, m, d] = myInputDate.split('-').map(Number);
-  const dateObj = new Date(y, m - 1, d + dir);
-  const yy = dateObj.getFullYear();
-  const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
-  const dd = String(dateObj.getDate()).padStart(2, '0');
-  myInputDate = `${yy}-${mm}-${dd}`;
-  render();
-}
-
-async function saveMyRecord(){
-  const w=workers.find(x=>x.id===currentUser.workerId); if(!w) return;
-  const qa=document.getElementById('my-qa')?.value||myQtyA||'';
-  const qb=document.getElementById('my-qb')?.value||myQtyB||'';
-  const qc=document.getElementById('my-qc')?.value||myQtyC||'';
-  if(!qa&&!qb&&!qc){ showToast('⚠️ 수량을 입력해주세요'); return; }
-  showToast('💾 저장 중...');
-  try {
-    const {error}=await db.from('daily_records').upsert({
-        work_date:myInputDate, worker_id:w.id,
-        qty_a:Number(qa)||0, qty_b:Number(qb)||0, qty_c:Number(qc)||0
-    },{onConflict:'work_date,worker_id'});
-    if(error) throw error;
-    
-    const idx=dailyRecords.findIndex(r=>r.date===myInputDate);
-    const entry={qtyA:qa,qtyB:qb,qtyC:qc};
-    if(idx>=0){ dailyRecords[idx].data[w.id]=entry; }
-    else { dailyRecords.unshift({date:myInputDate,data:{[w.id]:entry}}); }
-    dailyRecords.sort((a,b)=>b.date.localeCompare(a.date));
-    
-    myQtyA=''; myQtyB=''; myQtyC='';
-    updateSummary();
-    showToast('✅ 저장 완료!');
-    switchMyTab('records');
-  } catch(e){ showToast('❌ 저장 실패: '+e.message); }
-}
-
-function renderMyRecords(){
-  const w=workers.find(x=>x.id===currentUser.workerId);
-  if(!w) return `<div class="empty">배달원 정보 없음</div>`;
-  const myRecs=dailyRecords.filter(r=>r.data?.[w.id]);
-  if(!myRecs.length) return `<div class="empty">📋 아직 기록이 없어요</div>`;
-  return myRecs.map(r=>{
-    const p=calcPay(w,r.data[w.id].qtyA,r.data[w.id].qtyB,r.data[w.id].qtyC);
-    return `<div class="my-rec-card">
-      <div class="my-rec-head">
-        <div class="my-rec-date">${fmtDate(r.date)} <span style="font-size:11px;color:var(--sub)">${fmtDay(r.date)}</span></div>
-        <div class="my-rec-pay">${won(p.gross)}</div>
-      </div>
-      <div class="my-rec-detail">🅰 ${p.a} · 🅱 ${p.b} · 🅲 ${p.c} · 합계 ${p.qty}건 · 실수령 ${won(p.net)}</div>
-    </div>`;
-  }).join('')+'<div style="height:20px"></div>';
-}
-
-function renderMyStats(){
-  const w=workers.find(x=>x.id===currentUser.workerId);
-  if(!w) return `<div class="empty">배달원 정보 없음</div>`;
-  const pBar=`<div class="period-tabs">
-    <button class="period-tab ${myStatPeriod==='month'?'active worker-tab':''}" onclick="myStatPeriod='month';render()">🗓 이번 달</button>
-    <button class="period-tab ${myStatPeriod==='all'?'active worker-tab':''}" onclick="myStatPeriod='all';render()">📊 전체</button>
-  </div>`;
-  let filtered=[], navHtml='', title='';
-  if(myStatPeriod==='month'){
-    const ym=`${myStatYear}-${String(myStatMonth+1).padStart(2,'0')}`;
-    filtered=dailyRecords.filter(r=>r.date.startsWith(ym)&&r.data?.[w.id]);
-    title=`${myStatYear}년 ${myStatMonth+1}월`;
-    navHtml=`<div class="month-nav">
-      <div class="month-nav-btn" onclick="myStatMonth--;if(myStatMonth<0){myStatMonth=11;myStatYear--;}render()">◀</div>
-      <div class="month-nav-title">${myStatYear}년 ${myStatMonth+1}월</div>
-      <div class="month-nav-btn" onclick="myStatMonth++;if(myStatMonth>11){myStatMonth=0;myStatYear++;}render()">▶</div>
-    </div>`;
-  } else {
-    filtered=dailyRecords.filter(r=>r.data?.[w.id]);
-    title='전체';
-  }
-  if(!filtered.length) return pBar+navHtml+`<div class="empty" style="padding:40px 0">해당 기간에 기록이 없어요</div>`;
-  let tQty=0,tQtyA=0,tQtyB=0,tQtyC=0,tGross=0,tNet=0;
-  filtered.forEach(r=>{
-    const p=calcPay(w,r.data[w.id].qtyA,r.data[w.id].qtyB,r.data[w.id].qtyC);
-    tQty+=p.qty; tQtyA+=p.a; tQtyB+=p.b; tQtyC+=p.c; tGross+=p.gross; tNet+=p.net;
-  });
-  const avgQty=filtered.length?Math.round(tQty/filtered.length):0;
-  return pBar+navHtml+`
-    <div class="stat-summary worker-stat">
-      <div class="stat-title worker">📊 ${title} 내 통계</div>
-      <div class="stat-row"><span class="stat-row-lbl">📅 배송일수</span><span class="stat-row-val">${filtered.length}일</span></div>
-      <div class="stat-row"><span class="stat-row-lbl">🅰 ${itemNames.a}</span><span class="stat-row-val">${tQtyA.toLocaleString()}건</span></div>
-      <div class="stat-row"><span class="stat-row-lbl">🅱 ${itemNames.b}</span><span class="stat-row-val">${tQtyB.toLocaleString()}건</span></div>
-      <div class="stat-row"><span class="stat-row-lbl">🅲 ${itemNames.c}</span><span class="stat-row-val">${tQtyC.toLocaleString()}건</span></div>
-      <div class="stat-row"><span class="stat-row-lbl">📦 총 배송</span><span class="stat-row-val">${tQty.toLocaleString()}건</span></div>
-      <div class="stat-row"><span class="stat-row-lbl">📈 일평균</span><span class="stat-row-val">${avgQty.toLocaleString()}건</span></div>
-      <hr class="stat-sep">
-      <div class="stat-title worker" style="margin-bottom:6px">💰 예상 수령액</div>
-      <div class="stat-total" style="color:var(--teal2)">${won(tGross)}</div>
-      <div style="font-size:13px;font-weight:900;color:var(--green2);margin-top:4px">실수령 (3.3% 공제): ${won(tNet)}</div>
-      <div style="font-size:10px;color:var(--red);margin-top:3px">세금 공제액: -${won(tGross-tNet)}</div>
-    </div>
-    <div class="sec-title">일별 내역 (${filtered.length}일)</div>
-    ${filtered.map(r=>{ const p=calcPay(w,r.data[w.id].qtyA,r.data[w.id].qtyB,r.data[w.id].qtyC);
-      return `<div class="detail-day-row">
-        <div><div class="ddr-date">${fmtDate(r.date)} <span style="font-size:10px;color:var(--sub)">${fmtDay(r.date)}</span></div><div class="ddr-qty">🅰${p.a} · 🅱${p.b} · 🅲${p.c}</div></div>
-        <div style="text-align:right"><div class="ddr-pay" style="color:var(--teal2)">${won(p.gross)}</div><div class="ddr-net">실수령 ${won(p.net)}</div></div>
-      </div>`;
-    }).join('')}
-    <div style="height:20px"></div>`;
-}
-
-// ══════════════════════════════════════════
-//  Supabase 공통 함수
-// ══════════════════════════════════════════
-async function saveDailyToDB(date, data){
-  const {error:de}=await db.from('daily_records').delete().eq('work_date',date);
-  if(de) throw de;
-  const rows=Object.entries(data)
-    .filter(([,d])=>(Number(d.qtyA)||0)>0||(Number(d.qtyB)||0)>0||(Number(d.qtyC)||0)>0)
-    .map(([wid,d])=>({
-        work_date:date, worker_id:Number(wid),
-        qty_a:Number(d.qtyA)||0, qty_b:Number(d.qtyB)||0, qty_c:Number(d.qtyC)||0
-    }));
-  if(rows.length>0){
-    const {error:ie}=await db.from('daily_records').insert(rows);
-    if(ie) throw ie;
-  }
-}
-
-// 🚨 팝업/모달 로직
-function openConfirm(title,msg,btnLabel,action,isDanger=true){
-  document.getElementById('dlg-title').textContent=title;
-  document.getElementById('dlg-msg').textContent=msg;
-  
-  const okBtn = document.getElementById('dlg-ok');
-  okBtn.textContent=btnLabel;
-  okBtn.style.background = isDanger ? 'var(--red)' : 'var(--teal)';
-  
-  confirmAction=action;
-  document.getElementById('confirm-overlay').classList.add('show');
-}
-function closeConfirm(){ document.getElementById('confirm-overlay').classList.remove('show'); confirmAction=null; }
-function doConfirm(){ if(confirmAction) confirmAction(); closeConfirm(); }
-
-function openBackup(){
-  document.getElementById('backup-sub').textContent=`배달원 ${workers.length}명 · 기록 ${dailyRecords.length}일 (서버 저장)`;
-  document.getElementById('backup-sheet').classList.add('show');
-}
-function exportData(){
-  const blob=new Blob([JSON.stringify({version:'mgr-v5',exportDate:new Date().toISOString(),workers,dailyRecords},null,2)],{type:'application/json'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a'); a.href=url; a.download=`배송관리_백업_${today()}.json`; a.click();
-  URL.revokeObjectURL(url);
-  document.getElementById('backup-sheet').classList.remove('show');
-  showToast('📤 백업 완료!');
-}
-async function importData(e){
-  const file=e.target.files[0]; if(!file) return;
-  const reader=new FileReader();
-  reader.onload=async function(ev){
-    try{
-      const data=JSON.parse(ev.target.result);
-      showToast('📥 복원 중...');
-      const existIds=new Set(workers.map(x=>x.id));
-      for(const w of (data.workers||[])){
-        if(!existIds.has(w.id)){
-          const {data:d,error}=await db.from('workers').insert({
-              name:w.name, price_a:w.priceA, price_b:w.priceB, price_c:w.priceC||0,
-              region:w.region||'', access_codes:w.codes||[]
-          }).select().single();
-          if(!error) workers.push({id:d.id,name:w.name,region:w.region,priceA:w.priceA,priceB:w.priceB,priceC:w.priceC||0,loginId:'',codes:w.codes||[]});
-        }
-      }
-      const existDates=new Set(dailyRecords.map(x=>x.date));
-      let n=0;
-      for(const r of (data.dailyRecords||[])){
-        if(!existDates.has(r.date)){ await saveDailyToDB(r.date,r.data); dailyRecords.unshift({date:r.date,data:r.data}); n++; }
-      }
-      dailyRecords.sort((a,b)=>b.date.localeCompare(a.date));
-      document.getElementById('backup-sheet').classList.remove('show');
-      updateSummary(); render();
-      showToast(`✅ 복원 완료! ${n}일`);
-    }catch(err){ showToast('❌ 복원 실패: '+err.message); }
-  };
-  reader.readAsText(file); e.target.value='';
-}
-function exportCSV(){
-  if(!dailyRecords.length||!workers.length){ showToast('⚠️ 내보낼 기록이 없어요'); return; }
-  const months={};
-  dailyRecords.forEach(r=>{
-    const ym=r.date.slice(0,7);
-    if(!months[ym]) months[ym]={};
-    Object.entries(r.data||{}).forEach(([wid,d])=>{
-      const w=workers.find(x=>x.id===Number(wid)); if(!w) return;
-      const p=calcPay(w,d.qtyA,d.qtyB,d.qtyC);
-      if(!months[ym][w.id]) months[ym][w.id]={name:w.name,qtyA:0,qtyB:0,qtyC:0,gross:0,net:0,days:0};
-      months[ym][w.id].qtyA+=p.a; months[ym][w.id].qtyB+=p.b; months[ym][w.id].qtyC+=p.c;
-      months[ym][w.id].gross+=p.gross; months[ym][w.id].net+=p.net; months[ym][w.id].days++;
-    });
-  });
-  const rows=[`월,이름,${itemNames.a},${itemNames.b},${itemNames.c},총건수,총금액,실수령,세금공제,배송일수`];
-  Object.keys(months).sort().forEach(ym=>{
-    Object.values(months[ym]).forEach(t=>{
-      rows.push(`${ym},${t.name},${t.qtyA},${t.qtyB},${t.qtyC},${t.qtyA+t.qtyB+t.qtyC},${t.gross},${t.net},${t.gross-t.net},${t.days}`);
-    });
-  });
-  const blob=new Blob(['\uFEFF'+rows.join('\n')],{type:'text/csv;charset=utf-8'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a'); a.href=url; a.download=`배송정산_${today()}.csv`; a.click();
-  URL.revokeObjectURL(url);
-  document.getElementById('backup-sheet').classList.remove('show');
-  showToast('📊 CSV 내보내기 완료!');
-}
-function askReset(){
-  document.getElementById('backup-sheet').classList.remove('show');
-  openConfirm('⚠️ 전체 초기화',`배달원 ${workers.length}명 · 기록 ${dailyRecords.length}일\n서버에서 모두 삭제됩니다.`,'초기화',async()=>{
-    try{
-      await db.from('daily_records').delete().neq('id',0);
-      await db.from('workers').delete().neq('id',0);
-      workers=[]; dailyRecords=[];
-      updateSummary(); render(); showToast('🗑 초기화 완료');
-    }catch(e){ showToast('❌ '+e.message); }
-  });
-}
-function copyCode(){
-  const openEls=document.querySelectorAll('.bsoverlay.show');
-  openEls.forEach(el=>el.classList.remove('show'));
-  const code=document.documentElement.outerHTML;
-  openEls.forEach(el=>el.classList.add('show'));
-  navigator.clipboard.writeText(code).then(()=>{
-    document.getElementById('backup-sheet').classList.remove('show');
-    showToast('📋 전체 코드 복사 완료!');
-  }).catch(()=>{
-    const ta=document.createElement('textarea'); ta.value=code; ta.style.cssText='position:fixed;opacity:0';
-    document.body.appendChild(ta); ta.select();
-    try{ document.execCommand('copy'); showToast('📋 전체 코드 복사 완료!'); }
-    catch(e){ showToast('❌ 복사 실패'); }
-    document.body.removeChild(ta);
-    document.getElementById('backup-sheet').classList.remove('show');
-  });
-}
 function showToast(msg){
   const t=document.getElementById('toast');
-  t.textContent=msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),3000);
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2400);
 }
 
-const savedUser=sessionStorage.getItem('mgr-user');
-if(savedUser){
-  try{
-    currentUser=JSON.parse(savedUser);
-    document.getElementById('login-wrap').classList.add('hide');
-    document.getElementById('app').style.display='flex';
-    setupUI();
-    loadAll();
-  }catch(e){ sessionStorage.removeItem('mgr-user'); }
-} else {
-  setTimeout(()=>document.getElementById('l-id').focus(),300);
+function openBackupModal(){
+  document.getElementById('backupModal').classList.add('active');
+  document.body.style.overflow='hidden';
 }
+function exportBackup(){
+  const payload={version:1,exportedAt:new Date().toISOString(),data:data};
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='출입코드_백업_'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();URL.revokeObjectURL(a.href);
+  closeModal('backupModal');showToast('✓ 백업 파일이 저장됐어요');
+}
+function importBackup(file){
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=(e)=>{
+    try{
+      const parsed=JSON.parse(e.target.result);
+      const restored=parsed.version===1?parsed.data:parsed;
+      if(!restored.regions||!Array.isArray(restored.regions)){showToast('⚠️ 올바른 백업 파일이 아닙니다');return;}
+      if(!confirm('백업 파일을 복원할까요?\n\n지역 '+restored.regions.length+'개가 불러와집니다.\n현재 데이터는 덮어씌워집니다.'))return;
+      data=restored;save();openR=new Set();openC=new Set();
+      closeModal('backupModal');render();showToast('✓ 복원 완료 — 지역 '+restored.regions.length+'개');
+    }catch(err){showToast('⚠️ 파일을 읽을 수 없어요');}
+  };
+  reader.readAsText(file);
+}
+
+const DFLT={regions:[{id:'rg1',name:'대치동',complexes:[
+  {id:'cx1',name:'대치현대',addr:'삼성로64길 5',codes:[
+    {id:'k001',section:'',label:'공동 현관',sublabel:'',value:'##9077',isGlobal:true},
+    {id:'k002',section:'',label:'공동 현관 (101동·105동)',sublabel:'',value:'##2580',isGlobal:true}]},
+  {id:'cx2',name:'세영팔레스A',addr:'영동대로65길 57',codes:[
+    {id:'k010',section:'🔐 열경 1657',label:'101동 1005호',sublabel:'',value:'열경1657',isGlobal:false},
+    {id:'k011',section:'',label:'101동 1102호',sublabel:'',value:'열경1657',isGlobal:false},
+    {id:'k012',section:'',label:'101동 1203호',sublabel:'',value:'열경1657',isGlobal:false}]},
+  {id:'cx3',name:'대치푸르지오써밋',addr:'삼성로72길 12',codes:[
+    {id:'k020',section:'',label:'101동 1~3라인',sublabel:'',value:'201#0320#',isGlobal:false},
+    {id:'k021',section:'',label:'101동 4~5라인',sublabel:'',value:'305#3006#',isGlobal:false},
+    {id:'k022',section:'',label:'102동 1~2라인',sublabel:'',value:'702#1543#',isGlobal:false},
+    {id:'k023',section:'',label:'103동 1~2라인',sublabel:'',value:'702#0009#',isGlobal:false},
+    {id:'k024',section:'',label:'104동 1~4라인',sublabel:'',value:'104#8080#',isGlobal:false},
+    {id:'k025',section:'',label:'105동 3~5라인',sublabel:'',value:'703#8899#',isGlobal:false},
+    {id:'k026',section:'',label:'106동 3~5라인',sublabel:'',value:'1003#1004#',isGlobal:false},
+    {id:'k027',section:'',label:'107동 1~2라인',sublabel:'',value:'1102#0607#',isGlobal:false},
+    {id:'k028',section:'',label:'108동 1~2라인',sublabel:'',value:'1202#6699#',isGlobal:false},
+    {id:'k029',section:'',label:'109동 1~2라인',sublabel:'',value:'601#6733',isGlobal:false},
+    {id:'k030',section:'',label:'109동 3~5라인',sublabel:'',value:'103#4545#',isGlobal:false}]},
+  {id:'cx4',name:'디에이치 에델루이',addr:'역삼로 532',codes:[
+    {id:'k040',section:'',label:'공동 현관',sublabel:'',value:'##0282 / ##1478',isGlobal:true},
+    {id:'k041',section:'',label:'101동 1~5라인',sublabel:'',value:'#105#1053#',isGlobal:false},
+    {id:'k042',section:'',label:'102동 1~5라인',sublabel:'',value:'#403#1212#',isGlobal:false},
+    {id:'k043',section:'',label:'103동 1~2라인',sublabel:'',value:'#1102#8533',isGlobal:false},
+    {id:'k044',section:'',label:'106동 1~2라인',sublabel:'',value:'#9101#0423',isGlobal:false},
+    {id:'k045',section:'',label:'공통 (##0282)',sublabel:'',value:'#1303#1234',isGlobal:false}]},
+  {id:'cx5',name:'대치르엘',addr:'도곡93길 23',codes:[
+    {id:'k050',section:'',label:'101동 1~3라인',sublabel:'',value:'602#7777#',isGlobal:false},
+    {id:'k051',section:'',label:'102동 1~2라인',sublabel:'',value:'공동 2730',isGlobal:false},
+    {id:'k052',section:'',label:'102동 3~4라인',sublabel:'',value:'404#0645#',isGlobal:false},
+    {id:'k053',section:'',label:'103동 1~2라인',sublabel:'',value:'101#9309#',isGlobal:false},
+    {id:'k054',section:'',label:'103동 3~5라인',sublabel:'',value:'503#7777 / 0000',isGlobal:false},
+    {id:'k055',section:'',label:'104동 1~2라인',sublabel:'',value:'601#0407#',isGlobal:false},
+    {id:'k056',section:'',label:'105동 1~2라인',sublabel:'',value:'801#5104#',isGlobal:false},
+    {id:'k057',section:'',label:'106동 1~4라인',sublabel:'',value:'803#1006#',isGlobal:false},
+    {id:'k058',section:'',label:'106동 (보조)',sublabel:'',value:'1504#9569#',isGlobal:false}]},
+  {id:'cx6',name:'래미하이스턴',addr:'도곡93길 12',codes:[
+    {id:'k060',section:'',label:'201·202·203·206동 전체',sublabel:'',value:'#*1122#',isGlobal:true},
+    {id:'k061',section:'',label:'205동 1~2라인 (1)',sublabel:'',value:'#0202 0917',isGlobal:false},
+    {id:'k062',section:'',label:'205동 1~2라인 (2)',sublabel:'',value:'#*5173#',isGlobal:false},
+    {id:'k063',section:'',label:'205동 3~5라인',sublabel:'',value:'#*5273#',isGlobal:false}]},
+  {id:'cx7',name:'풍림아이원 3차',addr:'영동대로330-7 / 영동대로72길 10',codes:[
+    {id:'k070',section:'',label:'401동 603호',sublabel:'열쇠603→엔터→1003',value:'603 → 1003',isGlobal:false},
+    {id:'k071',section:'',label:'401동 1001호',sublabel:'열쇠1001→엔터→8018',value:'1001 → 8018',isGlobal:false},
+    {id:'k072',section:'',label:'301동 1202호',sublabel:'열쇠1202→엔터→9684',value:'1202 → 9684',isGlobal:false}]},
+  {id:'cx8',name:'개별 주소 코드',addr:'영동대로 · 삼성로 · 역삼로 · 테헤란로',codes:[
+    {id:'k080',section:'영동대로',label:'영동대로71길 24',sublabel:'',value:'종 7124',isGlobal:false},
+    {id:'k081',section:'',label:'영동대로71길 42',sublabel:'',value:'종 1234',isGlobal:false},
+    {id:'k082',section:'',label:'영동대로85길20 대치3차아이파크',sublabel:'',value:'#904*0008#',isGlobal:false},
+    {id:'k083',section:'',label:'영동대로85길20 대치3차아이파크',sublabel:'',value:'#506*1122#',isGlobal:false},
+    {id:'k084',section:'',label:'영동대로85길20 대치3차아이파크',sublabel:'',value:'#818*2580#',isGlobal:false},
+    {id:'k085',section:'',label:'영동대로85길20 대치3차아이파크',sublabel:'',value:'#1011*2580#',isGlobal:false},
+    {id:'k086',section:'',label:'영동대로85길34 대치2차',sublabel:'',value:'**2580#',isGlobal:false},
+    {id:'k090',section:'삼성로',label:'삼성로64길5 대치현대',sublabel:'',value:'##9077 / ##2580',isGlobal:false},
+    {id:'k091',section:'',label:'삼성로64길40 하이캐슬',sublabel:'',value:'종 5543',isGlobal:false},
+    {id:'k092',section:'',label:'삼성로76길5-6',sublabel:'',value:'경열3721종',isGlobal:false},
+    {id:'k093',section:'',label:'삼성로76길5-11',sublabel:'',value:'경비열쇠2525종',isGlobal:false},
+    {id:'k094',section:'',label:'삼성로76길23-11',sublabel:'',value:'종 2846',isGlobal:false},
+    {id:'k095',section:'',label:'삼성로76길23-12',sublabel:'',value:'종 1127',isGlobal:false},
+    {id:'k096',section:'',label:'삼성로82길30',sublabel:'',value:'열쇠6902종',isGlobal:false},
+    {id:'k097',section:'',label:'삼성로83길6',sublabel:'',value:'종 4468',isGlobal:false},
+    {id:'k098',section:'',label:'삼성로84길12',sublabel:'',value:'종 3080',isGlobal:false},
+    {id:'k099',section:'',label:'삼성로 414',sublabel:'',value:'654321*',isGlobal:false},
+    {id:'k100',section:'',label:'삼성로436 바실리체',sublabel:'',value:'1403#1010',isGlobal:false},
+    {id:'k110',section:'역삼로',label:'역삼로81길25',sublabel:'',value:'열쇠1234종',isGlobal:false},
+    {id:'k111',section:'',label:'역삼로83길7',sublabel:'',value:'#2145종',isGlobal:false},
+    {id:'k112',section:'',label:'역삼로83길12-7',sublabel:'',value:'*8652통화',isGlobal:false},
+    {id:'k113',section:'',label:'역삼로83길18',sublabel:'',value:'*7849*',isGlobal:false},
+    {id:'k114',section:'',label:'역삼로83길22',sublabel:'',value:'406#0301#',isGlobal:false},
+    {id:'k115',section:'',label:'역삼로85길17-7',sublabel:'',value:'2004',isGlobal:false},
+    {id:'k116',section:'',label:'역삼로87길7',sublabel:'',value:'#2145',isGlobal:false},
+    {id:'k117',section:'',label:'역삼로87길13',sublabel:'',value:'경열7856종',isGlobal:false},
+    {id:'k118',section:'',label:'역삼로87길15',sublabel:'',value:'1096*',isGlobal:false},
+    {id:'k119',section:'',label:'역삼로87길23',sublabel:'',value:'2456*',isGlobal:false},
+    {id:'k120',section:'',label:'역삼로87길25',sublabel:'',value:'종 2580',isGlobal:false},
+    {id:'k121',section:'',label:'역삼로88길9',sublabel:'',value:'종 1234',isGlobal:false},
+    {id:'k122',section:'',label:'역삼로90길26',sublabel:'',value:'열쇠50종',isGlobal:false},
+    {id:'k123',section:'',label:'역삼로92길12',sublabel:'',value:'970411#',isGlobal:false},
+    {id:'k124',section:'',label:'역삼로92길17',sublabel:'',value:'939495*',isGlobal:false},
+    {id:'k125',section:'',label:'역삼로92길34',sublabel:'',value:'#1210',isGlobal:false},
+    {id:'k126',section:'',label:'역삼로532 대치에델루이',sublabel:'',value:'#1303#1234 (##0282)',isGlobal:false},
+    {id:'k127',section:'',label:'역삼로551-5',sublabel:'',value:'3040310종',isGlobal:false},
+    {id:'k128',section:'',label:'역삼로555 W타워',sublabel:'',value:'종 1379',isGlobal:false},
+    {id:'k130',section:'테헤란로',label:'테헤란로92길43',sublabel:'',value:'3355#',isGlobal:false}]}
+]}]};
+
+let data={regions:[]};
+let openR=new Set(),openC=new Set(),q='';
+function save(){try{localStorage.setItem('acn5',JSON.stringify(data));}catch(e){}}
+function load(){try{const r=localStorage.getItem('acn5');data=r?JSON.parse(r):JSON.parse(JSON.stringify(DFLT));}catch(e){data=JSON.parse(JSON.stringify(DFLT));}}
+function fR(id){return data.regions.find(x=>x.id===id);}
+function fC(rid,cid){return fR(rid)?.complexes.find(x=>x.id===cid);}
+function fK(rid,cid,kid){return fC(rid,cid)?.codes.find(x=>x.id===kid);}
+
+function render(){
+  const root=document.getElementById('contentRoot');
+  if(!data.regions.length){
+    root.innerHTML=`<div class="empty-state"><div class="eico">🗺️</div><p>지역이 없습니다.<br>상단 <strong>＋ 지역 추가</strong> 버튼으로<br>새 지역을 만들어 보세요.</p></div>`;
+    return;
+  }
+  let html='',vis=0;
+  data.regions.forEach(rg=>{
+    let mcx=[];
+    if(!q){mcx=rg.complexes;}
+    else{
+      const rm=rg.name.toLowerCase().includes(q);
+      rg.complexes.forEach(cx=>{
+        const cm=cx.name.toLowerCase().includes(q)||cx.addr.toLowerCase().includes(q);
+        const mk=cx.codes.filter(cd=>cd.label.toLowerCase().includes(q)||cd.value.toLowerCase().includes(q)||cd.sublabel.toLowerCase().includes(q)||cd.section.toLowerCase().includes(q));
+        if(rm||cm||mk.length)mcx.push({...cx,codes:rm||cm?cx.codes:mk});
+      });
+    }
+    if(q&&!mcx.length)return;
+    vis++;
+    const ro=openR.has(rg.id)||!!q;
+    const kc=mcx.reduce((a,c)=>a+c.codes.length,0);
+    html+=`<div class="region-card${ro?' open':''}" id="rc_${esc(rg.id)}" data-id="${esc(rg.id)}">
+<div class="rg-hdr">
+<div class="dh rh" data-type="region" data-id="${esc(rg.id)}">⠿</div>
+<div class="rg-bar"></div>
+<div class="rg-clickable" onclick="tR('${esc(rg.id)}')">
+<div class="rg-ico">🏘️</div>
+<div><div class="rg-name">${esc(rg.name)}</div><div class="rg-meta">${mcx.length}개 단지 · ${kc}개 코드</div></div>
+</div>
+<div class="rg-acts">
+<button class="abt add" onclick="openModal('aC',{r:'${esc(rg.id)}'})">＋</button>
+<button class="abt" onclick="openModal('eR',{r:'${esc(rg.id)}'})">✏️</button>
+<button class="abt del" onclick="cdR('${esc(rg.id)}')">🗑</button>
+</div>
+<span class="chv r">▼</span>
+</div>
+<div class="rg-body">`;
+    if(!mcx.length){
+      html+=`<div style="text-align:center;padding:20px 0;color:var(--text3);font-size:12px;font-family:var(--mono);">단지가 없습니다 · <span style="color:var(--amber);cursor:pointer;" onclick="openModal('aC',{r:'${esc(rg.id)}'})">＋ 단지 추가</span></div>`;
+    } else {
+      mcx.forEach(cx=>{
+        const co=openC.has(cx.id)||!!q;
+        html+=`<div class="complex-card${co?' open':''}" id="cc_${esc(cx.id)}" data-id="${esc(cx.id)}" data-rid="${esc(rg.id)}">
+<div class="cx-hdr">
+<div class="dh ch" data-type="complex" data-id="${esc(cx.id)}" data-rid="${esc(rg.id)}">⠿</div>
+<div class="cx-bar"></div>
+<div class="cx-clickable" onclick="tC('${esc(cx.id)}')">
+<div class="cx-ico">🏢</div>
+<div class="cx-col"><div class="cx-name">${esc(cx.name)}</div><div class="cx-addr">${esc(cx.addr||'')}</div></div>
+</div>
+<div class="cx-acts">
+<button class="asm add" onclick="openModal('aK',{r:'${esc(rg.id)}',c:'${esc(cx.id)}'})">＋</button>
+<button class="asm" onclick="openModal('eC',{r:'${esc(rg.id)}',c:'${esc(cx.id)}'})">✏️</button>
+<button class="asm del" onclick="cdC('${esc(rg.id)}','${esc(cx.id)}')">🗑</button>
+</div>
+<span class="chv c">▼</span>
+</div>
+<div class="cx-body">`;
+        let ps='__NONE__';
+        cx.codes.forEach(cd=>{
+          if(cd.section&&cd.section!==ps)html+=`<div class="sec-lbl">${esc(cd.section)}</div>`;
+          ps=cd.section||ps;
+          html+=`<div class="code-row${cd.isGlobal?' global':''}" id="kd_${esc(cd.id)}" data-id="${esc(cd.id)}" data-rid="${esc(rg.id)}" data-cid="${esc(cx.id)}">
+<div class="dh kh" data-type="code" data-id="${esc(cd.id)}" data-rid="${esc(rg.id)}" data-cid="${esc(cx.id)}">⠿</div>
+<div class="code-main" onclick="showZ('${esc(cd.id)}','${esc(rg.id)}','${esc(cx.id)}')">
+${cd.sublabel?`<span class="code-sub">${esc(cd.sublabel)}</span>`:''}
+<div class="code-lbl">${esc(cd.label)}</div>
+<div class="code-val">${esc(cd.value)}</div>
+</div>
+<div class="code-acts">
+<button class="asm" onclick="openModal('eK',{r:'${esc(rg.id)}',c:'${esc(cx.id)}',k:'${esc(cd.id)}'})">✏️</button>
+<button class="asm del" onclick="cdK('${esc(rg.id)}','${esc(cx.id)}','${esc(cd.id)}')">🗑</button>
+</div>
+<span class="copy-hint">✓ 복사됨</span>
+</div>`;
+        });
+        html+=`<button class="add-row-btn" onclick="openModal('aK',{r:'${esc(rg.id)}',c:'${esc(cx.id)}'})">＋ 코드 추가</button></div></div>`;
+      });
+      html+=`<button class="add-row-btn amber-btn" onclick="openModal('aC',{r:'${esc(rg.id)}'})">＋ 단지 추가</button>`;
+    }
+    html+=`</div></div>`;
+  });
+  if(q&&!vis)html=`<div class="no-results">🔍 "${esc(q)}" 검색 결과 없음</div>`;
+  root.innerHTML=html;
+  attachHandles();
+}
+
+function tR(id){openR.has(id)?openR.delete(id):openR.add(id);render();}
+function tC(id){openC.has(id)?openC.delete(id):openC.add(id);render();}
+function handleSearch(v){
+  q=v.toLowerCase().trim();
+  document.getElementById('contentRoot').classList.toggle('searching',!!q);
+  render();
+}
+
+const DND={
+  active:false,type:null,id:null,rid:null,cid:null,
+  src:null,ghost:null,indicator:null,dropBefore:null,offY:0,
+  _timer:null,_startY:0,_startX:0,_scrollDir:0,_raf:null,
+  _onMoveBound:null,_onEndBound:null,_onCancelBound:null,
+
+  begin(e,type,id,rid,cid){
+    if(this.active)return;
+    const t=e.touches[0];
+    this.type=type;this.id=id;this.rid=rid;this.cid=cid;
+    this._startY=t.clientY;this._startX=t.clientX;
+    let el=e.currentTarget;
+    while(el){if(el.classList.contains('region-card')||el.classList.contains('complex-card')||el.classList.contains('code-row'))break;el=el.parentElement;}
+    this.src=el;
+    e.currentTarget.classList.add('pressing');this._pressHandle=e.currentTarget;
+    this._earlyMove=(ev)=>{
+      const dy=Math.abs(ev.touches[0].clientY-this._startY);
+      const dx=Math.abs(ev.touches[0].clientX-this._startX);
+      if(dy>8||dx>8){clearTimeout(this._timer);this._timer=null;this._pressHandle?.classList.remove('pressing');document.removeEventListener('touchmove',this._earlyMove);}
+    };
+    document.addEventListener('touchmove',this._earlyMove,{passive:true});
+    this._timer=setTimeout(()=>{document.removeEventListener('touchmove',this._earlyMove);this._activate(t);},420);
+  },
+
+  _activate(touch){
+    this.active=true;if(navigator.vibrate)navigator.vibrate(30);
+    this._pressHandle?.classList.remove('pressing');
+    const rect=this.src.getBoundingClientRect();this.offY=touch.clientY-rect.top;
+    const ghost=document.getElementById('drag-ghost');
+    const clone=this.src.cloneNode(true);
+    clone.querySelectorAll('.rg-body,.cx-body,.add-row-btn').forEach(b=>b.remove());
+    clone.style.cssText='width:100%;';ghost.innerHTML='';ghost.appendChild(clone);
+    ghost.style.cssText=`display:block;left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;`;
+    this.ghost=ghost;this.src.classList.add('drag-placeholder');
+    this.indicator=document.createElement('div');this.indicator.className='drop-line';
+    document.body.classList.add('dragging');
+    this._onMoveBound=(e)=>this._onMove(e);this._onEndBound=()=>this._onEnd();this._onCancelBound=()=>this._onCancel();
+    document.addEventListener('touchmove',this._onMoveBound,{passive:false});
+    document.addEventListener('touchend',this._onEndBound,{passive:true});
+    document.addEventListener('touchcancel',this._onCancelBound,{passive:true});
+  },
+
+  _onMove(e){
+    e.preventDefault();const t=e.touches[0];const cy=t.clientY;
+    this.ghost.style.top=(cy-this.offY)+'px';
+    const sc=document.getElementById('contentRoot');const sr=sc.getBoundingClientRect();const zone=90;
+    if(cy<sr.top+zone)this._scrollDir=-1;else if(cy>sr.bottom-zone)this._scrollDir=1;else this._scrollDir=0;
+    this._runScroll(sc);this._findDrop(cy);
+  },
+
+  _runScroll(sc){
+    if(this._scrollDir===0){if(this._raf){cancelAnimationFrame(this._raf);this._raf=null;}return;}
+    if(this._raf)return;
+    const step=()=>{sc.scrollTop+=this._scrollDir*6;this._raf=this._scrollDir!==0?requestAnimationFrame(step):null;};
+    this._raf=requestAnimationFrame(step);
+  },
+
+  _getSiblings(){
+    if(this.type==='region'){const root=document.getElementById('contentRoot');return{container:root,siblings:[...root.children].filter(c=>c.classList.contains('region-card'))};}
+    else if(this.type==='complex'){const rb=document.getElementById('rc_'+this.rid)?.querySelector('.rg-body');return{container:rb,siblings:rb?[...rb.children].filter(c=>c.classList.contains('complex-card')):[]};}
+    else{const cb=document.getElementById('cc_'+this.cid)?.querySelector('.cx-body');return{container:cb,siblings:cb?[...cb.children].filter(c=>c.classList.contains('code-row')):[]};}
+  },
+
+  _findDrop(cy){
+    const{container,siblings}=this._getSiblings();if(!container)return;
+    if(this.indicator.parentNode)this.indicator.parentNode.removeChild(this.indicator);
+    let insertBefore=null;
+    for(const sib of siblings){if(sib===this.src)continue;const r=sib.getBoundingClientRect();if(cy<r.top+r.height/2){insertBefore=sib;break;}}
+    this.dropBefore=insertBefore;
+    if(insertBefore){container.insertBefore(this.indicator,insertBefore);}
+    else{const btn=container.querySelector('.add-row-btn');btn?container.insertBefore(this.indicator,btn):container.appendChild(this.indicator);}
+  },
+
+  _onEnd(){this._reorder();this._cleanup();save();render();},
+  _onCancel(){this._cleanup();render();},
+
+  _reorder(){
+    let arr;
+    if(this.type==='region')arr=data.regions;
+    else if(this.type==='complex')arr=fR(this.rid)?.complexes;
+    else arr=fC(this.rid,this.cid)?.codes;
+    if(!arr)return;
+    const fi=arr.findIndex(x=>x.id===this.id);if(fi===-1)return;
+    const[item]=arr.splice(fi,1);
+    if(this.dropBefore?.dataset?.id){const ti=arr.findIndex(x=>x.id===this.dropBefore.dataset.id);arr.splice(ti!==-1?ti:arr.length,0,item);}
+    else arr.push(item);
+  },
+
+  _cleanup(){
+    clearTimeout(this._timer);this._timer=null;
+    if(this._raf){cancelAnimationFrame(this._raf);this._raf=null;}
+    this._scrollDir=0;
+    document.removeEventListener('touchmove',this._onMoveBound,{passive:false});
+    document.removeEventListener('touchend',this._onEndBound);
+    document.removeEventListener('touchcancel',this._onCancelBound);
+    document.removeEventListener('touchmove',this._earlyMove);
+    this._pressHandle?.classList.remove('pressing');
+    if(this.ghost){this.ghost.style.display='none';this.ghost.innerHTML='';}
+    if(this.indicator?.parentNode)this.indicator.parentNode.removeChild(this.indicator);
+    if(this.src)this.src.classList.remove('drag-placeholder');
+    document.body.classList.remove('dragging');
+    this.active=false;this.type=null;this.id=null;this.rid=null;this.cid=null;
+    this.src=null;this.ghost=null;this.indicator=null;this.dropBefore=null;
+    this._onMoveBound=null;this._onEndBound=null;this._onCancelBound=null;this._pressHandle=null;
+  }
+};
+
+function attachHandles(){
+  document.querySelectorAll('.dh').forEach(el=>{
+    el.addEventListener('touchstart',e=>{const d=el.dataset;DND.begin(e,d.type,d.id,d.rid||null,d.cid||null);},{passive:true});
+  });
+}
+
+let mCtx={};
+function openModal(type,ctx){
+  mCtx={type,...(ctx||{})};
+  let title='',fields='';
+  if(type==='aR'){title='<span>🏘️</span> 지역 추가';fields=fi('rn','지역명','예: 일원동, 개포동, 도곡동...','');}
+  else if(type==='eR'){const r=fR(mCtx.r);title='<span>✏️</span> 지역 편집';fields=fi('rn','지역명','',r?.name||'');}
+  else if(type==='aC'){title='<span>🏢</span> 단지 추가';fields=fi('cn','단지명','예: 대치현대, 래미하이스턴...','')+fi('ca','주소 (선택)','예: 삼성로64길 5','');}
+  else if(type==='eC'){const cx=fC(mCtx.r,mCtx.c);title='<span>✏️</span> 단지 편집';fields=fi('cn','단지명','',cx?.name||'')+fi('ca','주소','',cx?.addr||'');}
+  else if(type==='aK'){
+    title='<span>🔐</span> 코드 추가';
+    fields=fi('ks','섹션 구분 (선택)','예: 영동대로, 공동현관...','')+
+      `<div class="fhint" style="margin-top:-10px;margin-bottom:12px;">코드 위에 소제목을 붙일 때 사용</div>`+
+      fi('kl','위치 설명','예: 101동 1~3라인','')+fi('kb','상세 위치 (선택)','예: 열쇠603→엔터→1003','')+
+      fi('kv','코드값 ✱','예: ##9077, 종1234...','')+fc('kg','공동 코드 (황금색)');
+  } else if(type==='eK'){
+    const cd=fK(mCtx.r,mCtx.c,mCtx.k);title='<span>✏️</span> 코드 편집';
+    fields=fi('ks','섹션 구분','',cd?.section||'')+fi('kl','위치 설명','',cd?.label||'')+
+      fi('kb','상세 위치','',cd?.sublabel||'')+fi('kv','코드값 ✱','',cd?.value||'')+fc('kg','공동 코드',cd?.isGlobal||false);
+  }
+  document.getElementById('fmTitle').innerHTML=title;
+  document.getElementById('fmFields').innerHTML=fields;
+  document.getElementById('formModal').classList.add('active');
+  document.body.style.overflow='hidden';
+  setTimeout(()=>document.getElementById('fmFields').querySelector('input[type=text]')?.focus(),200);
+}
+
+function fi(id,lbl,ph,val){return`<div class="fg"><label class="flbl" for="${id}">${lbl}</label><input class="finp" type="text" id="${id}" placeholder="${ph}" value="${esc(val)}" autocomplete="off"></div>`;}
+function fc(id,lbl,chk=false){return`<div class="fg"><div class="fchk"><input type="checkbox" id="${id}" ${chk?'checked':''}><label for="${id}">🟡 ${lbl}</label></div></div>`;}
+
+function submitForm(){
+  const t=mCtx.type;
+  const v=id=>(document.getElementById(id)?.value||'').trim();
+  const c=id=>document.getElementById(id)?.checked||false;
+  const shake=id=>{const e=document.getElementById(id);if(!e)return;e.style.borderColor='var(--red)';e.style.boxShadow='0 0 0 3px rgba(248,113,113,.15)';setTimeout(()=>{e.style.borderColor='';e.style.boxShadow='';},1500);e.focus();};
+  if(t==='aR'){const n=v('rn');if(!n)return shake('rn');const id=uid();data.regions.push({id,name:n,complexes:[]});openR.add(id);}
+  else if(t==='eR'){const n=v('rn');if(!n)return shake('rn');const r=fR(mCtx.r);if(r)r.name=n;}
+  else if(t==='aC'){const n=v('cn'),a=v('ca');if(!n)return shake('cn');const r=fR(mCtx.r);if(r){const id=uid();r.complexes.push({id,name:n,addr:a,codes:[]});openC.add(id);}}
+  else if(t==='eC'){const n=v('cn'),a=v('ca');if(!n)return shake('cn');const cx=fC(mCtx.r,mCtx.c);if(cx){cx.name=n;cx.addr=a;}}
+  else if(t==='aK'){const val=v('kv');if(!val)return shake('kv');const cx=fC(mCtx.r,mCtx.c);if(cx)cx.codes.push({id:uid(),section:v('ks'),label:v('kl'),sublabel:v('kb'),value:val,isGlobal:c('kg')});}
+  else if(t==='eK'){const val=v('kv');if(!val)return shake('kv');const cd=fK(mCtx.r,mCtx.c,mCtx.k);if(cd){cd.section=v('ks');cd.label=v('kl');cd.sublabel=v('kb');cd.value=val;cd.isGlobal=c('kg');}}
+  save();closeModal('formModal');render();
+}
+
+function closeModal(id){document.getElementById(id).classList.remove('active');document.body.style.overflow='';}
+function ovcl(e,id){if(e.target===document.getElementById(id))closeModal(id);}
+
+function cdR(rid){
+  const r=fR(rid);if(!r)return;
+  document.getElementById('confMsg').innerHTML=`<strong>${esc(r.name)}</strong> 지역과 모든 단지·코드를 삭제합니다.`;
+  document.getElementById('confOkBtn').onclick=()=>{data.regions=data.regions.filter(x=>x.id!==rid);openR.delete(rid);save();closeModal('confirmModal');render();};
+  document.getElementById('confirmModal').classList.add('active');document.body.style.overflow='hidden';
+}
+function cdC(rid,cid){
+  const cx=fC(rid,cid);if(!cx)return;
+  document.getElementById('confMsg').innerHTML=`<strong>${esc(cx.name)}</strong> 단지와 모든 코드를 삭제합니다.`;
+  document.getElementById('confOkBtn').onclick=()=>{const r=fR(rid);if(r)r.complexes=r.complexes.filter(x=>x.id!==cid);openC.delete(cid);save();closeModal('confirmModal');render();};
+  document.getElementById('confirmModal').classList.add('active');document.body.style.overflow='hidden';
+}
+function cdK(rid,cid,kid){
+  const cd=fK(rid,cid,kid);if(!cd)return;
+  document.getElementById('confMsg').innerHTML=`코드 <strong>${esc(cd.value)}</strong> 를 삭제합니다.`;
+  document.getElementById('confOkBtn').onclick=()=>{const cx=fC(rid,cid);if(cx)cx.codes=cx.codes.filter(x=>x.id!==kid);save();closeModal('confirmModal');render();};
+  document.getElementById('confirmModal').classList.add('active');document.body.style.overflow='hidden';
+}
+
+let zVal='',zRowId='';
+function showZ(kid,rid,cid){
+  const cd=fK(rid,cid,kid);if(!cd)return;
+  const cx=fC(rid,cid);
+  zVal=cd.value;zRowId='kd_'+kid;
+  document.getElementById('zAdr').textContent=cx?(cx.name+(cx.addr?' · '+cx.addr:'')):cd.label;
+  document.getElementById('zSub').textContent=cd.sublabel||cd.label;
+  const ce=document.getElementById('zCod');ce.textContent=cd.value;ce.className='zcod'+(cd.isGlobal?' global':'');
+  const btn=document.getElementById('zCpyBtn');btn.textContent='📋 복사하기';btn.classList.remove('done');
+  document.getElementById('zoomModal').classList.add('active');document.body.style.overflow='hidden';
+}
+function execZCopy(){
+  navigator.clipboard.writeText(zVal).catch(()=>{});
+  const btn=document.getElementById('zCpyBtn');btn.textContent='✓ 복사됨!';btn.classList.add('done');
+  const row=document.getElementById(zRowId);if(row){row.classList.add('copied');setTimeout(()=>row&&row.classList.remove('copied'),1500);}
+  setTimeout(()=>closeModal('zoomModal'),700);
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape')['zoomModal','confirmModal','formModal','backupModal'].forEach(id=>{
+    const el=document.getElementById(id);if(el.classList.contains('active'))closeModal(id);
+  });
+  if(e.key==='Enter'&&document.getElementById('formModal').classList.contains('active')){
+    if(document.activeElement?.tagName==='INPUT'&&document.activeElement.type!=='checkbox')submitForm();
+  }
+});
+
+load();render();
 </script>
 </body>
 </html>
