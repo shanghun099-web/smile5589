@@ -105,7 +105,7 @@ body.dragging .cscroll{scroll-snap-type:none;}
 .cx-ico{width:30px;height:30px;border-radius:8px;background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.2);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
 .complex-card.open .cx-ico{background:rgba(96,165,250,.18);}
 .cx-col{flex:1;min-width:0;}
-.cx-name{font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cx-name{font-size:15px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .cx-addr{font-size:10px;color:var(--text2);font-family:var(--mono);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .cx-acts{display:flex;align-items:center;gap:3px;padding:0 8px 0 0;}
 .asm{width:28px;height:28px;border:1px solid var(--border2);border-radius:7px;background:var(--s3);color:var(--text2);font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
@@ -118,7 +118,7 @@ body.dragging .cscroll{scroll-snap-type:none;}
 .complex-card.open .cx-body{display:block;}
 
 /* SECTION LABEL */
-.sec-lbl{font-size:10px;font-weight:700;color:var(--amber);letter-spacing:.13em;text-transform:uppercase;font-family:var(--mono);padding:8px 4px 5px;display:flex;align-items:center;gap:5px;}
+.sec-lbl{font-size:12px;font-weight:700;color:var(--amber);letter-spacing:.13em;text-transform:uppercase;font-family:var(--mono);padding:8px 4px 5px;display:flex;align-items:center;gap:5px;}
 .sec-lbl::before{content:'▸';font-size:9px;}
 
 /* CODE ROW */
@@ -127,9 +127,9 @@ body.dragging .cscroll{scroll-snap-type:none;}
 .code-row.copied{border-color:var(--green)!important;background:rgba(52,211,153,.06)!important;}
 .code-row.drag-placeholder{opacity:.2;pointer-events:none;}
 .code-main{flex:1;min-width:0;cursor:pointer;padding:10px 8px 10px 10px;}
-.code-lbl{font-size:11px;color:var(--text2);line-height:1.5;}
+.code-lbl{font-size:14px;color:var(--text);font-weight:500;line-height:1.5;}
 .code-sub{font-size:10px;color:var(--blue);font-weight:600;display:block;margin-bottom:1px;}
-.code-val{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--green2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.03em;}
+.code-val{font-family:var(--mono);font-size:18px;font-weight:700;color:var(--green2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.03em;}
 .code-row.global .code-val{color:var(--amber2);}
 .code-acts{display:flex;gap:3px;padding:0 8px 0 0;flex-shrink:0;}
 .copy-hint{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:11px;color:var(--green);font-weight:700;font-family:var(--mono);background:rgba(10,10,14,.92);padding:3px 12px;border-radius:6px;opacity:0;pointer-events:none;transition:opacity .15s;white-space:nowrap;}
@@ -225,7 +225,6 @@ body.dragging .cscroll{scroll-snap-type:none;}
   <div class="cscroll" id="contentRoot"></div>
 </div>
 
-<!-- FORM MODAL -->
 <div class="movl" id="formModal" onclick="ovcl(event,'formModal')">
   <div class="mbox" onclick="event.stopPropagation()">
     <div class="mtitle" id="fmTitle"></div>
@@ -237,7 +236,6 @@ body.dragging .cscroll{scroll-snap-type:none;}
   </div>
 </div>
 
-<!-- CONFIRM MODAL -->
 <div class="movl" id="confirmModal" onclick="ovcl(event,'confirmModal')">
   <div class="cbox" onclick="event.stopPropagation()">
     <div class="cico">🗑️</div>
@@ -249,7 +247,6 @@ body.dragging .cscroll{scroll-snap-type:none;}
   </div>
 </div>
 
-<!-- ZOOM MODAL -->
 <div class="movl" id="zoomModal" onclick="ovcl(event,'zoomModal')">
   <div class="zbox" onclick="event.stopPropagation()">
     <div class="zadr" id="zAdr"></div>
@@ -263,7 +260,6 @@ body.dragging .cscroll{scroll-snap-type:none;}
   </div>
 </div>
 
-<!-- 백업 모달 -->
 <div class="movl" id="backupModal" onclick="ovcl(event,'backupModal')">
   <div class="bkbox" onclick="event.stopPropagation()">
     <div class="bk-title">💾 백업 · 복원</div>
@@ -283,7 +279,6 @@ body.dragging .cscroll{scroll-snap-type:none;}
   </div>
 </div>
 
-<!-- 토스트 -->
 <div class="toast" id="toast"></div>
 <div id="drag-ghost"></div>
 
