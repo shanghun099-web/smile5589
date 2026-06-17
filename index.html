@@ -23,7 +23,7 @@
   --text:#e8e8f0;--text2:#8888a8;--text3:#3a3a5a;
   --mono:'IBM Plex Mono',monospace;--sans:'Noto Sans KR',sans-serif;
 }
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+*,*::before,*::after{margin:0;padding:0;box-boxing:border-box;box-sizing:border-box;}
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);-webkit-tap-highlight-color:transparent;overscroll-behavior:none;}
 .app{display:flex;flex-direction:column;height:100dvh;height:100vh;max-width:560px;margin:0 auto;}
 
@@ -129,10 +129,10 @@ body.dragging .cscroll{scroll-snap-type:none;}
 .code-row.global{background:rgba(245,158,11,.05);border-color:rgba(245,158,11,.18);}
 .code-row.copied{border-color:var(--green)!important;background:rgba(52,211,153,.06)!important;}
 .code-row.drag-placeholder{opacity:.2;pointer-events:none;}
-.code-main{flex:1;min-width:0;cursor:pointer;padding:10px 8px 10px 10px;}
-.code-lbl{font-size:14px;color:var(--text);font-weight:500;line-height:1.5;}
-.code-sub{font-size:10px;color:var(--blue);font-weight:600;display:block;margin-bottom:1px;}
-.code-val{font-family:var(--mono);font-size:18px;font-weight:700;color:var(--green2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.03em;}
+.code-main{flex:1;min-width:0;cursor:pointer;padding:12px 10px;}
+.code-lbl{font-size:15px;color:var(--text);font-weight:500;line-height:1.4;}
+.code-sub{font-size:11px;color:var(--blue);font-weight:600;display:block;margin-bottom:2px;}
+.code-val{font-family:var(--mono);font-size:18px;font-weight:700;color:var(--green2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.03em;margin-top:2px;}
 .code-row.global .code-val{color:var(--amber2);}
 .code-acts{display:flex;gap:3px;padding:0 8px 0 0;flex-shrink:0;}
 .copy-hint{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:11px;color:var(--green);font-weight:700;font-family:var(--mono);background:rgba(10,10,14,.92);padding:3px 12px;border-radius:6px;opacity:0;pointer-events:none;transition:opacity .15s;white-space:nowrap;}
@@ -169,18 +169,6 @@ body.dragging .cscroll{scroll-snap-type:none;}
 .cacts{display:flex;gap:8px;}
 .bdng{flex:1;padding:13px;background:linear-gradient(135deg,var(--red),#dc2626);color:#fff;font-weight:700;font-size:14px;font-family:var(--sans);border:none;border-radius:11px;cursor:pointer;}
 .bdng:active{opacity:.85;}
-.zbox{width:100%;max-width:360px;background:var(--s2);border:1px solid var(--border3);border-radius:20px;padding:28px 24px 22px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.7);transform:scale(.9) translateY(20px);transition:transform .25s cubic-bezier(.34,1.56,.64,1);}
-.movl.active .zbox{transform:scale(1) translateY(0);}
-.zadr{font-size:11px;color:var(--text2);font-family:var(--mono);margin-bottom:6px;}
-.zsub{font-size:13px;color:var(--blue);font-weight:600;margin-bottom:18px;min-height:18px;}
-.zcod{font-family:var(--mono);font-size:34px;font-weight:700;color:var(--green2);letter-spacing:.05em;line-height:1.2;padding:16px;background:var(--bg);border-radius:12px;border:1px solid var(--border2);margin-bottom:20px;word-break:break-all;text-shadow:0 0 20px rgba(110,231,183,.25);}
-.zcod.global{color:var(--amber2);text-shadow:0 0 20px rgba(252,211,77,.25);}
-.zacts{display:flex;gap:8px;}
-.zcpy{flex:1;padding:13px;background:linear-gradient(135deg,var(--amber),#d97706);color:#0a0a0e;font-weight:700;font-size:14px;border:none;border-radius:11px;cursor:pointer;}
-.zcpy.done{background:linear-gradient(135deg,var(--green),#10b981);}
-.zcpy:active{opacity:.85;}
-.zcls{padding:13px 16px;background:var(--s3);color:var(--text2);font-weight:600;font-size:13px;border:1px solid var(--border2);border-radius:11px;cursor:pointer;}
-.zhnt{font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:14px;}
 
 /* 백업 모달 */
 .bkbox{width:100%;max-width:340px;background:var(--s2);border:1px solid var(--border3);border-radius:20px;padding:26px 22px 22px;box-shadow:0 20px 60px rgba(0,0,0,.7);transform:scale(.93) translateY(16px);transition:transform .25s cubic-bezier(.34,1.56,.64,1);}
@@ -213,7 +201,7 @@ body.dragging .cscroll{scroll-snap-type:none;}
       <div class="hicon">🔑</div>
       <div class="hinfo">
         <h1>출입코드 노트</h1>
-        <p>⠿ 꾹 누르기 = 순서변경 · 탭 = 복사</p>
+        <p>⠿ 꾹 누르기 = 순서변경</p>
       </div>
       <div class="header-actions">
         <button class="backup-btn" onclick="openParseModal()" title="텍스트 자동 추가">🪄</button>
@@ -251,19 +239,6 @@ body.dragging .cscroll{scroll-snap-type:none;}
   </div>
 </div>
 
-<div class="movl" id="zoomModal" onclick="ovcl(event,'zoomModal')">
-  <div class="zbox" onclick="event.stopPropagation()">
-    <div class="zadr" id="zAdr"></div>
-    <div class="zsub" id="zSub"></div>
-    <div class="zcod" id="zCod"></div>
-    <div class="zacts">
-      <button class="zcpy" id="zCpyBtn" onclick="execZCopy()">📋 복사하기</button>
-      <button class="zcls" onclick="closeModal('zoomModal')">닫기</button>
-    </div>
-    <div class="zhnt">바깥 탭하면 닫힙니다</div>
-  </div>
-</div>
-
 <div class="movl" id="backupModal" onclick="ovcl(event,'backupModal')">
   <div class="bkbox" onclick="event.stopPropagation()">
     <div class="bk-title">💾 백업 · 복원</div>
@@ -292,7 +267,7 @@ body.dragging .cscroll{scroll-snap-type:none;}
     </div>
     <div class="fg">
       <label class="flbl" for="parseInput">미정리 텍스트 입력</label>
-      <textarea class="finp" id="parseInput" rows="6" style="height: auto; resize: vertical; font-family: var(--sans); line-height: 1.5;" placeholder="예시 입력:&#10;양재대로 39길 12 공동현관 ##1234&#10;대치현대 101동 공동현관 ##9077&#10;(줄바꿈으로 여러 개 동시 입력 가능)"></textarea>
+      <textarea class="finp" id="parseInput" rows="6" style="height: auto; resize: vertical; font-family: var(--sans); line-height: 1.5;" placeholder="예시 입력:&#10;일원동 3길 14 공동현관 ##1234&#10;대치현대 101동 공동현관 ##9077&#10;(줄바꿈으로 여러 개 동시 입력 가능)"></textarea>
     </div>
     <div class="macts">
       <button class="bsec" onclick="closeModal('parseModal')">취소</button>
@@ -360,7 +335,7 @@ const DFLT={regions:[{id:'rg1',name:'대치동',complexes:[
     {id:'k025',section:'',label:'105동 3~5라인',sublabel:'',value:'703#8899#',isGlobal:false},
     {id:'k026',section:'',label:'106동 3~5라인',sublabel:'',value:'1003#1004#',isGlobal:false},
     {id:'k027',section:'',label:'107동 1~2라인',sublabel:'',value:'1102#0607#',isGlobal:false},
-    {id:'k028',section:'',label:'108동 1~2라인',sublabel:'',value:'1202#6699#',isGlobal:false},
+    {id:'k088',section:'',label:'108동 1~2라인',sublabel:'',value:'1202#6699#',isGlobal:false},
     {id:'k029',section:'',label:'109동 1~2라인',sublabel:'',value:'601#6733',isGlobal:false},
     {id:'k030',section:'',label:'109동 3~5라인',sublabel:'',value:'103#4545#',isGlobal:false}]},
   {id:'cx4',name:'디에이치 에델루이',addr:'역삼로 532',codes:[
@@ -386,16 +361,16 @@ const DFLT={regions:[{id:'rg1',name:'대치동',complexes:[
     {id:'k062',section:'',label:'205동 1~2라인 (2)',sublabel:'',value:'#*5173#',isGlobal:false},
     {id:'k063',section:'',label:'205동 3~5라인',sublabel:'',value:'#*5273#',isGlobal:false}]},
   {id:'cx7',name:'풍림아이원 3차',addr:'영동대로330-7 / 영동대로72길 10',codes:[
-    {id:'k070',section:'',label:'401동 603호',sublabel:'열쇠603→엔터→1003',value:'603 → 1003',isGlobal:false},
-    {id:'k071',section:'',label:'401동 1001호',sublabel:'열쇠1001→엔터→8018',value:'1001 → 8018',isGlobal:false},
-    {id:'k072',section:'',label:'301동 1202호',sublabel:'열쇠1202→엔터→9684',value:'1202 → 9684',isGlobal:false}]},
+    {id:'k070',section:'',label:'401동 603호',sublabel:'',value:'603 → 1003',isGlobal:false},
+    {id:'k071',section:'',label:'401동 1001호',sublabel:'',value:'1001 → 8018',isGlobal:false},
+    {id:'k072',section:'',label:'301동 1202호',sublabel:'',value:'1202 → 9684',isGlobal:false}]},
   {id:'cx8',name:'개별 주소 코드',addr:'영동대로 · 삼성로 · 역삼로 · 테헤란로',codes:[
     {id:'k080',section:'영동대로',label:'영동대로71길 24',sublabel:'',value:'종 7124',isGlobal:false},
     {id:'k081',section:'',label:'영동대로71길 42',sublabel:'',value:'종 1234',isGlobal:false},
     {id:'k082',section:'영동대로',label:'영동대로85길20 대치3차아이파크',sublabel:'',value:'#904*0008#',isGlobal:false},
     {id:'k083',section:'',label:'영동대로85길20 대치3차아이파크',sublabel:'',value:'#506*1122#',isGlobal:false},
     {id:'k084',section:'',label:'영동대로85길20 대치3차아이파크',sublabel:'',value:'#818*2580#',isGlobal:false},
-    {id:'k085',section:'',label:'영동대로85길20 대치3차아이파크',sublabel:'#1011*2580#',value:'1011*2580#',isGlobal:false},
+    {id:'k085',section:'',label:'영동대로85길20 대치3차아이파크',sublabel:'',value:'1011*2580#',isGlobal:false},
     {id:'k086',section:'',label:'영동대로85길34 대치2차',sublabel:'',value:'**2580#',isGlobal:false},
     {id:'k090',section:'삼성로',label:'삼성로64길5 대치현대',sublabel:'',value:'##9077 / ##2580',isGlobal:false},
     {id:'k091',section:'',label:'삼성로64길40 하이캐슬',sublabel:'',value:'종 5543',isGlobal:false},
@@ -416,7 +391,7 @@ const DFLT={regions:[{id:'rg1',name:'대치동',complexes:[
     {id:'k115',section:'',label:'역삼로85길17-7',sublabel:'',value:'2004',isGlobal:false},
     {id:'k116',section:'',label:'역삼로87길7',sublabel:'',value:'#2145',isGlobal:false},
     {id:'k117',section:'',label:'역삼로87길13',sublabel:'',value:'경열7856종',isGlobal:false},
-    {id:'k118',section:'',label:'역삼로87길15',sublabel:'',value:'1096*',isGlobal:false},
+    {id(--):'',label:'역삼로87길15',sublabel:'',value:'1096*',isGlobal:false},
     {id:'k119',section:'',label:'역삼로87길23',sublabel:'',value:'2456*',isGlobal:false},
     {id:'k120',section:'',label:'역삼로87길25',sublabel:'',value:'종 2580',isGlobal:false},
     {id:'k121',section:'',label:'역삼로88길9',sublabel:'',value:'종 1234',isGlobal:false},
@@ -437,6 +412,18 @@ function load(){try{const r=localStorage.getItem('acn5');data=r?JSON.parse(r):JS
 function fR(id){return data.regions.find(x=>x.id===id);}
 function fC(rid,cid){return fR(rid)?.complexes.find(x=>x.id===cid);}
 function fK(rid,cid,kid){return fC(rid,cid)?.codes.find(x=>x.id===kid);}
+
+function execDirectCopy(el, val) {
+  if (!val || val === '코드 확인 필요') return;
+  navigator.clipboard.writeText(val).then(() => {
+    const row = el.closest('.code-row');
+    if (row) {
+      row.classList.add('copied');
+      setTimeout(() => { if(row) row.classList.remove('copied'); }, 1500);
+    }
+    showToast('✓ 복사완료: ' + val);
+  }).catch(() => {});
+}
 
 function render(){
   const root=document.getElementById('contentRoot');
@@ -503,7 +490,7 @@ function render(){
           ps=cd.section||ps;
           html+=`<div class="code-row${cd.isGlobal?' global':''}" id="kd_${esc(cd.id)}" data-id="${esc(cd.id)}" data-rid="${esc(rg.id)}" data-cid="${esc(cx.id)}">
 <div class="dh kh" data-type="code" data-id="${esc(cd.id)}" data-rid="${esc(rg.id)}" data-cid="${esc(cx.id)}">⠿</div>
-<div class="code-main" onclick="showZ('${esc(cd.id)}','${esc(rg.id)}','${esc(cx.id)}')">
+<div class="code-main" onclick="execDirectCopy(this, '${esc(cd.value)}')">
 ${cd.sublabel?`<span class="code-sub">${esc(cd.sublabel)}</span>`:''}
 <div class="code-lbl">${esc(cd.label)}</div>
 <div class="code-val">${esc(cd.value)}</div>
@@ -712,24 +699,6 @@ function cdK(rid,cid,kid){
   document.getElementById('confirmModal').classList.add('active');document.body.style.overflow='hidden';
 }
 
-let zVal='',zRowId='';
-function showZ(kid,rid,cid){
-  const cd=fK(rid,cid,kid);if(!cd)return;
-  const cx=fC(rid,cid);
-  zVal=cd.value;zRowId='kd_'+kid;
-  document.getElementById('zAdr').textContent=cx?(cx.name+(cx.addr?' · '+cx.addr:'')):cd.label;
-  document.getElementById('zSub').textContent=cd.sublabel||cd.label;
-  const ce=document.getElementById('zCod');ce.textContent=cd.value;ce.className='zcod'+(cd.isGlobal?' global':'');
-  const btn=document.getElementById('zCpyBtn');btn.textContent='📋 복사하기';btn.classList.remove('done');
-  document.getElementById('zoomModal').classList.add('active');document.body.style.overflow='hidden';
-}
-function execZCopy(){
-  navigator.clipboard.writeText(zVal).catch(()=>{});
-  const btn=document.getElementById('zCpyBtn');btn.textContent='✓ 복사됨!';btn.classList.add('done');
-  const row=document.getElementById(zRowId);if(row){row.classList.add('copied');setTimeout(()=>row&&row.classList.remove('copied'),1500);}
-  setTimeout(()=>closeModal('zoomModal'),700);
-}
-
 // ====== 🪄 텍스트 자동 분류 추가 기능 관련 스크립트 ======
 function openParseModal() {
   const select = document.getElementById('parseTargetRegion');
@@ -790,32 +759,31 @@ function submitParseForm() {
 
     if (!codeValue) codeValue = '코드 확인 필요';
 
-    // 2단계: 대테마(단지/도로명)와 하위 위치설명(Label) 분리
+    // 2단계: 대테마(단지명)와 하위 위치설명(Label) 정밀 매칭 분리
     let complexName = '';
     let labelName = '';
 
-    const roadMatch = remaining.match(/([가-힣A-Za-z0-9]+(?:대로|로))/);
+    // 주요 아파트/빌라/단지 대표 키워드 검사
+    const complexKeywords = /(아파트|단지|현대|래미안|푸르지오|써밋|르엘|하이스턴|아이원|팰리스|타워|빌딩|빌라|맨션|힐스테이트|자이|아이파크|e편한세상|더샵|롯데캐슬|하이캐슬)/;
+    const hasComplex = complexKeywords.test(remaining);
 
-    if (roadMatch) {
-      complexName = roadMatch[1].trim();
-      // 💡 [수정] 띄어쓰기를 모두 제거하여 전체 주소(예: 일원로5길12)를 하나의 메인 텍스트로 합침
-      labelName = remaining.replace(/\s+/g, '');
+    if (hasComplex) {
+      const match = remaining.match(complexKeywords);
+      const idx = remaining.indexOf(match[0]) + match[0].length;
+      complexName = remaining.substring(0, idx).trim();
+      labelName = remaining.substring(idx).trim().replace(/\s+/g, '');
       if (!labelName) labelName = '공동 현관';
     } else {
-      const labelRegex = /([0-9A-Za-z가-힣]+\s*(?:동|라인|호|측|정문|후문|공동현관).*)$/i;
-      const labelMatch = remaining.match(labelRegex);
-
-      if (labelMatch) {
-        labelName = labelMatch[0].trim();
-        complexName = remaining.replace(labelMatch[0], '').trim();
-      } else {
-        complexName = remaining;
-        labelName = '공동 현관';
-      }
+      // 💡 일반 지번이나 길거리 개별 주소인 경우 (예: 일원동 3길 14)
+      // 기존 DFLT 데이터 구조에 맞추어 단지명을 '개별 주소 코드'로 일괄 지정하여 모아주고
+      // 라벨에 전체 주소 문자열을 공백 없이 그대로 주입하여 잘림이나 유실을 원천 차단합니다.
+      complexName = '개별 주소 코드';
+      labelName = remaining.replace(/\s+/g, '');
     }
 
     if (!complexName) complexName = '지정되지 않은 단지';
 
+    // 3단계: 기존 단지가 매칭되는지 대조
     let complex = region.complexes.find(cx => {
       const target = cx.name.toLowerCase().replace(/\s+/g, '');
       const source = complexName.toLowerCase().replace(/\s+/g, '');
@@ -831,12 +799,12 @@ function submitParseForm() {
 
     const isGlobal = /공동|전체|공통|정문/.test(labelName) || /##/.test(codeValue);
 
-    // 4단계: 매칭된 대테마 내부에 하위 레코드 주입
+    // 4단계: 매칭된 단지 내부에 하위 레코드 주입 (서브 레이블 완전 공백 처리)
     complex.codes.push({
       id: uid(),
       section: '',
       label: labelName,
-      sublabel: '', // 💡 [수정] 불필요한 서브 레이블(파란색 텍스트) 완전 삭제
+      sublabel: '', 
       value: codeValue,
       isGlobal: isGlobal
     });
@@ -856,7 +824,7 @@ function submitParseForm() {
 }
 
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape')['zoomModal','confirmModal','formModal','backupModal','parseModal'].forEach(id=>{
+  if(e.key==='Escape')['confirmModal','formModal','backupModal','parseModal'].forEach(id=>{
     const el=document.getElementById(id);if(el.classList.contains('active'))closeModal(id);
   });
   if(e.key==='Enter'&&document.getElementById('formModal').classList.contains('active')){
