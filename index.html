@@ -216,6 +216,7 @@ body.dragging .cscroll{scroll-snap-type:none;}
         <p>⠿ 꾹 누르기 = 순서변경 · 탭 = 복사</p>
       </div>
       <div class="header-actions">
+        <button class="backup-btn" onclick="openParseModal()" title="텍스트 자동 추가">🪄</button>
         <button class="backup-btn" onclick="openBackupModal()" title="백업/복원">💾</button>
         <button class="add-rgn-btn" onclick="openModal('aR')">＋ 지역 추가</button>
       </div>
@@ -279,6 +280,24 @@ body.dragging .cscroll{scroll-snap-type:none;}
       </label>
     </div>
     <button class="bk-close" onclick="closeModal('backupModal')">닫기</button>
+  </div>
+</div>
+
+<div class="movl" id="parseModal" onclick="ovcl(event,'parseModal')">
+  <div class="mbox" onclick="event.stopPropagation()">
+    <div class="mtitle"><span>🪄</span> 텍스트 자동 분류 추가</div>
+    <div class="fg">
+      <label class="flbl" for="parseTargetRegion">대상 지역 선택</label>
+      <select class="finp" id="parseTargetRegion" style="background: var(--s3); color: var(--text); font-weight: 500;"></select>
+    </div>
+    <div class="fg">
+      <label class="flbl" for="parseInput">미정리 텍스트 입력</label>
+      <textarea class="finp" id="parseInput" rows="6" style="height: auto; resize: vertical; font-family: var(--sans); line-height: 1.5;" placeholder="예시 입력:&#10;대치현대 101동 공동현관 ##9077&#10;래미하이스턴 205동 1~2라인 #*5173#&#10;(줄바꿈으로 여러 개 동시 입력 가능)"></textarea>
+    </div>
+    <div class="macts">
+      <button class="bsec" onclick="closeModal('parseModal')">취소</button>
+      <button class="bpri" onclick="submitParseForm()">분류 및 추가</button>
+    </div>
   </div>
 </div>
 
@@ -711,8 +730,120 @@ function execZCopy(){
   setTimeout(()=>closeModal('zoomModal'),700);
 }
 
+// ====== 🪄 텍스트 자동 분류 추가 기능 관련 스크립트 ======
+function openParseModal() {
+  const select = document.getElementById('parseTargetRegion');
+  if (!data.regions.length) {
+    showToast('⚠️ 먼저 지역을 추가해 주세요');
+    return;
+  }
+  
+  select.innerHTML = data.regions.map(r => `<option value="${esc(r.id)}">${esc(r.name)}</option>`).join('');
+  
+  if (openR.size > 0) {
+    select.value = Array.from(openR)[0];
+  }
+  
+  document.getElementById('parseInput').value = '';
+  document.getElementById('parseModal').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function submitParseForm() {
+  const rid = document.getElementById('parseTargetRegion').value;
+  const text = document.getElementById('parseInput').value.trim();
+  if (!text) {
+    showToast('⚠️ 텍스트를 입력해 주세요');
+    return;
+  }
+
+  const region = fR(rid);
+  if (!region) return;
+
+  const lines = text.split('\n');
+  let addedCount = 0;
+
+  lines.forEach(line => {
+    const trLine = line.trim();
+    if (!trLine) return;
+
+    let codeValue = '';
+    let remaining = trLine;
+
+    const codeRegex = /((?:##|#|\*|종\s|열경|경열|열쇠|경비|공동\s)[0-9#*→➔\s\/~()\-–—]+|[0-9]{3,4}#[0-9]{4,6}#?|[0-9]{4,6}[#*])/i;
+    const codeMatch = trLine.match(codeRegex);
+
+    if (codeMatch) {
+      codeValue = codeMatch[0].trim();
+      remaining = trLine.replace(codeMatch[0], '').trim();
+    } else {
+      const words = trLine.split(/\s+/);
+      if (words.length > 1) {
+        const lastWord = words[words.length - 1];
+        if (/[0-9]/.test(lastWord) && !lastWord.endsWith('동') && !lastWord.endsWith('호')) {
+          codeValue = lastWord;
+          remaining = trLine.substring(0, trLine.lastIndexOf(lastWord)).trim();
+        }
+      }
+    }
+
+    if (!codeValue) codeValue = '코드 확인 필요';
+
+    const labelRegex = /([0-9A-Za-z가-힣]+\s*(?:동|라인|호|측|정문|후문|공동현관).*)$/i;
+    const labelMatch = remaining.match(labelRegex);
+
+    let complexName = '';
+    let labelName = '공동 현관';
+
+    if (labelMatch) {
+      labelName = labelMatch[0].trim();
+      complexName = remaining.replace(labelMatch[0], '').trim();
+    } else {
+      complexName = remaining;
+    }
+
+    if (!complexName) complexName = '지정되지 않은 단지';
+
+    let complex = region.complexes.find(cx => {
+      const target = cx.name.toLowerCase().replace(/\s+/g, '');
+      const source = complexName.toLowerCase().replace(/\s+/g, '');
+      return target === source || source.includes(target) || target.includes(source);
+    });
+
+    if (!complex) {
+      const cxId = uid();
+      complex = { id: cxId, name: complexName, addr: '', codes: [] };
+      region.complexes.push(complex);
+      openC.add(cxId);
+    }
+
+    const isGlobal = /공동|전체|공통|정문/.test(labelName) || /##/.test(codeValue);
+
+    complex.codes.push({
+      id: uid(),
+      section: '',
+      label: labelName,
+      sublabel: '⚡ 자동 분류 추가됨',
+      value: codeValue,
+      isGlobal: isGlobal
+    });
+
+    addedCount++;
+  });
+
+  if (addedCount > 0) {
+    save();
+    closeModal('parseModal');
+    openR.add(rid);
+    render();
+    showToast(`✓ ${addedCount}개 항목 분류 완료`);
+  } else {
+    showToast('⚠️ 분류할 수 있는 텍스트를 찾지 못했습니다.');
+  }
+}
+
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape')['zoomModal','confirmModal','formModal','backupModal'].forEach(id=>{
+  if(e.key==='Escape')['zoomModal','confirmModal','formModal','backupModal','parseModal'].forEach(id=>{
     const el=document.getElementById(id);if(el.classList.contains('active'))closeModal(id);
   });
   if(e.key==='Enter'&&document.getElementById('formModal').classList.contains('active')){
