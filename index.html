@@ -682,19 +682,19 @@ function ovcl(e,id){if(e.target===document.getElementById(id))closeModal(id);}
 
 function cdR(rid){
   const r=fR(rid);if(!r)return;
-  document.getElementById('confMsg').innerHTML=`<strong>${esc(r.name)}</strong> 지역과 모든 단지·코드를 삭제합니다.`;
+  document.getElementById('confMsg').innerHTML=\`<strong>\${esc(r.name)}</strong> 지역과 모든 단지·코드를 삭제합니다.\`;
   document.getElementById('confOkBtn').onclick=()=>{data.regions=data.regions.filter(x=>x.id!==rid);openR.delete(rid);save();closeModal('confirmModal');render();};
   document.getElementById('confirmModal').classList.add('active');document.body.style.overflow='hidden';
 }
 function cdC(rid,cid){
   const cx=fC(rid,cid);if(!cx)return;
-  document.getElementById('confMsg').innerHTML=`<strong>${esc(cx.name)}</strong> 단지와 모든 코드를 삭제합니다.`;
+  document.getElementById('confMsg').innerHTML=\`<strong>\${esc(cx.name)}</strong> 단지와 모든 코드를 삭제합니다.\`;
   document.getElementById('confOkBtn').onclick=()=>{const r=fR(rid);if(r)r.complexes=r.complexes.filter(x=>x.id!==cid);openC.delete(cid);save();closeModal('confirmModal');render();};
   document.getElementById('confirmModal').classList.add('active');document.body.style.overflow='hidden';
 }
 function cdK(rid,cid,kid){
   const cd=fK(rid,cid,kid);if(!cd)return;
-  document.getElementById('confMsg').innerHTML=`코드 <strong>${esc(cd.value)}</strong> 를 삭제합니다.`;
+  document.getElementById('confMsg').innerHTML=\`코드 <strong>\${esc(cd.value)}</strong> 를 삭제합니다.\`;
   document.getElementById('confOkBtn').onclick=()=>{const cx=fC(rid,cid);if(cx)cx.codes=cx.codes.filter(x=>x.id!==kid);save();closeModal('confirmModal');render();};
   document.getElementById('confirmModal').classList.add('active');document.body.style.overflow='hidden';
 }
@@ -707,7 +707,7 @@ function openParseModal() {
     return;
   }
   
-  select.innerHTML = data.regions.map(r => `<option value="${esc(r.id)}">${esc(r.name)}</option>`).join('');
+  select.innerHTML = data.regions.map(r => `<option value="\${esc(r.id)}">\${esc(r.name)}</option>`).join('');
   
   if (openR.size > 0) {
     select.value = Array.from(openR)[0];
@@ -815,7 +815,7 @@ function submitParseForm() {
     closeModal('parseModal');
     openR.add(rid);
     render();
-    showToast(`✓ ${addedCount}개 항목 분류 완료`);
+    showToast(`✓ \${addedCount}개 항목 분류 완료`);
   } else {
     showToast('⚠️ 분류할 수 있는 텍스트를 찾지 못했습니다.');
   }
