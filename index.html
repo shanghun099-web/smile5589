@@ -682,24 +682,23 @@ function ovcl(e,id){if(e.target===document.getElementById(id))closeModal(id);}
 
 function cdR(rid){
   const r=fR(rid);if(!r)return;
-  document.getElementById('confMsg').innerHTML=\`<strong>\${esc(r.name)}</strong> 지역과 모든 단지·코드를 삭제합니다.\`;
+  document.getElementById('confMsg').innerHTML=`<strong>${esc(r.name)}</strong> 지역과 모든 단지·코드를 삭제합니다.`;
   document.getElementById('confOkBtn').onclick=()=>{data.regions=data.regions.filter(x=>x.id!==rid);openR.delete(rid);save();closeModal('confirmModal');render();};
   document.getElementById('confirmModal').classList.add('active');document.body.style.overflow='hidden';
 }
 function cdC(rid,cid){
   const cx=fC(rid,cid);if(!cx)return;
-  document.getElementById('confMsg').innerHTML=\`<strong>\${esc(cx.name)}</strong> 단지와 모든 코드를 삭제합니다.\`;
+  document.getElementById('confMsg').innerHTML=`<strong>${esc(cx.name)}</strong> 단지와 모든 코드를 삭제합니다.`;
   document.getElementById('confOkBtn').onclick=()=>{const r=fR(rid);if(r)r.complexes=r.complexes.filter(x=>x.id!==cid);openC.delete(cid);save();closeModal('confirmModal');render();};
   document.getElementById('confirmModal').classList.add('active');document.body.style.overflow='hidden';
 }
 function cdK(rid,cid,kid){
   const cd=fK(rid,cid,kid);if(!cd)return;
-  document.getElementById('confMsg').innerHTML=\`코드 <strong>\${esc(cd.value)}</strong> 를 삭제합니다.\`;
+  document.getElementById('confMsg').innerHTML=`코드 <strong>${esc(cd.value)}</strong> 를 삭제합니다.`;
   document.getElementById('confOkBtn').onclick=()=>{const cx=fC(rid,cid);if(cx)cx.codes=cx.codes.filter(x=>x.id!==kid);save();closeModal('confirmModal');render();};
   document.getElementById('confirmModal').classList.add('active');document.body.style.overflow='hidden';
 }
 
-// ====== 🪄 텍스트 자동 분류 추가 기능 관련 스크립트 ======
 function openParseModal() {
   const select = document.getElementById('parseTargetRegion');
   if (!data.regions.length) {
@@ -707,7 +706,7 @@ function openParseModal() {
     return;
   }
   
-  select.innerHTML = data.regions.map(r => `<option value="\${esc(r.id)}">\${esc(r.name)}</option>`).join('');
+  select.innerHTML = data.regions.map(r => `<option value="${esc(r.id)}">${esc(r.name)}</option>`).join('');
   
   if (openR.size > 0) {
     select.value = Array.from(openR)[0];
@@ -739,7 +738,6 @@ function submitParseForm() {
     let codeValue = '';
     let remaining = trLine;
 
-    // 1단계: 출입코드 패턴 매칭
     const codeRegex = /((?:##|#|\*|종\s|열경|경열|열쇠|경비|공동\s)[0-9#*→➔\s\/~()\-–—]+|[0-9]{3,4}#[0-9]{4,6}#?|[0-9]{4,6}[#*])/i;
     const codeMatch = trLine.match(codeRegex);
 
@@ -759,11 +757,9 @@ function submitParseForm() {
 
     if (!codeValue) codeValue = '코드 확인 필요';
 
-    // 2단계: 대테마(단지명)와 하위 위치설명(Label) 정밀 매칭 분리
     let complexName = '';
     let labelName = '';
 
-    // 주요 아파트/빌라/단지 대표 키워드 검사
     const complexKeywords = /(아파트|단지|현대|래미안|푸르지오|써밋|르엘|하이스턴|아이원|팰리스|타워|빌딩|빌라|맨션|힐스테이트|자이|아이파크|e편한세상|더샵|롯데캐슬|하이캐슬)/;
     const hasComplex = complexKeywords.test(remaining);
 
@@ -771,17 +767,15 @@ function submitParseForm() {
       const match = remaining.match(complexKeywords);
       const idx = remaining.indexOf(match[0]) + match[0].length;
       complexName = remaining.substring(0, idx).trim();
-      labelName = remaining.substring(idx).trim().replace(/\s+/g, '');
+      labelName = remaining.substring(idx).trim().replace(/\s+/g, ' ');
       if (!labelName) labelName = '공동 현관';
     } else {
-      // 일반 지번이나 길거리 개별 주소인 경우 (예: 일원동 3길 14)
       complexName = '개별 주소 코드';
-      labelName = remaining.replace(/\s+/g, '');
+      labelName = remaining.replace(/\s+/g, ' ');
     }
 
     if (!complexName) complexName = '지정되지 않은 단지';
 
-    // 3단계: 기존 단지가 매칭되는지 대조
     let complex = region.complexes.find(cx => {
       const target = cx.name.toLowerCase().replace(/\s+/g, '');
       const source = complexName.toLowerCase().replace(/\s+/g, '');
@@ -797,7 +791,6 @@ function submitParseForm() {
 
     const isGlobal = /공동|전체|공통|정문/.test(labelName) || /##/.test(codeValue);
 
-    // 4단계: 매칭된 단지 내부에 하위 레코드 주입 (서브 레이블 완전 공백 처리)
     complex.codes.push({
       id: uid(),
       section: '',
@@ -815,7 +808,7 @@ function submitParseForm() {
     closeModal('parseModal');
     openR.add(rid);
     render();
-    showToast(`✓ \${addedCount}개 항목 분류 완료`);
+    showToast(`✓ ${addedCount}개 항목 분류 완료`);
   } else {
     showToast('⚠️ 분류할 수 있는 텍스트를 찾지 못했습니다.');
   }
