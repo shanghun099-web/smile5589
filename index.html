@@ -798,7 +798,8 @@ function submitParseForm() {
 
     if (roadMatch) {
       complexName = roadMatch[1].trim();
-      labelName = remaining.replace(complexName, '').trim();
+      // 💡 [수정] 띄어쓰기를 모두 제거하여 전체 주소(예: 일원로5길12)를 하나의 메인 텍스트로 합침
+      labelName = remaining.replace(/\s+/g, '');
       if (!labelName) labelName = '공동 현관';
     } else {
       const labelRegex = /([0-9A-Za-z가-힣]+\s*(?:동|라인|호|측|정문|후문|공동현관).*)$/i;
@@ -835,7 +836,7 @@ function submitParseForm() {
       id: uid(),
       section: '',
       label: labelName,
-      sublabel: region.name, // 💡 [수정] '⚡ 자동 분류 추가됨' 제거 후 현재 선택된 지역명(예: 일원동)이 상시 표시되도록 변경
+      sublabel: '', // 💡 [수정] 불필요한 서브 레이블(파란색 텍스트) 완전 삭제
       value: codeValue,
       isGlobal: isGlobal
     });
