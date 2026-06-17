@@ -395,7 +395,7 @@ const DFLT={regions:[{id:'rg1',name:'대치동',complexes:[
     {id:'k082',section:'영동대로',label:'영동대로85길20 대치3차아이파크',sublabel:'',value:'#904*0008#',isGlobal:false},
     {id:'k083',section:'',label:'영동대로85길20 대치3차아이파크',sublabel:'',value:'#506*1122#',isGlobal:false},
     {id:'k084',section:'',label:'영동대로85길20 대치3차아이파크',sublabel:'',value:'#818*2580#',isGlobal:false},
-    {id:'k085',section:'',label:'영동대로85길20 대치3차아이파크',sublabel:'',value:'#1011*2580#',isGlobal:false},
+    {id:'k085',section:'',label:'영동대로85길20 대치3차아이파크',sublabel:'#1011*2580#',value:'1011*2580#',isGlobal:false},
     {id:'k086',section:'',label:'영동대로85길34 대치2차',sublabel:'',value:'**2580#',isGlobal:false},
     {id:'k090',section:'삼성로',label:'삼성로64길5 대치현대',sublabel:'',value:'##9077 / ##2580',isGlobal:false},
     {id:'k091',section:'',label:'삼성로64길40 하이캐슬',sublabel:'',value:'종 5543',isGlobal:false},
@@ -794,17 +794,13 @@ function submitParseForm() {
     let complexName = '';
     let labelName = '';
 
-    // 💡 [개선] 도로명 주소(~대로, ~로) 패턴 선제 감지 레이어
     const roadMatch = remaining.match(/([가-힣A-Za-z0-9]+(?:대로|로))/);
 
     if (roadMatch) {
-      // '양재대로', '영동대로', '삼성로' 등을 카드 테마 이름으로 고정
       complexName = roadMatch[1].trim();
-      // 도로명 이후에 남은 주소 정보('39길 12', '71길 24 공동현관' 등)를 하위 항목 레이블로 배치
       labelName = remaining.replace(complexName, '').trim();
       if (!labelName) labelName = '공동 현관';
     } else {
-      // 일반 아파트/빌라 단지 형태 분리 방식 (기존 유지)
       const labelRegex = /([0-9A-Za-z가-힣]+\s*(?:동|라인|호|측|정문|후문|공동현관).*)$/i;
       const labelMatch = remaining.match(labelRegex);
 
@@ -819,7 +815,6 @@ function submitParseForm() {
 
     if (!complexName) complexName = '지정되지 않은 단지';
 
-    // 3단계: 기존 데이터베이스에 중복 카드가 있는지 조회 및 매칭
     let complex = region.complexes.find(cx => {
       const target = cx.name.toLowerCase().replace(/\s+/g, '');
       const source = complexName.toLowerCase().replace(/\s+/g, '');
@@ -840,7 +835,7 @@ function submitParseForm() {
       id: uid(),
       section: '',
       label: labelName,
-      sublabel: '⚡ 자동 분류 추가됨',
+      sublabel: region.name, // 💡 [수정] '⚡ 자동 분류 추가됨' 제거 후 현재 선택된 지역명(예: 일원동)이 상시 표시되도록 변경
       value: codeValue,
       isGlobal: isGlobal
     });
