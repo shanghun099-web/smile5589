@@ -292,7 +292,7 @@ body.dragging .cscroll{scroll-snap-type:none;}
     </div>
     <div class="fg">
       <label class="flbl" for="parseInput">미정리 텍스트 입력</label>
-      <textarea class="finp" id="parseInput" rows="6" style="height: auto; resize: vertical; font-family: var(--sans); line-height: 1.5;" placeholder="예시 입력:&#10;대치현대 101동 공동현관 ##9077&#10;래미하이스턴 205동 1~2라인 #*5173#&#10;(줄바꿈으로 여러 개 동시 입력 가능)"></textarea>
+      <textarea class="finp" id="parseInput" rows="6" style="height: auto; resize: vertical; font-family: var(--sans); line-height: 1.5;" placeholder="예시 입력:&#10;양재대로 39길 12 공동현관 ##1234&#10;대치현대 101동 공동현관 ##9077&#10;(줄바꿈으로 여러 개 동시 입력 가능)"></textarea>
     </div>
     <div class="macts">
       <button class="bsec" onclick="closeModal('parseModal')">취소</button>
@@ -392,7 +392,7 @@ const DFLT={regions:[{id:'rg1',name:'대치동',complexes:[
   {id:'cx8',name:'개별 주소 코드',addr:'영동대로 · 삼성로 · 역삼로 · 테헤란로',codes:[
     {id:'k080',section:'영동대로',label:'영동대로71길 24',sublabel:'',value:'종 7124',isGlobal:false},
     {id:'k081',section:'',label:'영동대로71길 42',sublabel:'',value:'종 1234',isGlobal:false},
-    {id:'k082',section:'',label:'영동대로85길20 대치3차아이파크',sublabel:'',value:'#904*0008#',isGlobal:false},
+    {id:'k082',section:'영동대로',label:'영동대로85길20 대치3차아이파크',sublabel:'',value:'#904*0008#',isGlobal:false},
     {id:'k083',section:'',label:'영동대로85길20 대치3차아이파크',sublabel:'',value:'#506*1122#',isGlobal:false},
     {id:'k084',section:'',label:'영동대로85길20 대치3차아이파크',sublabel:'',value:'#818*2580#',isGlobal:false},
     {id:'k085',section:'',label:'영동대로85길20 대치3차아이파크',sublabel:'',value:'#1011*2580#',isGlobal:false},
@@ -770,6 +770,7 @@ function submitParseForm() {
     let codeValue = '';
     let remaining = trLine;
 
+    // 1단계: 출입코드 패턴 매칭
     const codeRegex = /((?:##|#|\*|종\s|열경|경열|열쇠|경비|공동\s)[0-9#*→➔\s\/~()\-–—]+|[0-9]{3,4}#[0-9]{4,6}#?|[0-9]{4,6}[#*])/i;
     const codeMatch = trLine.match(codeRegex);
 
@@ -789,21 +790,36 @@ function submitParseForm() {
 
     if (!codeValue) codeValue = '코드 확인 필요';
 
-    const labelRegex = /([0-9A-Za-z가-힣]+\s*(?:동|라인|호|측|정문|후문|공동현관).*)$/i;
-    const labelMatch = remaining.match(labelRegex);
-
+    // 2단계: 대테마(단지/도로명)와 하위 위치설명(Label) 분리
     let complexName = '';
-    let labelName = '공동 현관';
+    let labelName = '';
 
-    if (labelMatch) {
-      labelName = labelMatch[0].trim();
-      complexName = remaining.replace(labelMatch[0], '').trim();
+    // 💡 [개선] 도로명 주소(~대로, ~로) 패턴 선제 감지 레이어
+    const roadMatch = remaining.match(/([가-힣A-Za-z0-9]+(?:대로|로))/);
+
+    if (roadMatch) {
+      // '양재대로', '영동대로', '삼성로' 등을 카드 테마 이름으로 고정
+      complexName = roadMatch[1].trim();
+      // 도로명 이후에 남은 주소 정보('39길 12', '71길 24 공동현관' 등)를 하위 항목 레이블로 배치
+      labelName = remaining.replace(complexName, '').trim();
+      if (!labelName) labelName = '공동 현관';
     } else {
-      complexName = remaining;
+      // 일반 아파트/빌라 단지 형태 분리 방식 (기존 유지)
+      const labelRegex = /([0-9A-Za-z가-힣]+\s*(?:동|라인|호|측|정문|후문|공동현관).*)$/i;
+      const labelMatch = remaining.match(labelRegex);
+
+      if (labelMatch) {
+        labelName = labelMatch[0].trim();
+        complexName = remaining.replace(labelMatch[0], '').trim();
+      } else {
+        complexName = remaining;
+        labelName = '공동 현관';
+      }
     }
 
     if (!complexName) complexName = '지정되지 않은 단지';
 
+    // 3단계: 기존 데이터베이스에 중복 카드가 있는지 조회 및 매칭
     let complex = region.complexes.find(cx => {
       const target = cx.name.toLowerCase().replace(/\s+/g, '');
       const source = complexName.toLowerCase().replace(/\s+/g, '');
@@ -819,6 +835,7 @@ function submitParseForm() {
 
     const isGlobal = /공동|전체|공통|정문/.test(labelName) || /##/.test(codeValue);
 
+    // 4단계: 매칭된 대테마 내부에 하위 레코드 주입
     complex.codes.push({
       id: uid(),
       section: '',
