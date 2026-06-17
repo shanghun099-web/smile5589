@@ -23,7 +23,7 @@
   --text:#e8e8f0;--text2:#8888a8;--text3:#3a3a5a;
   --mono:'IBM Plex Mono',monospace;--sans:'Noto Sans KR',sans-serif;
 }
-*,*::before,*::after{margin:0;padding:0;box-boxing:border-box;box-sizing:border-box;}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);-webkit-tap-highlight-color:transparent;overscroll-behavior:none;}
 .app{display:flex;flex-direction:column;height:100dvh;height:100vh;max-width:560px;margin:0 auto;}
 
@@ -335,7 +335,7 @@ const DFLT={regions:[{id:'rg1',name:'대치동',complexes:[
     {id:'k025',section:'',label:'105동 3~5라인',sublabel:'',value:'703#8899#',isGlobal:false},
     {id:'k026',section:'',label:'106동 3~5라인',sublabel:'',value:'1003#1004#',isGlobal:false},
     {id:'k027',section:'',label:'107동 1~2라인',sublabel:'',value:'1102#0607#',isGlobal:false},
-    {id:'k088',section:'',label:'108동 1~2라인',sublabel:'',value:'1202#6699#',isGlobal:false},
+    {id:'k028',section:'',label:'108동 1~2라인',sublabel:'',value:'1202#6699#',isGlobal:false},
     {id:'k029',section:'',label:'109동 1~2라인',sublabel:'',value:'601#6733',isGlobal:false},
     {id:'k030',section:'',label:'109동 3~5라인',sublabel:'',value:'103#4545#',isGlobal:false}]},
   {id:'cx4',name:'디에이치 에델루이',addr:'역삼로 532',codes:[
@@ -391,7 +391,7 @@ const DFLT={regions:[{id:'rg1',name:'대치동',complexes:[
     {id:'k115',section:'',label:'역삼로85길17-7',sublabel:'',value:'2004',isGlobal:false},
     {id:'k116',section:'',label:'역삼로87길7',sublabel:'',value:'#2145',isGlobal:false},
     {id:'k117',section:'',label:'역삼로87길13',sublabel:'',value:'경열7856종',isGlobal:false},
-    {id(--):'',label:'역삼로87길15',sublabel:'',value:'1096*',isGlobal:false},
+    {id:'k118',section:'',label:'역삼로87길 15',sublabel:'',value:'1096*',isGlobal:false},
     {id:'k119',section:'',label:'역삼로87길23',sublabel:'',value:'2456*',isGlobal:false},
     {id:'k120',section:'',label:'역삼로87길25',sublabel:'',value:'종 2580',isGlobal:false},
     {id:'k121',section:'',label:'역삼로88길9',sublabel:'',value:'종 1234',isGlobal:false},
@@ -774,9 +774,7 @@ function submitParseForm() {
       labelName = remaining.substring(idx).trim().replace(/\s+/g, '');
       if (!labelName) labelName = '공동 현관';
     } else {
-      // 💡 일반 지번이나 길거리 개별 주소인 경우 (예: 일원동 3길 14)
-      // 기존 DFLT 데이터 구조에 맞추어 단지명을 '개별 주소 코드'로 일괄 지정하여 모아주고
-      // 라벨에 전체 주소 문자열을 공백 없이 그대로 주입하여 잘림이나 유실을 원천 차단합니다.
+      // 일반 지번이나 길거리 개별 주소인 경우 (예: 일원동 3길 14)
       complexName = '개별 주소 코드';
       labelName = remaining.replace(/\s+/g, '');
     }
