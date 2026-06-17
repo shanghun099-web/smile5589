@@ -129,10 +129,10 @@ body.dragging .cscroll{scroll-snap-type:none;}
 .code-row.global{background:rgba(245,158,11,.05);border-color:rgba(245,158,11,.18);}
 .code-row.copied{border-color:var(--green)!important;background:rgba(52,211,153,.06)!important;}
 .code-row.drag-placeholder{opacity:.2;pointer-events:none;}
-.code-main{flex:1;min-width:0;cursor:pointer;padding:12px 10px;}
-.code-lbl{font-size:15px;color:var(--text);font-weight:500;line-height:1.4;}
-.code-sub{font-size:11px;color:var(--blue);font-weight:600;display:block;margin-bottom:2px;}
-.code-val{font-family:var(--mono);font-size:18px;font-weight:700;color:var(--green2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.03em;margin-top:2px;}
+.code-main{flex:1;min-width:0;cursor:pointer;padding:10px 8px 10px 10px;}
+.code-lbl{font-size:14px;color:var(--text);font-weight:500;line-height:1.5;}
+.code-sub{font-size:10px;color:var(--blue);font-weight:600;display:block;margin-bottom:1px;}
+.code-val{font-family:var(--mono);font-size:18px;font-weight:700;color:var(--green2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.03em;}
 .code-row.global .code-val{color:var(--amber2);}
 .code-acts{display:flex;gap:3px;padding:0 8px 0 0;flex-shrink:0;}
 .copy-hint{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:11px;color:var(--green);font-weight:700;font-family:var(--mono);background:rgba(10,10,14,.92);padding:3px 12px;border-radius:6px;opacity:0;pointer-events:none;transition:opacity .15s;white-space:nowrap;}
@@ -169,6 +169,18 @@ body.dragging .cscroll{scroll-snap-type:none;}
 .cacts{display:flex;gap:8px;}
 .bdng{flex:1;padding:13px;background:linear-gradient(135deg,var(--red),#dc2626);color:#fff;font-weight:700;font-size:14px;font-family:var(--sans);border:none;border-radius:11px;cursor:pointer;}
 .bdng:active{opacity:.85;}
+.zbox{width:100%;max-width:360px;background:var(--s2);border:1px solid var(--border3);border-radius:20px;padding:28px 24px 22px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.7);transform:scale(.9) translateY(20px);transition:transform .25s cubic-bezier(.34,1.56,.64,1);}
+.movl.active .zbox{transform:scale(1) translateY(0);}
+.zadr{font-size:11px;color:var(--text2);font-family:var(--mono);margin-bottom:6px;}
+.zsub{font-size:13px;color:var(--blue);font-weight:600;margin-bottom:18px;min-height:18px;}
+.zcod{font-family:var(--mono);font-size:34px;font-weight:700;color:var(--green2);letter-spacing:.05em;line-height:1.2;padding:16px;background:var(--bg);border-radius:12px;border:1px solid var(--border2);margin-bottom:20px;word-break:break-all;text-shadow:0 0 20px rgba(110,231,183,.25);}
+.zcod.global{color:var(--amber2);text-shadow:0 0 20px rgba(252,211,77,.25);}
+.zacts{display:flex;gap:8px;}
+.zcpy{flex:1;padding:13px;background:linear-gradient(135deg,var(--amber),#d97706);color:#0a0a0e;font-weight:700;font-size:14px;border:none;border-radius:11px;cursor:pointer;}
+.zcpy.done{background:linear-gradient(135deg,var(--green),#10b981);}
+.zcpy:active{opacity:.85;}
+.zcls{padding:13px 16px;background:var(--s3);color:var(--text2);font-weight:600;font-size:13px;border:1px solid var(--border2);border-radius:11px;cursor:pointer;}
+.zhnt{font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:14px;}
 
 /* 백업 모달 */
 .bkbox{width:100%;max-width:340px;background:var(--s2);border:1px solid var(--border3);border-radius:20px;padding:26px 22px 22px;box-shadow:0 20px 60px rgba(0,0,0,.7);transform:scale(.93) translateY(16px);transition:transform .25s cubic-bezier(.34,1.56,.64,1);}
@@ -201,10 +213,9 @@ body.dragging .cscroll{scroll-snap-type:none;}
       <div class="hicon">🔑</div>
       <div class="hinfo">
         <h1>출입코드 노트</h1>
-        <p>⠿ 꾹 누르기 = 순서변경</p>
+        <p>⠿ 꾹 누르기 = 순서변경 · 탭 = 복사</p>
       </div>
       <div class="header-actions">
-        <button class="backup-btn" onclick="openParseModal()" title="텍스트 자동 추가">🪄</button>
         <button class="backup-btn" onclick="openBackupModal()" title="백업/복원">💾</button>
         <button class="add-rgn-btn" onclick="openModal('aR')">＋ 지역 추가</button>
       </div>
@@ -239,6 +250,19 @@ body.dragging .cscroll{scroll-snap-type:none;}
   </div>
 </div>
 
+<div class="movl" id="zoomModal" onclick="ovcl(event,'zoomModal')">
+  <div class="zbox" onclick="event.stopPropagation()">
+    <div class="zadr" id="zAdr"></div>
+    <div class="zsub" id="zSub"></div>
+    <div class="zcod" id="zCod"></div>
+    <div class="zacts">
+      <button class="zcpy" id="zCpyBtn" onclick="execZCopy()">📋 복사하기</button>
+      <button class="zcls" onclick="closeModal('zoomModal')">닫기</button>
+    </div>
+    <div class="zhnt">바깥 탭하면 닫힙니다</div>
+  </div>
+</div>
+
 <div class="movl" id="backupModal" onclick="ovcl(event,'backupModal')">
   <div class="bkbox" onclick="event.stopPropagation()">
     <div class="bk-title">💾 백업 · 복원</div>
@@ -255,24 +279,6 @@ body.dragging .cscroll{scroll-snap-type:none;}
       </label>
     </div>
     <button class="bk-close" onclick="closeModal('backupModal')">닫기</button>
-  </div>
-</div>
-
-<div class="movl" id="parseModal" onclick="ovcl(event,'parseModal')">
-  <div class="mbox" onclick="event.stopPropagation()">
-    <div class="mtitle"><span>🪄</span> 텍스트 자동 분류 추가</div>
-    <div class="fg">
-      <label class="flbl" for="parseTargetRegion">대상 지역 선택</label>
-      <select class="finp" id="parseTargetRegion" style="background: var(--s3); color: var(--text); font-weight: 500;"></select>
-    </div>
-    <div class="fg">
-      <label class="flbl" for="parseInput">미정리 텍스트 입력</label>
-      <textarea class="finp" id="parseInput" rows="6" style="height: auto; resize: vertical; font-family: var(--sans); line-height: 1.5;" placeholder="예시 입력:&#10;일원동 3길 14 공동현관 ##1234&#10;대치현대 101동 공동현관 ##9077&#10;(줄바꿈으로 여러 개 동시 입력 가능)"></textarea>
-    </div>
-    <div class="macts">
-      <button class="bsec" onclick="closeModal('parseModal')">취소</button>
-      <button class="bpri" onclick="submitParseForm()">분류 및 추가</button>
-    </div>
   </div>
 </div>
 
@@ -361,16 +367,16 @@ const DFLT={regions:[{id:'rg1',name:'대치동',complexes:[
     {id:'k062',section:'',label:'205동 1~2라인 (2)',sublabel:'',value:'#*5173#',isGlobal:false},
     {id:'k063',section:'',label:'205동 3~5라인',sublabel:'',value:'#*5273#',isGlobal:false}]},
   {id:'cx7',name:'풍림아이원 3차',addr:'영동대로330-7 / 영동대로72길 10',codes:[
-    {id:'k070',section:'',label:'401동 603호',sublabel:'',value:'603 → 1003',isGlobal:false},
-    {id:'k071',section:'',label:'401동 1001호',sublabel:'',value:'1001 → 8018',isGlobal:false},
-    {id:'k072',section:'',label:'301동 1202호',sublabel:'',value:'1202 → 9684',isGlobal:false}]},
+    {id:'k070',section:'',label:'401동 603호',sublabel:'열쇠603→엔터→1003',value:'603 → 1003',isGlobal:false},
+    {id:'k071',section:'',label:'401동 1001호',sublabel:'열쇠1001→엔터→8018',value:'1001 → 8018',isGlobal:false},
+    {id:'k072',section:'',label:'301동 1202호',sublabel:'열쇠1202→엔터→9684',value:'1202 → 9684',isGlobal:false}]},
   {id:'cx8',name:'개별 주소 코드',addr:'영동대로 · 삼성로 · 역삼로 · 테헤란로',codes:[
     {id:'k080',section:'영동대로',label:'영동대로71길 24',sublabel:'',value:'종 7124',isGlobal:false},
     {id:'k081',section:'',label:'영동대로71길 42',sublabel:'',value:'종 1234',isGlobal:false},
-    {id:'k082',section:'영동대로',label:'영동대로85길20 대치3차아이파크',sublabel:'',value:'#904*0008#',isGlobal:false},
+    {id:'k082',section:'',label:'영동대로85길20 대치3차아이파크',sublabel:'',value:'#904*0008#',isGlobal:false},
     {id:'k083',section:'',label:'영동대로85길20 대치3차아이파크',sublabel:'',value:'#506*1122#',isGlobal:false},
     {id:'k084',section:'',label:'영동대로85길20 대치3차아이파크',sublabel:'',value:'#818*2580#',isGlobal:false},
-    {id:'k085',section:'',label:'영동대로85길20 대치3차아이파크',sublabel:'',value:'1011*2580#',isGlobal:false},
+    {id:'k085',section:'',label:'영동대로85길20 대치3차아이파크',sublabel:'',value:'#1011*2580#',isGlobal:false},
     {id:'k086',section:'',label:'영동대로85길34 대치2차',sublabel:'',value:'**2580#',isGlobal:false},
     {id:'k090',section:'삼성로',label:'삼성로64길5 대치현대',sublabel:'',value:'##9077 / ##2580',isGlobal:false},
     {id:'k091',section:'',label:'삼성로64길40 하이캐슬',sublabel:'',value:'종 5543',isGlobal:false},
@@ -391,7 +397,7 @@ const DFLT={regions:[{id:'rg1',name:'대치동',complexes:[
     {id:'k115',section:'',label:'역삼로85길17-7',sublabel:'',value:'2004',isGlobal:false},
     {id:'k116',section:'',label:'역삼로87길7',sublabel:'',value:'#2145',isGlobal:false},
     {id:'k117',section:'',label:'역삼로87길13',sublabel:'',value:'경열7856종',isGlobal:false},
-    {id:'k118',section:'',label:'역삼로87길 15',sublabel:'',value:'1096*',isGlobal:false},
+    {id:'k118',section:'',label:'역삼로87길15',sublabel:'',value:'1096*',isGlobal:false},
     {id:'k119',section:'',label:'역삼로87길23',sublabel:'',value:'2456*',isGlobal:false},
     {id:'k120',section:'',label:'역삼로87길25',sublabel:'',value:'종 2580',isGlobal:false},
     {id:'k121',section:'',label:'역삼로88길9',sublabel:'',value:'종 1234',isGlobal:false},
@@ -412,18 +418,6 @@ function load(){try{const r=localStorage.getItem('acn5');data=r?JSON.parse(r):JS
 function fR(id){return data.regions.find(x=>x.id===id);}
 function fC(rid,cid){return fR(rid)?.complexes.find(x=>x.id===cid);}
 function fK(rid,cid,kid){return fC(rid,cid)?.codes.find(x=>x.id===kid);}
-
-function execDirectCopy(el, val) {
-  if (!val || val === '코드 확인 필요') return;
-  navigator.clipboard.writeText(val).then(() => {
-    const row = el.closest('.code-row');
-    if (row) {
-      row.classList.add('copied');
-      setTimeout(() => { if(row) row.classList.remove('copied'); }, 1500);
-    }
-    showToast('✓ 복사완료: ' + val);
-  }).catch(() => {});
-}
 
 function render(){
   const root=document.getElementById('contentRoot');
@@ -490,7 +484,7 @@ function render(){
           ps=cd.section||ps;
           html+=`<div class="code-row${cd.isGlobal?' global':''}" id="kd_${esc(cd.id)}" data-id="${esc(cd.id)}" data-rid="${esc(rg.id)}" data-cid="${esc(cx.id)}">
 <div class="dh kh" data-type="code" data-id="${esc(cd.id)}" data-rid="${esc(rg.id)}" data-cid="${esc(cx.id)}">⠿</div>
-<div class="code-main" onclick="execDirectCopy(this, '${esc(cd.value)}')">
+<div class="code-main" onclick="showZ('${esc(cd.id)}','${esc(rg.id)}','${esc(cx.id)}')">
 ${cd.sublabel?`<span class="code-sub">${esc(cd.sublabel)}</span>`:''}
 <div class="code-lbl">${esc(cd.label)}</div>
 <div class="code-val">${esc(cd.value)}</div>
@@ -699,123 +693,26 @@ function cdK(rid,cid,kid){
   document.getElementById('confirmModal').classList.add('active');document.body.style.overflow='hidden';
 }
 
-function openParseModal() {
-  const select = document.getElementById('parseTargetRegion');
-  if (!data.regions.length) {
-    showToast('⚠️ 먼저 지역을 추가해 주세요');
-    return;
-  }
-  
-  select.innerHTML = data.regions.map(r => `<option value="${esc(r.id)}">${esc(r.name)}</option>`).join('');
-  
-  if (openR.size > 0) {
-    select.value = Array.from(openR)[0];
-  }
-  
-  document.getElementById('parseInput').value = '';
-  document.getElementById('parseModal').classList.add('active');
-  document.body.style.overflow = 'hidden';
+let zVal='',zRowId='';
+function showZ(kid,rid,cid){
+  const cd=fK(rid,cid,kid);if(!cd)return;
+  const cx=fC(rid,cid);
+  zVal=cd.value;zRowId='kd_'+kid;
+  document.getElementById('zAdr').textContent=cx?(cx.name+(cx.addr?' · '+cx.addr:'')):cd.label;
+  document.getElementById('zSub').textContent=cd.sublabel||cd.label;
+  const ce=document.getElementById('zCod');ce.textContent=cd.value;ce.className='zcod'+(cd.isGlobal?' global':'');
+  const btn=document.getElementById('zCpyBtn');btn.textContent='📋 복사하기';btn.classList.remove('done');
+  document.getElementById('zoomModal').classList.add('active');document.body.style.overflow='hidden';
 }
-
-function submitParseForm() {
-  const rid = document.getElementById('parseTargetRegion').value;
-  const text = document.getElementById('parseInput').value.trim();
-  if (!text) {
-    showToast('⚠️ 텍스트를 입력해 주세요');
-    return;
-  }
-
-  const region = fR(rid);
-  if (!region) return;
-
-  const lines = text.split('\n');
-  let addedCount = 0;
-
-  lines.forEach(line => {
-    const trLine = line.trim();
-    if (!trLine) return;
-
-    let codeValue = '';
-    let remaining = trLine;
-
-    const codeRegex = /((?:##|#|\*|종\s|열경|경열|열쇠|경비|공동\s)[0-9#*→➔\s\/~()\-–—]+|[0-9]{3,4}#[0-9]{4,6}#?|[0-9]{4,6}[#*])/i;
-    const codeMatch = trLine.match(codeRegex);
-
-    if (codeMatch) {
-      codeValue = codeMatch[0].trim();
-      remaining = trLine.replace(codeMatch[0], '').trim();
-    } else {
-      const words = trLine.split(/\s+/);
-      if (words.length > 1) {
-        const lastWord = words[words.length - 1];
-        if (/[0-9]/.test(lastWord) && !lastWord.endsWith('동') && !lastWord.endsWith('호')) {
-          codeValue = lastWord;
-          remaining = trLine.substring(0, trLine.lastIndexOf(lastWord)).trim();
-        }
-      }
-    }
-
-    if (!codeValue) codeValue = '코드 확인 필요';
-
-    let complexName = '';
-    let labelName = '';
-
-    const complexKeywords = /(아파트|단지|현대|래미안|푸르지오|써밋|르엘|하이스턴|아이원|팰리스|타워|빌딩|빌라|맨션|힐스테이트|자이|아이파크|e편한세상|더샵|롯데캐슬|하이캐슬)/;
-    const hasComplex = complexKeywords.test(remaining);
-
-    if (hasComplex) {
-      const match = remaining.match(complexKeywords);
-      const idx = remaining.indexOf(match[0]) + match[0].length;
-      complexName = remaining.substring(0, idx).trim();
-      labelName = remaining.substring(idx).trim().replace(/\s+/g, ' ');
-      if (!labelName) labelName = '공동 현관';
-    } else {
-      complexName = '개별 주소 코드';
-      labelName = remaining.replace(/\s+/g, ' ');
-    }
-
-    if (!complexName) complexName = '지정되지 않은 단지';
-
-    let complex = region.complexes.find(cx => {
-      const target = cx.name.toLowerCase().replace(/\s+/g, '');
-      const source = complexName.toLowerCase().replace(/\s+/g, '');
-      return target === source || source.includes(target) || target.includes(source);
-    });
-
-    if (!complex) {
-      const cxId = uid();
-      complex = { id: cxId, name: complexName, addr: '', codes: [] };
-      region.complexes.push(complex);
-      openC.add(cxId);
-    }
-
-    const isGlobal = /공동|전체|공통|정문/.test(labelName) || /##/.test(codeValue);
-
-    complex.codes.push({
-      id: uid(),
-      section: '',
-      label: labelName,
-      sublabel: '', 
-      value: codeValue,
-      isGlobal: isGlobal
-    });
-
-    addedCount++;
-  });
-
-  if (addedCount > 0) {
-    save();
-    closeModal('parseModal');
-    openR.add(rid);
-    render();
-    showToast(`✓ ${addedCount}개 항목 분류 완료`);
-  } else {
-    showToast('⚠️ 분류할 수 있는 텍스트를 찾지 못했습니다.');
-  }
+function execZCopy(){
+  navigator.clipboard.writeText(zVal).catch(()=>{});
+  const btn=document.getElementById('zCpyBtn');btn.textContent='✓ 복사됨!';btn.classList.add('done');
+  const row=document.getElementById(zRowId);if(row){row.classList.add('copied');setTimeout(()=>row&&row.classList.remove('copied'),1500);}
+  setTimeout(()=>closeModal('zoomModal'),700);
 }
 
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape')['confirmModal','formModal','backupModal','parseModal'].forEach(id=>{
+  if(e.key==='Escape')['zoomModal','confirmModal','formModal','backupModal'].forEach(id=>{
     const el=document.getElementById(id);if(el.classList.contains('active'))closeModal(id);
   });
   if(e.key==='Enter'&&document.getElementById('formModal').classList.contains('active')){
