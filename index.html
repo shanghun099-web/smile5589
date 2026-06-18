@@ -423,7 +423,6 @@ function fR(id){return data.regions.find(x=>x.id===id);}
 function fC(rid,cid){return fR(rid)?.complexes.find(x=>x.id===cid);}
 function fK(rid,cid,kid){return fC(rid,cid)?.codes.find(x=>x.id===kid);}
 
-// 출입코드 크게 보기 전면 모달 생성 함수 (기존의 직접 복사 기능을 대체)
 function openZoomModal(rid, cid, kid) {
   const cd = fK(rid, cid, kid);
   if (!cd) return;
@@ -457,7 +456,6 @@ function openZoomModal(rid, cid, kid) {
   document.body.style.overflow = 'hidden';
 }
 
-// 팝업 내 복사 함수
 function copyZoomValue(val) {
   if (!val || val === '코드 확인 필요') return;
 
@@ -489,9 +487,8 @@ function copyZoomValue(val) {
   }
 }
 
-// 기존 직접 복사는 비활성화 처리 또는 내부 유지 (클래스 표시용)
 function execDirectCopy(el, val) {
-  // 메인 화면 클릭 시 직접 복사하는 기능은 생략되고 openZoomModal을 거치도록 재설계되었습니다.
+  // 메인 리스트 클릭시 바로 복사되는 기능을 제외하고 팝업 확대로 처리합니다.
 }
 
 function render(){
@@ -795,15 +792,20 @@ function cdK(rid,cid,kid){
 
 function openParseModal() {
   const select = document.getElementById('parseTargetRegion');
-  if (!data.regions.length) {
+  if (!select) return;
+  if (!data.regions || !data.regions.length) {
     showToast('⚠️ 먼저 지역을 추가해 주세요');
     return;
   }
   
   select.innerHTML = data.regions.map(r => `<option value="${esc(r.id)}">${esc(r.name)}</option>`).join('');
   
-  if (openR.size > 0) {
-    select.value = Array.from(openR)[0];
+  // openR에 활성화되어 존재 중인 유효 지역 ID 선별 매핑
+  const validActiveId = Array.from(openR).find(id => fR(id));
+  if (validActiveId) {
+    select.value = validActiveId;
+  } else if (data.regions.length > 0) {
+    select.value = data.regions[0].id;
   }
   
   document.getElementById('parseInput').value = '';
@@ -812,99 +814,111 @@ function openParseModal() {
 }
 
 function submitParseForm() {
-  const rid = document.getElementById('parseTargetRegion').value;
-  const text = document.getElementById('parseInput').value.trim();
-  if (!text) {
-    showToast('⚠️ 텍스트를 입력해 주세요');
-    return;
-  }
+  try {
+    const selectEl = document.getElementById('parseTargetRegion');
+    if (!selectEl) return;
+    const rid = selectEl.value;
+    const text = document.getElementById('parseInput').value.trim();
+    if (!text) {
+      showToast('⚠️ 텍스트를 입력해 주세요');
+      return;
+    }
 
-  const region = fR(rid);
-  if (!region) return;
+    const region = fR(rid);
+    if (!region) {
+      showToast('⚠️ 대상 지역이 올바르지 않습니다.');
+      return;
+    }
 
-  const lines = text.split('\n');
-  let addedCount = 0;
+    const lines = text.split('\n');
+    let addedCount = 0;
 
-  lines.forEach(line => {
-    const trLine = line.trim();
-    if (!trLine) return;
+    lines.forEach(line => {
+      const trLine = line.trim();
+      if (!trLine) return;
 
-    let codeValue = '';
-    let remaining = trLine;
+      let codeValue = '';
+      let remaining = trLine;
 
-    const codeRegex = /((?:##|#|\*|종\s|열경|경열|열쇠|경비|공동\s)[0-9#*→➔\s\/~()\-–—]+|[0-9]{3,4}#[0-9]{4,6}#?|[0-9]{4,6}[#*])/i;
-    const codeMatch = trLine.match(codeRegex);
+      const codeRegex = /((?:##|#|\*|종\s|열경|경열|열쇠|경비|공동\s)[0-9#*→➔\s\/~()\-–—]+|[0-9]{3,4}#[0-9]{4,6}#?|[0-9]{4,6}[#*])/i;
+      const codeMatch = trLine.match(codeRegex);
 
-    if (codeMatch) {
-      codeValue = codeMatch[0].trim();
-      remaining = trLine.replace(codeMatch[0], '').trim();
-    } else {
-      const words = trLine.split(/\s+/);
-      if (words.length > 1) {
-        const lastWord = words[words.length - 1];
-        if (/[0-9]/.test(lastWord) && !lastWord.endsWith('동') && !lastWord.endsWith('호')) {
-          codeValue = lastWord;
-          remaining = trLine.substring(0, trLine.lastIndexOf(lastWord)).trim();
+      if (codeMatch) {
+        codeValue = codeMatch[0].trim();
+        remaining = trLine.replace(codeMatch[0], '').trim();
+      } else {
+        const words = trLine.split(/\s+/);
+        if (words.length > 1) {
+          const lastWord = words[words.length - 1];
+          if (/[0-9]/.test(lastWord) && !lastWord.endsWith('동') && !lastWord.endsWith('호')) {
+            codeValue = lastWord;
+            remaining = trLine.substring(0, trLine.lastIndexOf(lastWord)).trim();
+          }
         }
       }
-    }
 
-    if (!codeValue) codeValue = '코드 확인 필요';
+      if (!codeValue) codeValue = '코드 확인 필요';
 
-    let complexName = '';
-    let labelName = '';
+      let complexName = '';
+      let labelName = '';
 
-    const complexKeywords = /(아파트|단지|현대|래미안|푸르지오|써밋|르엘|하이스턴|아이원|팰리스|타워|빌딩|빌라|맨션|힐스테이트|자이|아이파크|e편한세상|더샵|롯데캐슬|하이캐슬)/;
-    const hasComplex = complexKeywords.test(remaining);
+      const complexKeywords = /(아파트|단지|현대|래미안|푸르지오|써밋|르엘|하이스턴|아이원|팰리스|타워|빌딩|빌라|맨션|힐스테이트|자이|아이파크|e편한세상|더샵|롯데캐슬|하이캐슬)/;
+      const hasComplex = complexKeywords.test(remaining);
 
-    if (hasComplex) {
-      const match = remaining.match(complexKeywords);
-      const idx = remaining.indexOf(match[0]) + match[0].length;
-      complexName = remaining.substring(0, idx).trim();
-      labelName = remaining.substring(idx).trim().replace(/\s+/g, ' ');
-      if (!labelName) labelName = '공동 현관';
+      if (hasComplex) {
+        const match = remaining.match(complexKeywords);
+        const idx = remaining.indexOf(match[0]) + match[0].length;
+        complexName = remaining.substring(0, idx).trim();
+        labelName = remaining.substring(idx).trim().replace(/\s+/g, ' ');
+        if (!labelName) labelName = '공동 현관';
+      } else {
+        complexName = '개별 주소 코드';
+        labelName = remaining.replace(/\s+/g, ' ');
+      }
+
+      if (!complexName) complexName = '지정되지 않은 단지';
+
+      let complex = region.complexes.find(cx => {
+        const target = (cx.name || '').toLowerCase().replace(/\s+/g, '');
+        const source = (complexName || '').toLowerCase().replace(/\s+/g, '');
+        return target === source || source.includes(target) || target.includes(source);
+      });
+
+      if (!complex) {
+        const cxId = uid();
+        complex = { id: cxId, name: complexName, addr: '', codes: [] };
+        region.complexes.push(complex);
+        openC.add(cxId);
+      }
+
+      if (!complex.codes) complex.codes = [];
+
+      const isGlobal = /공동|전체|공통|정문/.test(labelName) || /##/.test(codeValue);
+
+      complex.codes.push({
+        id: uid(),
+        section: '',
+        label: labelName,
+        sublabel: '', 
+        value: codeValue,
+        isGlobal: isGlobal
+      });
+
+      addedCount++;
+    });
+
+    if (addedCount > 0) {
+      save();
+      closeModal('parseModal');
+      openR.add(rid);
+      render();
+      showToast(`✓ ${addedCount}개 항목 분류 완료`);
     } else {
-      complexName = '개별 주소 코드';
-      labelName = remaining.replace(/\s+/g, ' ');
+      showToast('⚠️ 분류할 수 있는 텍스트를 찾지 못했습니다.');
     }
-
-    if (!complexName) complexName = '지정되지 않은 단지';
-
-    let complex = region.complexes.find(cx => {
-      const target = cx.name.toLowerCase().replace(/\s+/g, '');
-      const source = complexName.toLowerCase().replace(/\s+/g, '');
-      return target === source || source.includes(target) || target.includes(source);
-    });
-
-    if (!complex) {
-      const cxId = uid();
-      complex = { id: cxId, name: complexName, addr: '', codes: [] };
-      region.complexes.push(complex);
-      openC.add(cxId);
-    }
-
-    const isGlobal = /공동|전체|공통|정문/.test(labelName) || /##/.test(codeValue);
-
-    complex.codes.push({
-      id: uid(),
-      section: '',
-      label: labelName,
-      sublabel: '', 
-      value: codeValue,
-      isGlobal: isGlobal
-    });
-
-    addedCount++;
-  });
-
-  if (addedCount > 0) {
-    save();
-    closeModal('parseModal');
-    openR.add(rid);
-    render();
-    showToast(`✓ ${addedCount}개 항목 분류 완료`);
-  } else {
-    showToast('⚠️ 분류할 수 있는 텍스트를 찾지 못했습니다.');
+  } catch (err) {
+    console.error(err);
+    showToast('⚠️ 분류 중 오류가 발생했습니다.');
   }
 }
 
