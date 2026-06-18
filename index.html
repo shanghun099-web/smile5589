@@ -276,6 +276,15 @@ body.dragging .cscroll{scroll-snap-type:none; user-select: none; -webkit-user-se
   </div>
 </div>
 
+<!-- 코드 크게 보기 모달 추가 -->
+<div class="movl" id="zoomModal" onclick="ovcl(event,'zoomModal')">
+  <div class="mbox" onclick="event.stopPropagation()">
+    <div class="mtitle"><span>🔍</span> 코드 크게 보기</div>
+    <div id="zoomModalContent"></div>
+    <button class="bk-close" onclick="closeModal('zoomModal')" style="width: 100%; margin-top: 12px;">닫기</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 <div id="drag-ghost"></div>
 
@@ -414,10 +423,44 @@ function fR(id){return data.regions.find(x=>x.id===id);}
 function fC(rid,cid){return fR(rid)?.complexes.find(x=>x.id===cid);}
 function fK(rid,cid,kid){return fC(rid,cid)?.codes.find(x=>x.id===kid);}
 
-function execDirectCopy(el, val) {
+// 출입코드 크게 보기 전면 모달 생성 함수 (기존의 직접 복사 기능을 대체)
+function openZoomModal(rid, cid, kid) {
+  const cd = fK(rid, cid, kid);
+  if (!cd) return;
+  const rg = fR(rid);
+  const cx = fC(rid, cid);
+
+  const html = `
+    <div style="text-align: center; padding: 10px 0;">
+      <div style="font-size: 11px; color: var(--text3); font-family: var(--mono); margin-bottom: 4px; letter-spacing: 0.05em;">
+        ${esc(rg?.name)} › ${esc(cx?.name)}
+      </div>
+      <div style="font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 6px;">
+        ${esc(cd.label)}
+      </div>
+      ${cd.sublabel ? `<div style="font-size: 12px; color: var(--blue); margin-bottom: 12px; font-weight: 500;">${esc(cd.sublabel)}</div>` : ''}
+      
+      <div style="background: var(--s3); border: 1px solid var(--border3); border-radius: 14px; padding: 28px 16px; margin: 18px 0; position: relative;">
+        <div id="zoomValue" style="font-family: var(--mono); font-size: 34px; font-weight: 700; color: var(--green2); word-break: break-all; letter-spacing: 0.05em;">
+          ${esc(cd.value)}
+        </div>
+      </div>
+      
+      <button class="bpri" onclick="copyZoomValue('${esc(cd.value)}')" style="width: 100%; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+        📋 코드 복사하기
+      </button>
+    </div>
+  `;
+
+  document.getElementById('zoomModalContent').innerHTML = html;
+  document.getElementById('zoomModal').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+// 팝업 내 복사 함수
+function copyZoomValue(val) {
   if (!val || val === '코드 확인 필요') return;
-  
-  // 하이브리드 복사 처리 (Clipboard API 우선, 실패 시 fallback)
+
   const performFallbackCopy = (text) => {
     const textArea = document.createElement("textarea");
     textArea.value = text;
@@ -428,31 +471,27 @@ function execDirectCopy(el, val) {
     textArea.select();
     try {
       document.execCommand('copy');
-      triggerCopyUI();
+      showToast('✓ 복사완료: ' + val);
     } catch (err) {
       showToast('⚠️ 복사할 수 없습니다');
     }
     document.body.removeChild(textArea);
   };
 
-  const triggerCopyUI = () => {
-    const row = el.closest('.code-row');
-    if (row) {
-      row.classList.add('copied');
-      setTimeout(() => { if(row) row.classList.remove('copied'); }, 1500);
-    }
-    showToast('✓ 복사완료: ' + val);
-  };
-
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(val).then(() => {
-      triggerCopyUI();
+      showToast('✓ 복사완료: ' + val);
     }).catch(() => {
       performFallbackCopy(val);
     });
   } else {
     performFallbackCopy(val);
   }
+}
+
+// 기존 직접 복사는 비활성화 처리 또는 내부 유지 (클래스 표시용)
+function execDirectCopy(el, val) {
+  // 메인 화면 클릭 시 직접 복사하는 기능은 생략되고 openZoomModal을 거치도록 재설계되었습니다.
 }
 
 function render(){
@@ -525,7 +564,7 @@ function render(){
           ps=cd.section||ps;
           html+=`<div class="code-row${cd.isGlobal?' global':''}" id="kd_${esc(cd.id)}" data-id="${esc(cd.id)}" data-rid="${esc(rg.id)}" data-cid="${esc(cx.id)}">
 <div class="dh kh" data-type="code" data-id="${esc(cd.id)}" data-rid="${esc(rg.id)}" data-cid="${esc(cx.id)}">⠿</div>
-<div class="code-main" onclick="execDirectCopy(this, '${esc(cd.value)}')">
+<div class="code-main" onclick="openZoomModal('${esc(rg.id)}', '${esc(cx.id)}', '${esc(cd.id)}')">
 ${cd.sublabel?`<span class="code-sub">${esc(cd.sublabel)}</span>`:''}
 <div class="code-lbl">${esc(cd.label)}</div>
 <div class="code-val">${esc(cd.value)}</div>
@@ -870,7 +909,7 @@ function submitParseForm() {
 }
 
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape')['confirmModal','formModal','backupModal','parseModal'].forEach(id=>{
+  if(e.key==='Escape')['confirmModal','formModal','backupModal','parseModal','zoomModal'].forEach(id=>{
     const el=document.getElementById(id);if(el && el.classList.contains('active'))closeModal(id);
   });
   if(e.key==='Enter'&&document.getElementById('formModal').classList.contains('active')){
