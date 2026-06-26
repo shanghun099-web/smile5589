@@ -252,7 +252,12 @@ body.dragging .cscroll{scroll-snap-type:none; user-select: none; -webkit-user-se
     <div class="mtitle"><span>🪄</span> 텍스트 자동 분류 추가</div>
     <div class="fg">
       <label class="flbl" for="parseTargetRegion">대상 지역 선택</label>
-      <select class="finp" id="parseTargetRegion" style="background: var(--s3); color: var(--text); font-weight: 500;"></select>
+      <select class="finp" id="parseTargetRegion" style="background: var(--s3); color: var(--text); font-weight: 500;" onchange="onParseRegionChange()"></select>
+    </div>
+    <div class="fg">
+      <label class="flbl" for="parseTargetComplex">대상 단지 선택</label>
+      <select class="finp" id="parseTargetComplex" style="background: var(--s3); color: var(--text); font-weight: 500;"></select>
+      <div class="fhint" id="parseComplexHint">＊ 자동 분류: 텍스트에서 단지명을 추출해 단지를 만들거나 매칭합니다.</div>
     </div>
     <div class="fg">
       <label class="flbl" for="parseInput">미정리 텍스트 입력</label>
@@ -801,6 +806,29 @@ function cdK(rid,cid,kid){
   document.getElementById('confirmModal').classList.add('active');document.body.style.overflow='hidden';
 }
 
+function onParseRegionChange(){
+  const rid=document.getElementById('parseTargetRegion').value;
+  const cxSelect=document.getElementById('parseTargetComplex');
+  const region=fR(rid);
+  let opts='<option value="__AUTO__">🪄 자동 분류 (단지 자동 생성/매칭)</option>';
+  if(region && region.complexes.length){
+    opts+=region.complexes.map(cx=>`<option value="${esc(cx.id)}">${esc(cx.name)}</option>`).join('');
+  }
+  cxSelect.innerHTML=opts;
+  cxSelect.value='__AUTO__';
+  updateParseHint();
+}
+
+function updateParseHint(){
+  const cxVal=document.getElementById('parseTargetComplex').value;
+  const hint=document.getElementById('parseComplexHint');
+  if(cxVal==='__AUTO__'){
+    hint.textContent='＊ 자동 분류: 텍스트에서 단지명을 추출해 단지를 만들거나 매칭합니다.';
+  } else {
+    hint.textContent='＊ 단지 지정: 모든 줄을 이 단지 안의 코드로 바로 추가합니다.';
+  }
+}
+
 function openParseModal() {
   const select = document.getElementById('parseTargetRegion');
   if (!select) return;
@@ -817,10 +845,34 @@ function openParseModal() {
   } else if (data.regions.length > 0) {
     select.value = data.regions[0].id;
   }
+
+  onParseRegionChange();
   
   document.getElementById('parseInput').value = '';
   document.getElementById('parseModal').classList.add('active');
   document.body.style.overflow = 'hidden';
+}
+
+function parseCodeFromLine(trLine){
+  let codeValue='';
+  let remaining=trLine;
+  const codeRegex = /((?:##|#|\*|종\s|열경|경열|열쇠|경비|공동\s)[0-9#*→➔\s\/~()\-–—]+|[0-9]{3,4}#[0-9]{4,6}#?|[0-9]{4,6}[#*])/i;
+  const codeMatch = trLine.match(codeRegex);
+  if (codeMatch) {
+    codeValue = codeMatch[0].trim();
+    remaining = trLine.replace(codeMatch[0], '').trim();
+  } else {
+    const words = trLine.split(/\s+/);
+    if (words.length > 1) {
+      const lastWord = words[words.length - 1];
+      if (/[0-9]/.test(lastWord) && !lastWord.endsWith('동') && !lastWord.endsWith('호')) {
+        codeValue = lastWord;
+        remaining = trLine.substring(0, trLine.lastIndexOf(lastWord)).trim();
+      }
+    }
+  }
+  if (!codeValue) codeValue = '코드 확인 필요';
+  return { codeValue, remaining };
 }
 
 function submitParseForm() {
@@ -828,6 +880,7 @@ function submitParseForm() {
     const selectEl = document.getElementById('parseTargetRegion');
     if (!selectEl) return;
     const rid = selectEl.value;
+    const cidSel = document.getElementById('parseTargetComplex').value;
     const text = document.getElementById('parseInput').value.trim();
     if (!text) {
       showToast('⚠️ 텍스트를 입력해 주세요');
@@ -843,31 +896,52 @@ function submitParseForm() {
     const lines = text.split('\n');
     let addedCount = 0;
 
+    // ── 모드 1: 특정 단지 지정 ──
+    if (cidSel && cidSel !== '__AUTO__') {
+      const targetCx = fC(rid, cidSel);
+      if (!targetCx) {
+        showToast('⚠️ 대상 단지가 올바르지 않습니다.');
+        return;
+      }
+      if (!targetCx.codes) targetCx.codes = [];
+
+      lines.forEach(line => {
+        const trLine = line.trim();
+        if (!trLine) return;
+        const { codeValue, remaining } = parseCodeFromLine(trLine);
+        let labelName = remaining.replace(/\s+/g, ' ').trim();
+        if (!labelName) labelName = '공동 현관';
+        const isGlobal = /공동|전체|공통|정문/.test(labelName) || /##/.test(codeValue);
+        targetCx.codes.push({
+          id: uid(),
+          section: '',
+          label: labelName,
+          sublabel: '',
+          value: codeValue,
+          isGlobal: isGlobal
+        });
+        addedCount++;
+      });
+
+      if (addedCount > 0) {
+        save();
+        closeModal('parseModal');
+        openR.add(rid);
+        openC.add(cidSel);
+        render();
+        showToast(`✓ ${targetCx.name}에 ${addedCount}개 코드 추가`);
+      } else {
+        showToast('⚠️ 분류할 수 있는 텍스트를 찾지 못했습니다.');
+      }
+      return;
+    }
+
+    // ── 모드 2: 자동 분류 (기존 동작) ──
     lines.forEach(line => {
       const trLine = line.trim();
       if (!trLine) return;
 
-      let codeValue = '';
-      let remaining = trLine;
-
-      const codeRegex = /((?:##|#|\*|종\s|열경|경열|열쇠|경비|공동\s)[0-9#*→➔\s\/~()\-–—]+|[0-9]{3,4}#[0-9]{4,6}#?|[0-9]{4,6}[#*])/i;
-      const codeMatch = trLine.match(codeRegex);
-
-      if (codeMatch) {
-        codeValue = codeMatch[0].trim();
-        remaining = trLine.replace(codeMatch[0], '').trim();
-      } else {
-        const words = trLine.split(/\s+/);
-        if (words.length > 1) {
-          const lastWord = words[words.length - 1];
-          if (/[0-9]/.test(lastWord) && !lastWord.endsWith('동') && !lastWord.endsWith('호')) {
-            codeValue = lastWord;
-            remaining = trLine.substring(0, trLine.lastIndexOf(lastWord)).trim();
-          }
-        }
-      }
-
-      if (!codeValue) codeValue = '코드 확인 필요';
+      const { codeValue, remaining } = parseCodeFromLine(trLine);
 
       let complexName = '';
       let labelName = '';
@@ -931,6 +1005,8 @@ function submitParseForm() {
     showToast('⚠️ 분류 중 오류가 발생했습니다.');
   }
 }
+
+document.getElementById('parseTargetComplex').addEventListener('change', updateParseHint);
 
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape')['confirmModal','formModal','backupModal','parseModal','zoomModal'].forEach(id=>{
