@@ -122,7 +122,7 @@ body.dragging .cscroll{scroll-snap-type:none; user-select: none; -webkit-user-se
 .code-main{flex:1;min-width:0;cursor:pointer;padding:16px 14px;}
 .code-lbl{font-size:15px;color:var(--text);font-weight:500;line-height:1.4;}
 .code-memo{font-size:16px;color:#d1d5db;line-height:1.5;margin-top:8px;word-break:break-word;}
-.code-val{font-family:var(--mono);font-size:30px;font-weight:700;color:var(--green2);line-height:1.2;word-break:break-all;letter-spacing:.04em;}
+.code-val{font-family:var(--mono);font-size:28px;font-weight:700;color:var(--green2);line-height:1.2;word-break:break-all;letter-spacing:.04em;}
 .code-row.global .code-val{color:var(--amber2);}
 .code-acts{display:flex;gap:3px;padding:0 8px 0 0;flex-shrink:0;}
 .copy-hint{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:15px;color:var(--green);font-weight:700;font-family:var(--mono);background:rgba(10,10,14,.92);padding:3px 12px;border-radius:6px;opacity:0;pointer-events:none;transition:opacity .15s;white-space:nowrap;}
@@ -472,47 +472,12 @@ function openZoomModal(rid, cid, kid) {
         </div>
       </div>
       ${cd.sublabel ? `<div style="font-size: 18px; color: #d1d5db; line-height: 1.5; margin-bottom: 8px; word-break: break-word;">${esc(cd.sublabel)}</div>` : ''}
-      
-      <button class="bpri" onclick="copyZoomValue('${esc(cd.value)}')" style="width: 100%; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px;">
-        📋 코드 복사하기
-      </button>
     </div>
   `;
 
   document.getElementById('zoomModalContent').innerHTML = html;
   document.getElementById('zoomModal').classList.add('active');
   document.body.style.overflow = 'hidden';
-}
-
-function copyZoomValue(val) {
-  if (!val || val === '코드 확인 필요') return;
-
-  const performFallbackCopy = (text) => {
-    const textArea = document.createElement("textarea");
-    textArea.value = text;
-    textArea.style.position = "fixed"; 
-    textArea.style.left = "-999999px";
-    document.body.appendChild(textArea);
-    textArea.focus();
-    textArea.select();
-    try {
-      document.execCommand('copy');
-      showToast('✓ 복사완료: ' + val);
-    } catch (err) {
-      showToast('⚠️ 복사할 수 없습니다');
-    }
-    document.body.removeChild(textArea);
-  };
-
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(val).then(() => {
-      showToast('✓ 복사완료: ' + val);
-    }).catch(() => {
-      performFallbackCopy(val);
-    });
-  } else {
-    performFallbackCopy(val);
-  }
 }
 
 function render(){
