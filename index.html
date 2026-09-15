@@ -454,6 +454,35 @@ function fR(id){return data.regions.find(x=>x.id===id);}
 function fC(rid,cid){return fR(rid)?.complexes.find(x=>x.id===cid);}
 function fK(rid,cid,kid){return fC(rid,cid)?.codes.find(x=>x.id===kid);}
 
+// 새 코드를 정렬된 위치에 삽입 — 동·구역 → 사용법·메모 순, 숫자는 크기순(3길 14 < 3길 62 < 5길 3).
+// 기존 코드 순서는 건드리지 않고 새 코드만 알맞은 자리에 끼워 넣는다.
+const NCOLL=new Intl.Collator('ko',{numeric:true,sensitivity:'base'});
+const nkey=s=>(s||'').replace(/\s+/g,'');
+const ncmp=(a,b)=>NCOLL.compare(nkey(a),nkey(b));
+function insertCodeSorted(cx,cd){
+  const codes=cx.codes||(cx.codes=[]);
+  // 각 코드가 실제로 속한 구역 (비어 있으면 앞선 구역 제목을 물려받음)
+  let cur='';const eff=codes.map(k=>{if((k.section||'').trim())cur=k.section.trim();return cur;});
+  const sec=(cd.section||'').trim();
+  let at;
+  const afterLastLE=idxs=>{let a=idxs.length?idxs[0]:0;for(const i of idxs){if(ncmp(codes[i].sublabel,cd.sublabel)<=0)a=i+1;}return a;};
+  if(sec){
+    const grp=codes.map((_,i)=>i).filter(i=>ncmp(eff[i],sec)===0);
+    if(grp.length){
+      // 같은 구역 안에서 메모 순서대로
+      at=cd.sublabel?afterLastLE(grp):grp[grp.length-1]+1;
+    } else {
+      // 새 구역: 구역 제목이 더 큰 첫 그룹 앞에 (구역 없는 맨 앞 코드들은 그대로 앞에 둠)
+      at=codes.length;
+      for(let i=0;i<codes.length;i++){if(eff[i]&&ncmp(eff[i],sec)>0){at=i;break;}}
+    }
+  } else {
+    // 구역 없음: 전체에서 메모 순서대로
+    at=cd.sublabel?afterLastLE(codes.map((_,i)=>i)):codes.length;
+  }
+  codes.splice(at,0,cd);
+}
+
 function openZoomModal(rid, cid, kid) {
   const cd = fK(rid, cid, kid);
   if (!cd) return;
@@ -759,7 +788,7 @@ function submitForm(){
   else if(t==='eR'){const n=v('rn');if(!n)return shake('rn');const r=fR(mCtx.r);if(r)r.name=n;}
   else if(t==='aC'){const n=v('cn'),a=v('ca');if(!n)return shake('cn');const r=fR(mCtx.r);if(r){const id=uid();r.complexes.push({id,name:n,addr:a,codes:[]});openC.add(id);}}
   else if(t==='eC'){const n=v('cn'),a=v('ca');if(!n)return shake('cn');const cx=fC(mCtx.r,mCtx.c);if(cx){cx.name=n;cx.addr=a;}}
-  else if(t==='aK'){const val=v('kv');if(!val)return shake('kv');const cx=fC(mCtx.r,mCtx.c);if(cx)cx.codes.push({id:uid(),section:v('ks'),label:'',sublabel:v('kb'),value:val,isGlobal:c('kg')});}
+  else if(t==='aK'){const val=v('kv');if(!val)return shake('kv');const cx=fC(mCtx.r,mCtx.c);if(cx)insertCodeSorted(cx,{id:uid(),section:v('ks'),label:'',sublabel:v('kb'),value:val,isGlobal:c('kg')});}
   else if(t==='eK'){const val=v('kv');if(!val)return shake('kv');const cd=fK(mCtx.r,mCtx.c,mCtx.k);if(cd){cd.section=v('ks');cd.label='';cd.sublabel=v('kb');cd.value=val;cd.isGlobal=c('kg');}}
   save();closeModal('formModal');render();
 }
@@ -892,7 +921,7 @@ function submitParseForm() {
         let labelName = remaining.replace(/\s+/g, ' ').trim();
         if (!labelName) labelName = '공동 현관';
         const isGlobal = /공동|전체|공통|정문/.test(labelName) || /##/.test(codeValue);
-        targetCx.codes.push({
+        insertCodeSorted(targetCx, {
           id: uid(),
           section: '',
           label: '',
@@ -959,7 +988,7 @@ function submitParseForm() {
 
       const isGlobal = /공동|전체|공통|정문/.test(labelName) || /##/.test(codeValue);
 
-      complex.codes.push({
+      insertCodeSorted(complex, {
         id: uid(),
         section: '',
         label: '',
