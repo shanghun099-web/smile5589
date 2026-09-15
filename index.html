@@ -623,25 +623,36 @@ function clearSearch(){const inp=document.getElementById('searchInput');inp.valu
 //  2단계: 검색어 전체가 그대로 포함 (예: "일원로 3길 62")
 //  1단계: 단어가 모두 포함 (예: "상록 108동" → 단지 "상록스타힐스" + 구역 "108동")
 // 가장 높은 단계의 결과만 보여준다.
-function matchLevel(text){
-  if(text.includes(q))return 2;
-  if(qt.length>1&&qt.every(t=>text.includes(t)))return 1;
-  return 0;
+// 단어 → 정규식. 숫자로 시작/끝나는 단어는 숫자 경계를 지킨다 ("5길"이 "15길", "49"가 "149"에 걸리지 않게)
+function tokRe(t){
+  const e=t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  return new RegExp((/^\d/.test(t)?'(?:^|[^0-9])':'')+e+(/\d$/.test(t)?'(?![0-9])':''));
 }
+let qDropped=[];   // 데이터 어디에도 없어서 무시한 단어 (음성 인식이 잘못 들은 말)
 function buildMatches(){
-  const lv=[];
+  const items=[];
   const T=arr=>nkey(arr.join('|')).toLowerCase();
   data.regions.forEach(rg=>rg.complexes.forEach(cx=>{
     let sec='';
     cx.codes.forEach(cd=>{
       if((cd.section||'').trim())sec=cd.section;   // 비어 있으면 앞선 동·구역을 물려받음
-      const l=matchLevel(T([rg.name,cx.name,cx.addr,sec,cd.label,cd.sublabel,cd.value]));
-      if(l)lv.push({rg,cx,cd,l});
+      items.push({rg,cx,cd,text:T([rg.name,cx.name,cx.addr,sec,cd.label,cd.sublabel,cd.value])});
     });
-    if(!cx.codes.length){const l=matchLevel(T([rg.name,cx.name,cx.addr]));if(l)lv.push({rg,cx,cd:null,l});}
+    if(!cx.codes.length)items.push({rg,cx,cd:null,text:T([rg.name,cx.name,cx.addr])});
   }));
-  const best=Math.max(0,...lv.map(x=>x.l));
-  return lv.filter(x=>x.l===best);
+  // 3단계: 검색어 전체 포함 → 2단계: 단어 모두 포함 → 1단계: 데이터에 없는 단어는 빼고 나머지 모두 포함
+  const all=items.map(x=>x.text).join('|');
+  const res=qt.map(tokRe);
+  const knownIdx=res.map((r,i)=>r.test(all)?i:-1).filter(i=>i>=0);
+  const known=knownIdx.map(i=>res[i]);
+  qDropped=qt.filter((t,i)=>!knownIdx.includes(i));
+  // 남은 단어가 숫자 하나뿐이면("49") 너무 많이 걸리므로 1단계는 쓰지 않음
+  const useReduced=qDropped.length>0&&known.length>0&&(known.length>=2||!/^\d+$/.test(qt[knownIdx[0]]));
+  const qre=tokRe(q);
+  const lvl=t=>qre.test(t)?3:(res.length>1&&res.every(r=>r.test(t)))?2:(useReduced&&known.every(r=>r.test(t)))?1:0;
+  let best=0;
+  const lv=items.map(x=>{const l=lvl(x.text);if(l>best)best=l;return{...x,l};});
+  return best?lv.filter(x=>x.l===best):[];
 }
 // 현재 검색어에 걸리는 코드 목록 (음성 검색 결과 판단용)
 function searchMatches(){
@@ -691,9 +702,10 @@ function toggleVoiceSearch(){
     if(!gotFinal||!q)return;
     // 정확히 하나면 바로 크게 보기, 여러 개면 목록으로 쭉 보여줌
     const m=searchMatches();
-    if(m.length===1){openR.add(m[0].rid);openC.add(m[0].cid);render();voiceZoom=true;openZoomModal(m[0].rid,m[0].cid,m[0].cd.id);}
+    const drop=qDropped.length?`"${qDropped.join(' ')}" 제외 · `:'';
+    if(m.length===1){openR.add(m[0].rid);openC.add(m[0].cid);render();voiceZoom=true;openZoomModal(m[0].rid,m[0].cid,m[0].cd.id);if(drop)showToast(`🎤 ${drop}1개 결과`);}
     else if(!m.length)showToast(`🔍 "${inp.value}" 검색 결과 없음`);
-    else showToast(`🎤 ${m.length}개 결과`);
+    else showToast(`🎤 ${drop}${m.length}개 결과`);
   };
   voiceRec=rec;
   try{rec.start();}catch(err){voiceRec=null;showToast('⚠️ 음성 인식을 시작할 수 없어요');}
