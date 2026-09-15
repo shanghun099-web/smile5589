@@ -441,7 +441,7 @@ const DFLT={regions:[{id:'rg1',name:'대치동',complexes:[
 ]}]};
 
 let data={regions:[]};
-let openR=new Set(),openC=new Set(),q='';
+let openR=new Set(),openC=new Set(),q='',qt=[];
 
 function save(){try{localStorage.setItem('acn5',JSON.stringify(data));}catch(e){}}
 // 예전 '위치 설명'(label) 값은 '사용법·메모'(sublabel)로 합쳐서 보존
@@ -522,16 +522,14 @@ function render(){
     return;
   }
   let html='',vis=0;
+  const M=q?buildMatches():null;
   data.regions.forEach(rg=>{
     let mcx=[];
     if(!q){mcx=rg.complexes;}
     else{
-      const has=x=>nkey(x).toLowerCase().includes(q);
-      const rm=has(rg.name);
       rg.complexes.forEach(cx=>{
-        const cm=has(cx.name)||has(cx.addr);
-        const mk=cx.codes.filter(cd=>has(cd.label)||has(cd.value)||has(cd.sublabel)||has(cd.section));
-        if(rm||cm||mk.length) mcx.push({...cx,codes:rm||cm?cx.codes:mk});
+        const ks=M.filter(x=>x.cx===cx);
+        if(ks.length)mcx.push({...cx,codes:ks.map(x=>x.cd).filter(Boolean)});
       });
     }
     if(q&&!mcx.length)return;
@@ -607,18 +605,40 @@ function tR(id){openR.has(id)?openR.delete(id):openR.add(id);render();}
 function tC(id){openC.has(id)?openC.delete(id):openC.add(id);render();}
 function handleSearch(v){
   q=nkey(v).toLowerCase();
+  // 단어별 토큰: 띄어쓰기 기준 + 한글→숫자 경계("상록108동" → "상록","108동")
+  qt=v.toLowerCase().replace(/([가-힣a-z])(?=\d)/g,'$1 ').split(/\s+/).filter(Boolean);
   document.getElementById('contentRoot').classList.toggle('searching',!!q);
   render();
 }
-// 현재 검색어(q)에 걸리는 코드 목록 — render()의 필터와 같은 기준
+// ── 검색 매칭 ──
+// 지역·단지·주소·동구역·메모·코드를 합친 텍스트에서 찾는다.
+//  2단계: 검색어 전체가 그대로 포함 (예: "일원로 3길 62")
+//  1단계: 단어가 모두 포함 (예: "상록 108동" → 단지 "상록스타힐스" + 구역 "108동")
+// 가장 높은 단계의 결과만 보여준다.
+function matchLevel(text){
+  if(text.includes(q))return 2;
+  if(qt.length>1&&qt.every(t=>text.includes(t)))return 1;
+  return 0;
+}
+function buildMatches(){
+  const lv=[];
+  const T=arr=>nkey(arr.join('|')).toLowerCase();
+  data.regions.forEach(rg=>rg.complexes.forEach(cx=>{
+    let sec='';
+    cx.codes.forEach(cd=>{
+      if((cd.section||'').trim())sec=cd.section;   // 비어 있으면 앞선 동·구역을 물려받음
+      const l=matchLevel(T([rg.name,cx.name,cx.addr,sec,cd.label,cd.sublabel,cd.value]));
+      if(l)lv.push({rg,cx,cd,l});
+    });
+    if(!cx.codes.length){const l=matchLevel(T([rg.name,cx.name,cx.addr]));if(l)lv.push({rg,cx,cd:null,l});}
+  }));
+  const best=Math.max(0,...lv.map(x=>x.l));
+  return lv.filter(x=>x.l===best);
+}
+// 현재 검색어에 걸리는 코드 목록 (음성 검색 결과 판단용)
 function searchMatches(){
-  const out=[];if(!q)return out;
-  const has=x=>nkey(x).toLowerCase().includes(q);
-  data.regions.forEach(rg=>{const rm=has(rg.name);rg.complexes.forEach(cx=>{
-    const cm=rm||has(cx.name)||has(cx.addr);
-    cx.codes.forEach(cd=>{if(cm||has(cd.label)||has(cd.value)||has(cd.sublabel)||has(cd.section))out.push({rid:rg.id,cid:cx.id,cd});});
-  });});
-  return out;
+  if(!q)return[];
+  return buildMatches().filter(x=>x.cd).map(x=>({rid:x.rg.id,cid:x.cx.id,cd:x.cd}));
 }
 
 // ── 음성 검색: 마이크 버튼 → 말한 내용을 검색창에 넣고 바로 검색 ──
