@@ -610,6 +610,16 @@ function handleSearch(v){
   document.getElementById('contentRoot').classList.toggle('searching',!!q);
   render();
 }
+// 현재 검색어(q)에 걸리는 코드 목록 — render()의 필터와 같은 기준
+function searchMatches(){
+  const out=[];if(!q)return out;
+  const has=x=>nkey(x).toLowerCase().includes(q);
+  data.regions.forEach(rg=>{const rm=has(rg.name);rg.complexes.forEach(cx=>{
+    const cm=rm||has(cx.name)||has(cx.addr);
+    cx.codes.forEach(cd=>{if(cm||has(cd.label)||has(cd.value)||has(cd.sublabel)||has(cd.section))out.push({rid:rg.id,cid:cx.id,cd});});
+  });});
+  return out;
+}
 
 // ── 음성 검색: 마이크 버튼 → 말한 내용을 검색창에 넣고 바로 검색 ──
 // 한글 숫자("삼길", "육십이")를 숫자로 바꿔서 "일원로 3길 62" 같은 메모와 맞춰준다.
@@ -638,8 +648,9 @@ function toggleVoiceSearch(){
   const rec=new SR();
   rec.lang='ko-KR';rec.interimResults=true;rec.continuous=false;rec.maxAlternatives=1;
   rec.onstart=()=>{btn.classList.add('listening');inp.value='';handleSearch('');inp.placeholder='듣는 중... 주소를 말해 주세요';};
+  let gotFinal=false;
   rec.onresult=e=>{
-    let t='';for(const r of e.results)t+=r[0].transcript;
+    let t='';for(const r of e.results){t+=r[0].transcript;if(r.isFinal)gotFinal=true;}
     inp.value=normalizeSpeech(t);handleSearch(inp.value);
   };
   rec.onerror=e=>{
@@ -647,7 +658,15 @@ function toggleVoiceSearch(){
     else if(e.error==='no-speech')showToast('🎤 음성이 들리지 않았어요');
     else if(e.error!=='aborted')showToast('⚠️ 음성 인식 오류: '+e.error);
   };
-  rec.onend=()=>{voiceRec=null;btn.classList.remove('listening');inp.placeholder='지역·단지·주소·코드 검색...';};
+  rec.onend=()=>{
+    voiceRec=null;btn.classList.remove('listening');inp.placeholder='지역·단지·주소·코드 검색...';
+    if(!gotFinal||!q)return;
+    // 정확히 하나면 바로 크게 보기, 여러 개면 목록으로 쭉 보여줌
+    const m=searchMatches();
+    if(m.length===1){openR.add(m[0].rid);openC.add(m[0].cid);render();openZoomModal(m[0].rid,m[0].cid,m[0].cd.id);}
+    else if(!m.length)showToast(`🔍 "${inp.value}" 검색 결과 없음`);
+    else showToast(`🎤 ${m.length}개 결과`);
+  };
   voiceRec=rec;
   try{rec.start();}catch(err){voiceRec=null;showToast('⚠️ 음성 인식을 시작할 수 없어요');}
 }
