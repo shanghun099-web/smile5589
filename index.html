@@ -47,6 +47,10 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 .swrap input{padding-right:52px;}
 .mic-btn{position:absolute;right:22px;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:9px;border:1px solid var(--border2);background:var(--s3);color:var(--text2);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 .mic-btn:active{transform:translateY(-50%) scale(.9);}
+.swrap.has-q input{padding-right:96px;}
+.clr-btn{position:absolute;right:64px;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:9px;border:1px solid var(--border2);background:var(--s3);color:var(--text2);font-size:15px;cursor:pointer;display:none;align-items:center;justify-content:center;}
+.swrap.has-q .clr-btn{display:flex;}
+.clr-btn:active{transform:translateY(-50%) scale(.9);}
 .mic-btn.listening{color:#fff;background:var(--red);border-color:var(--red);animation:micPulse 1s ease-in-out infinite;}
 @keyframes micPulse{0%,100%{box-shadow:0 0 0 0 rgba(248,113,113,.5);}50%{box-shadow:0 0 0 8px rgba(248,113,113,0);}}
 
@@ -206,6 +210,7 @@ body.dragging .cscroll{scroll-snap-type:none; user-select: none; -webkit-user-se
   <div class="swrap">
     <span class="si">🔍</span>
     <input type="text" id="searchInput" placeholder="지역·단지·주소·코드 검색..." autocomplete="off" autocorrect="off" spellcheck="false" oninput="handleSearch(this.value)">
+    <button class="clr-btn" id="clrBtn" onclick="clearSearch()" title="검색 지우기">✕</button>
     <button class="mic-btn" id="micBtn" onclick="toggleVoiceSearch()" title="음성으로 검색">🎤</button>
   </div>
   <div class="cscroll" id="contentRoot"></div>
@@ -608,8 +613,11 @@ function handleSearch(v){
   // 단어별 토큰: 띄어쓰기 기준 + 한글→숫자 경계("상록108동" → "상록","108동")
   qt=v.toLowerCase().replace(/([가-힣a-z])(?=\d)/g,'$1 ').split(/\s+/).filter(Boolean);
   document.getElementById('contentRoot').classList.toggle('searching',!!q);
+  document.querySelector('.swrap').classList.toggle('has-q',!!q);
   render();
 }
+// 검색 지우고 메인 목록으로
+function clearSearch(){const inp=document.getElementById('searchInput');inp.value='';inp.blur();handleSearch('');}
 // ── 검색 매칭 ──
 // 지역·단지·주소·동구역·메모·코드를 합친 텍스트에서 찾는다.
 //  2단계: 검색어 전체가 그대로 포함 (예: "일원로 3길 62")
@@ -658,7 +666,7 @@ function normalizeSpeech(t){
     .replace(/[일이삼사오육칠팔구십백천]+(?=길|동|호|번|라인)/g,w=>koNumToDigit(w))           // "삼길", "백십오동"
     .replace(/번지/g,'').trim();
 }
-let voiceRec=null;
+let voiceRec=null,voiceZoom=false;
 function toggleVoiceSearch(){
   const btn=document.getElementById('micBtn');
   if(voiceRec){voiceRec.stop();return;}
@@ -683,7 +691,7 @@ function toggleVoiceSearch(){
     if(!gotFinal||!q)return;
     // 정확히 하나면 바로 크게 보기, 여러 개면 목록으로 쭉 보여줌
     const m=searchMatches();
-    if(m.length===1){openR.add(m[0].rid);openC.add(m[0].cid);render();openZoomModal(m[0].rid,m[0].cid,m[0].cd.id);}
+    if(m.length===1){openR.add(m[0].rid);openC.add(m[0].cid);render();voiceZoom=true;openZoomModal(m[0].rid,m[0].cid,m[0].cd.id);}
     else if(!m.length)showToast(`🔍 "${inp.value}" 검색 결과 없음`);
     else showToast(`🎤 ${m.length}개 결과`);
   };
@@ -875,7 +883,10 @@ function submitForm(){
   save();closeModal('formModal');render();
 }
 
-function closeModal(id){document.getElementById(id).classList.remove('active');document.body.style.overflow='';}
+function closeModal(id){
+  document.getElementById(id).classList.remove('active');document.body.style.overflow='';
+  if(id==='zoomModal'&&voiceZoom){voiceZoom=false;clearSearch();}   // 음성 검색으로 열린 팝업은 닫으면 메인으로
+}
 function ovcl(e,id){if(e.target===document.getElementById(id))closeModal(id);}
 
 function cdR(rid){
