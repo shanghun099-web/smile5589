@@ -44,6 +44,11 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 .swrap input:focus{border-color:var(--amber);box-shadow:0 0 0 3px rgba(245,158,11,.1);}
 .swrap input::placeholder{color:var(--text3);}
 .si{position:absolute;left:29px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:14px;pointer-events:none;}
+.swrap input{padding-right:52px;}
+.mic-btn{position:absolute;right:22px;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:9px;border:1px solid var(--border2);background:var(--s3);color:var(--text2);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.mic-btn:active{transform:translateY(-50%) scale(.9);}
+.mic-btn.listening{color:#fff;background:var(--red);border-color:var(--red);animation:micPulse 1s ease-in-out infinite;}
+@keyframes micPulse{0%,100%{box-shadow:0 0 0 0 rgba(248,113,113,.5);}50%{box-shadow:0 0 0 8px rgba(248,113,113,0);}}
 
 .cscroll{flex:1;overflow-y:scroll;overflow-x:hidden;-webkit-overflow-scrolling:touch;scroll-snap-type:y proximity;padding:4px 16px 50px;}
 .cscroll::-webkit-scrollbar{width:3px;}
@@ -201,6 +206,7 @@ body.dragging .cscroll{scroll-snap-type:none; user-select: none; -webkit-user-se
   <div class="swrap">
     <span class="si">🔍</span>
     <input type="text" id="searchInput" placeholder="지역·단지·주소·코드 검색..." autocomplete="off" autocorrect="off" spellcheck="false" oninput="handleSearch(this.value)">
+    <button class="mic-btn" id="micBtn" onclick="toggleVoiceSearch()" title="음성으로 검색">🎤</button>
   </div>
   <div class="cscroll" id="contentRoot"></div>
 </div>
@@ -520,15 +526,11 @@ function render(){
     let mcx=[];
     if(!q){mcx=rg.complexes;}
     else{
-      const rm=rg.name.toLowerCase().includes(q);
+      const has=x=>nkey(x).toLowerCase().includes(q);
+      const rm=has(rg.name);
       rg.complexes.forEach(cx=>{
-        const cm=cx.name.toLowerCase().includes(q)||cx.addr.toLowerCase().includes(q);
-        const mk=cx.codes.filter(cd=>
-          (cd.label||'').toLowerCase().includes(q)||
-          (cd.value||'').toLowerCase().includes(q)||
-          (cd.sublabel||'').toLowerCase().includes(q)||
-          (cd.section && cd.section.toLowerCase().includes(q))
-        );
+        const cm=has(cx.name)||has(cx.addr);
+        const mk=cx.codes.filter(cd=>has(cd.label)||has(cd.value)||has(cd.sublabel)||has(cd.section));
         if(rm||cm||mk.length) mcx.push({...cx,codes:rm||cm?cx.codes:mk});
       });
     }
@@ -604,9 +606,50 @@ ${cd.sublabel?`<div class="code-memo">${esc(cd.sublabel)}</div>`:''}
 function tR(id){openR.has(id)?openR.delete(id):openR.add(id);render();}
 function tC(id){openC.has(id)?openC.delete(id):openC.add(id);render();}
 function handleSearch(v){
-  q=v.toLowerCase().trim();
+  q=nkey(v).toLowerCase();
   document.getElementById('contentRoot').classList.toggle('searching',!!q);
   render();
+}
+
+// ── 음성 검색: 마이크 버튼 → 말한 내용을 검색창에 넣고 바로 검색 ──
+// 한글 숫자("삼길", "육십이")를 숫자로 바꿔서 "일원로 3길 62" 같은 메모와 맞춰준다.
+function koNumToDigit(w){
+  const d={'일':1,'이':2,'삼':3,'사':4,'오':5,'육':6,'칠':7,'팔':8,'구':9},u={'십':10,'백':100,'천':1000};
+  let total=0,cur=0;
+  for(const ch of w){
+    if(d[ch]!==undefined)cur=d[ch];
+    else if(u[ch]){total+=(cur||1)*u[ch];cur=0;}
+  }
+  return String(total+cur);
+}
+function normalizeSpeech(t){
+  return t
+    .replace(/(^|\s)([일이삼사오육칠팔구십백천]+)(?=\s|$)/g,(m,sp,w)=>sp+koNumToDigit(w))   // "육십이" 단독 토큰
+    .replace(/[일이삼사오육칠팔구십백천]+(?=길|동|호|번|라인)/g,w=>koNumToDigit(w))           // "삼길", "백십오동"
+    .replace(/번지/g,'').trim();
+}
+let voiceRec=null;
+function toggleVoiceSearch(){
+  const btn=document.getElementById('micBtn');
+  if(voiceRec){voiceRec.stop();return;}
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){showToast('⚠️ 이 브라우저는 음성 인식을 지원하지 않아요');return;}
+  const inp=document.getElementById('searchInput');
+  const rec=new SR();
+  rec.lang='ko-KR';rec.interimResults=true;rec.continuous=false;rec.maxAlternatives=1;
+  rec.onstart=()=>{btn.classList.add('listening');inp.value='';handleSearch('');inp.placeholder='듣는 중... 주소를 말해 주세요';};
+  rec.onresult=e=>{
+    let t='';for(const r of e.results)t+=r[0].transcript;
+    inp.value=normalizeSpeech(t);handleSearch(inp.value);
+  };
+  rec.onerror=e=>{
+    if(e.error==='not-allowed'||e.error==='service-not-allowed')showToast('⚠️ 마이크 권한을 허용해 주세요');
+    else if(e.error==='no-speech')showToast('🎤 음성이 들리지 않았어요');
+    else if(e.error!=='aborted')showToast('⚠️ 음성 인식 오류: '+e.error);
+  };
+  rec.onend=()=>{voiceRec=null;btn.classList.remove('listening');inp.placeholder='지역·단지·주소·코드 검색...';};
+  voiceRec=rec;
+  try{rec.start();}catch(err){voiceRec=null;showToast('⚠️ 음성 인식을 시작할 수 없어요');}
 }
 
 const DND={
