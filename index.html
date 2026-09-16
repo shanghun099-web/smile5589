@@ -272,7 +272,7 @@ body.dragging .cscroll{scroll-snap-type:none; user-select: none; -webkit-user-se
     </div>
     <div class="fg">
       <label class="flbl" for="parseInput">미정리 텍스트 입력</label>
-      <textarea class="finp" id="parseInput" rows="6" style="height: auto; resize: vertical; font-family: var(--sans); line-height: 1.5;" placeholder="예시 입력:&#10;일원동 3길 14 공동현관 ##1234&#10;대치현대 101동 공동현관 ##9077&#10;(줄바꿈으로 여러 개 동시 입력 가능)"></textarea>
+      <textarea class="finp" id="parseInput" rows="6" style="height: auto; resize: vertical; font-family: var(--sans); line-height: 1.5;" placeholder="예시 입력:&#10;일원동 3길 14 공동현관 ##1234&#10;대치현대 101동 공동현관 ##9077&#10;&#10;정리된 목록도 그대로 붙여넣기 가능:&#10;☆단지명(주소)&#10;■101동 1~2라인&#10;#1701 8728&#10;☆봉은사로 주소(오름차순)&#10;봉은사로55길18 종1234"></textarea>
     </div>
     <div class="macts">
       <button class="bsec" onclick="closeModal('parseModal')">취소</button>
@@ -989,6 +989,142 @@ function parseCodeFromLine(trLine){
   return { codeValue, remaining };
 }
 
+// ════════════════════════════════════════════════════════════════
+// 🗂 정리된 목록 파서
+//   ☆단지명(주소)      → 단지
+//   ■101동 1~2라인      → 동·구역
+//   #1701 8728          → 코드 (뒤의 괄호는 메모)
+//   ☆봉은사로 주소(오름차순) → "봉은사로" 단지, 아래 줄들은 "주소 [건물명] 코드"
+// ════════════════════════════════════════════════════════════════
+function isStructuredText(text){return /^\s*[☆■]/m.test(text)||/주소\s*\(?\s*오름차순/.test(text);}
+
+const ROAD_FIX={'봉은가로':'봉은사로','심성로':'삼성로'};
+const CODE_WORDS=new Set(['종','열쇠','경비','경비열쇠','열쇠경비','경찰열쇠','비번','비','문','키','별','시작','호출','엔터','벨','열','경키','기능','ent','확인','체크필요']);
+// "봉은사로55길18", "봉은사로 78길25", "봉은사로404", "봉은사로442-9", "선릉로116길" → {road,n,n2,key,display,rest}
+function parseRoadAddr(line){
+  const m=line.match(/^([가-힣]+로)\s?(\d+)(?:\s?([길겔딜])\s?(\d+(?:-\d+)?)?|(-\d+))?/);
+  if(!m)return null;
+  const road=ROAD_FIX[m[1]]||m[1];
+  const n=+m[2], hasGil=!!m[3];
+  let n2=hasGil?(m[4]||''):(m[5]||''), rest=line.slice(m[0].length).trim();
+  // "선릉로116길 2378" — 길 뒤 4자리 숫자만 있고 나머지가 없으면 그건 코드
+  if(hasGil&&!rest&&/^\d{4,}$/.test(n2)&&/[길겔딜]\s+\d/.test(m[0])){rest=n2;n2='';}
+  const [a,b]=n2.replace(/^-/,'').split('-').map(x=>x===undefined||x===''?0:+x);
+  return {road,n,hasGil,n2,key:[road,n,hasGil?a||0:0,hasGil?b||0:a||0],
+          display:road+' '+n+(hasGil?'길'+(n2?' '+n2:''):(n2?'-'+n2.replace(/^-/,''):'')),rest};
+}
+// 건물명으로 볼 단어: 한글/영문 2자 이상(+숫자 하나/차), "오네뜨101동", "101동", "세대"
+function isNameToken(t){
+  if(CODE_WORDS.has(t.toLowerCase()))return false;
+  return /^[가-힣a-zA-Z]{2,}\d?(차)?$/.test(t)||/^[가-힣a-zA-Z]{2,}\d{1,3}동$/.test(t)||/^\d{1,4}동$/.test(t);
+}
+// "동지웰#*3180#", "롯데캐슬클라쎄10#9999" → 건물명 + 코드 분리
+function splitNameCode(t){
+  const m=t.match(/^([가-힣a-zA-Z]{2,})((?:\d{1,3})?[#*].*)$/);
+  if(m&&!CODE_WORDS.has(m[1])&&!/^(열쇠|경비|비번|문|키|종|별|시작|기능)/.test(m[1]))return [m[1],m[2]];
+  return [t];
+}
+
+function parseStructuredText(text){
+  const complexes=[];const skipped=[];
+  let cx=null, sec='', secHasCode=true, secLine='', street=null;
+  const getCx=(name,addr)=>{let c=complexes.find(x=>nkey(x.name)===nkey(name));if(!c){c={name,addr:addr||'',codes:[]};complexes.push(c);}return c;};
+  const flushSec=()=>{if(!secHasCode&&secLine)skipped.push(secLine+' (코드 없음)');};
+  const splitNote=s=>{ // 뒤쪽 괄호 → 메모
+    const notes=[];s=s.replace(/[\(（]([^()（）]*)[\)）]/g,(m,x)=>{notes.push(x.trim());return ' ';});
+    return {main:s.replace(/\s+/g,' ').trim(),note:notes.filter(Boolean).join(', ')};
+  };
+
+  text.split('\n').forEach(raw=>{
+    const line=raw.replace(/ /g,' ').trim();
+    if(!line||/^[ㅡ\-=_─━]+$/.test(line))return;
+
+    if(line.startsWith('☆')){
+      flushSec();
+      const t=line.replace(/[☆]/g,'').trim();
+      if(/주소/.test(t)&&/오름차순/.test(t)){ // 개별 주소 목록 시작
+        const road=(t.match(/([가-힣]+로)/)||[])[1]||t.replace(/주소.*$/,'').trim();
+        street=getCx(road,'개별 주소 · 오름차순');cx=null;sec='';secHasCode=true;secLine='';
+        return;
+      }
+      const m=t.match(/^(.*?)\s*[\(（](.*?)[\)）]?\s*$/);
+      cx=getCx(m?m[1].trim():t,m?m[2].trim():'');street=null;sec='';secHasCode=true;secLine='';
+      return;
+    }
+    if(line.startsWith('■')){
+      flushSec();
+      sec=line.slice(1).trim().replace(/동(?=\d)/,'동 ');secHasCode=false;secLine=line;
+      return;
+    }
+    // "봉은사로 주소(오름차순)" 처럼 ☆ 없는 목록 머리글
+    if(/주소\s*\(?\s*오름차순/.test(line)){
+      flushSec();
+      const road=(line.match(/([가-힣]+로)/)||[])[1]||line;
+      street=getCx(road,'개별 주소 · 오름차순');cx=null;sec='';secHasCode=true;secLine='';
+      return;
+    }
+
+    if(street){
+      const ra=parseRoadAddr(line);
+      if(!ra){skipped.push(line);return;}
+      // 길 이름별 단지로 (선릉로 목록에 섞인 "삼성로119길25"는 삼성로 단지로)
+      let target=getCx(ra.road,'개별 주소 · 오름차순'), section='', rest=ra.rest, isStreet=true;
+      // "삼성로99길14(삼성파크)6~8라인#1306 1306" → 단지 삼성파크 / 구역 6~8라인
+      const pm=rest.match(/^[\(（]([^()（）]+)[\)）]\s*(\d+\s*~\s*\d+\s*라인)\s*/);
+      if(pm){target=getCx(pm[1].trim(),ra.display);section=pm[2].replace(/\s+/g,'');rest=rest.slice(pm[0].length).trim();isStreet=false;}
+      const {main,note}=splitNote(rest);
+      const toks=main.split(/\s+/).flatMap(splitNameCode).filter(Boolean);
+      const names=[],codes=[];
+      toks.forEach(t=>(isNameToken(t)&&!codes.length?names:codes).push(t));
+      let value=codes.join(' ').trim();
+      if(!value&&note&&/[0-9#*]/.test(note)){value=note;}
+      if(!value){skipped.push(line+' (코드 없음)');return;}
+      const memo=(isStreet?ra.display:'')+(names.length?' '+names.join(' '):'')+(note&&value!==note?' ('+note+')':'');
+      target.codes.push({section,sublabel:memo.trim(),value,isGlobal:false,_key:[...ra.key,section]});
+      return;
+    }
+
+    if(!cx){skipped.push(line);return;}
+    const {main,note}=splitNote(line);
+    if(!main){skipped.push(line);return;}
+    const isGlobal=/^(#\*|##|\*)/.test(main)||(!sec&&/^#\*/.test(main));
+    cx.codes.push({section:sec,sublabel:note,value:main,isGlobal});
+    secHasCode=true;
+  });
+  flushSec();
+
+  // 개별 주소 단지는 주소 오름차순 정렬, 중복 제거
+  complexes.forEach(c=>{
+    if(c.codes.some(k=>k._key)){
+      c.codes.sort((a,b)=>{const x=a._key||[],y=b._key||[];for(let i=0;i<5;i++){if(x[i]!==y[i])return typeof x[i]==='string'?ncmp(x[i],y[i]):(x[i]||0)-(y[i]||0);}return 0;});
+    }
+    const seen=new Set();
+    c.codes=c.codes.filter(k=>{delete k._key;const key=nkey(k.section+'|'+k.sublabel+'|'+k.value).toLowerCase();if(seen.has(key))return false;seen.add(key);return true;});
+  });
+  return {complexes,skipped};
+}
+
+// 파싱 결과를 지역에 합치기 (같은 이름 단지는 합치고, 이미 있는 코드는 건너뜀)
+function addStructuredToRegion(region,parsed){
+  let addedCx=0,addedK=0,dup=0;
+  parsed.complexes.forEach(pc=>{
+    let cx=region.complexes.find(c=>nkey(c.name).toLowerCase()===nkey(pc.name).toLowerCase());
+    const fresh=!cx;
+    if(!cx){cx={id:uid(),name:pc.name,addr:pc.addr,codes:[]};region.complexes.push(cx);addedCx++;}
+    else if(!cx.addr&&pc.addr)cx.addr=pc.addr;
+    const have=new Set(cx.codes.map(k=>nkey(k.section+'|'+k.sublabel+'|'+k.value).toLowerCase()));
+    pc.codes.forEach(k=>{
+      const key=nkey(k.section+'|'+k.sublabel+'|'+k.value).toLowerCase();
+      if(have.has(key)){dup++;return;}
+      have.add(key);
+      const cd={id:uid(),section:k.section,label:'',sublabel:k.sublabel,value:k.value,isGlobal:k.isGlobal};
+      if(fresh)cx.codes.push(cd);else insertCodeSorted(cx,cd);
+      addedK++;
+    });
+  });
+  return {addedCx,addedK,dup};
+}
+
 function submitParseForm() {
   try {
     const selectEl = document.getElementById('parseTargetRegion');
@@ -1004,6 +1140,20 @@ function submitParseForm() {
     const region = fR(rid);
     if (!region) {
       showToast('⚠️ 대상 지역이 올바르지 않습니다.');
+      return;
+    }
+
+    // ── 모드 0: 정리된 목록 (☆단지 / ■동·라인 / 주소 목록) ──
+    if (isStructuredText(text)) {
+      const parsed = parseStructuredText(text);
+      const nK = parsed.complexes.reduce((s,c)=>s+c.codes.length,0);
+      if (!nK) { showToast('⚠️ 분류할 수 있는 코드를 찾지 못했습니다.'); return; }
+      let msg = `"${region.name}" 지역에 추가할까요?\n\n단지: ${parsed.complexes.length}개\n코드: ${nK}개`;
+      if (parsed.skipped.length) msg += `\n\n건너뛴 줄 ${parsed.skipped.length}개:\n` + parsed.skipped.slice(0,12).join('\n') + (parsed.skipped.length>12?'\n…':'');
+      if (!confirm(msg)) return;
+      const r = addStructuredToRegion(region, parsed);
+      save(); closeModal('parseModal'); openR.add(rid); render();
+      showToast(`✓ 단지 ${r.addedCx}개 · 코드 ${r.addedK}개 추가` + (r.dup ? ` (중복 ${r.dup}개 제외)` : ''));
       return;
     }
 
