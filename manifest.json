@@ -1,0 +1,13 @@
+{
+  "name": "출입코드 노트",
+  "short_name": "출입코드",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0a0e",
+  "theme_color": "#0a0a0e",
+  "icons": [
+    { "src": "icon-195.png", "sizes": "1024x1024", "type": "image/png", "purpose": "any" }
+  ]
+}
