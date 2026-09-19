@@ -136,6 +136,14 @@ body.dragging .cscroll{scroll-snap-type:none; user-select: none; -webkit-user-se
 .code-acts{display:flex;gap:3px;padding:0 8px 0 0;flex-shrink:0;}
 .copy-hint{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:15px;color:var(--green);font-weight:700;font-family:var(--mono);background:rgba(10,10,14,.92);padding:3px 12px;border-radius:6px;opacity:0;pointer-events:none;transition:opacity .15s;white-space:nowrap;}
 .code-row.copied .copy-hint{opacity:1;}
+.bulk-bar{display:flex;gap:6px;margin-bottom:10px;}
+.bulk-btn{flex:1;height:36px;border-radius:8px;border:1px solid var(--border2);background:var(--s3);color:var(--text2);font-size:12.5px;font-weight:700;font-family:var(--sans);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;}
+.bulk-btn:active{transform:scale(.97);}
+.bulk-btn.amber{background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.22);color:var(--amber);}
+.bulk-btn.blue{background:rgba(96,165,250,.1);border-color:rgba(96,165,250,.25);color:var(--blue);}
+.bulk-bar.sm .bulk-btn{height:33px;font-size:12px;}
+.zoom-copy{width:100%;padding:13px;border:none;border-radius:11px;background:var(--amber);color:#1a1200;font-size:15px;font-weight:700;font-family:var(--sans);cursor:pointer;margin-top:4px;}
+.zoom-copy:active{transform:scale(.98);}
 .add-row-btn{width:100%;padding:13px;border:1px dashed var(--border3);border-radius:10px;background:transparent;color:var(--text2);font-size:15px;font-family:var(--sans);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:border-color .15s,color .15s;margin-top:4px;}
 .add-row-btn.amber-btn{border-color:rgba(245,158,11,.22);color:rgba(245,158,11,.5);}
 .add-row-btn:active{border-color:var(--amber);color:var(--amber);}
@@ -512,6 +520,7 @@ function openZoomModal(rid, cid, kid) {
           ${esc(cd.value)}
         </div>
       </div>
+      <button class="zoom-copy" data-v="${esc(cd.value)}" onclick="copyOut(this.dataset.v)">📋 코드 복사하기</button>
     </div>
   `;
 
@@ -519,6 +528,72 @@ function openZoomModal(rid, cid, kid) {
   document.getElementById('zoomModal').classList.add('active');
   document.body.style.overflow = 'hidden';
 }
+
+/* ── 복사 · 공유 — 다른 앱 안에 프레임으로 떠 있어도 자체 처리 (부모가 clipboard-write · web-share 권한을 줌) ── */
+async function copyOut(text){
+  if(!text) return;
+  let ok=false;
+  try{ if(navigator.clipboard&&navigator.clipboard.writeText){ await navigator.clipboard.writeText(text); ok=true; } }catch(e){}
+  if(!ok){
+    try{
+      const ta=document.createElement('textarea'); ta.value=text; ta.style.cssText='position:fixed;left:-9999px;top:0;';
+      document.body.appendChild(ta); ta.focus(); ta.select(); ok=document.execCommand('copy'); document.body.removeChild(ta);
+    }catch(e){}
+  }
+  showToast(ok?'📋 복사했어요':'⚠️ 복사에 실패했어요');
+}
+function shareOut(text){
+  if(!text) return;
+  if(navigator.share){ navigator.share({text}).catch(err=>{ if(!err||err.name!=='AbortError') copyOut(text); }); }
+  else copyOut(text);
+}
+/* 코드 한 줄 제목: 라벨 (부제) — 라벨이 없으면 부제를 제목으로, 둘 다 없으면 빈 문자열 */
+function codeTitle(cd){
+  const l=String(cd.label||'').trim(), sub=String(cd.sublabel||'').trim();
+  if(l&&sub) return `${l} (${sub})`;
+  return l||sub;
+}
+function getComplexCodesText(rid,cid){
+  const cx=fC(rid,cid);
+  if(!cx||!cx.codes.length) return '';
+  let text=`🏢 ${cx.name}\n`;
+  if(cx.addr) text+=`📍 ${cx.addr}\n`;
+  text+=`━━━━━━━━━━━━━━\n`;
+  let cur='';
+  cx.codes.forEach(cd=>{
+    if(cd.section&&cd.section!==cur){ text+=`\n[${cd.section}]\n`; cur=cd.section; }
+    const nm=codeTitle(cd);
+    text+=nm?`▫️ ${nm}\n🔑 ${cd.value}\n`:`🔑 ${cd.value}\n`;
+  });
+  text+=`━━━━━━━━━━━━━━`;
+  return text;
+}
+function getRegionCodesText(rid){
+  const rg=fR(rid);
+  if(!rg||!rg.complexes.length) return '';
+  let text=`🏘️ [${rg.name}] 구역 출입코드 목록\n━━━━━━━━━━━━━━\n`;
+  let any=false;
+  rg.complexes.forEach(cx=>{
+    if(!cx.codes.length) return;
+    any=true;
+    text+=`\n🏢 ${cx.name}`;
+    if(cx.addr) text+=` (${cx.addr})`;
+    text+=`\n`;
+    let cur='';
+    cx.codes.forEach(cd=>{
+      if(cd.section&&cd.section!==cur){ text+=`  [${cd.section}]\n`; cur=cd.section; }
+      const nm=codeTitle(cd);
+      text+=nm?`  ▫️ ${nm}: ${cd.value}\n`:`  🔑 ${cd.value}\n`;
+    });
+  });
+  if(!any) return '';
+  text+=`\n━━━━━━━━━━━━━━`;
+  return text;
+}
+function shareComplexCodes(rid,cid){ const t=getComplexCodesText(rid,cid); if(!t){showToast('⚠️ 공유할 코드가 없습니다');return;} shareOut(t); }
+function copyComplexCodes(rid,cid){ const t=getComplexCodesText(rid,cid); if(!t){showToast('⚠️ 복사할 코드가 없습니다');return;} copyOut(t); }
+function shareRegionCodes(rid){ const t=getRegionCodesText(rid); if(!t){showToast('⚠️ 공유할 코드가 없습니다');return;} shareOut(t); }
+function copyRegionCodes(rid){ const t=getRegionCodesText(rid); if(!t){showToast('⚠️ 복사할 코드가 없습니다');return;} copyOut(t); }
 
 function render(){
   const root=document.getElementById('contentRoot');
@@ -557,6 +632,12 @@ function render(){
 <span class="chv r">▼</span>
 </div>
 <div class="rg-body">`;
+    if(kc>0){
+      html+=`<div class="bulk-bar">
+<button class="bulk-btn amber" onclick="shareRegionCodes('${esc(rg.id)}')">💬 구역전체 공유</button>
+<button class="bulk-btn" onclick="copyRegionCodes('${esc(rg.id)}')">📋 구역전체 복사</button>
+</div>`;
+    }
     if(!mcx.length){
       html+=`<div style="text-align:center;padding:20px 0;color:var(--text3);font-size:12px;font-family:var(--mono);">단지가 없습니다 · <span style="color:var(--amber);cursor:pointer;" onclick="openModal('aC',{r:'${esc(rg.id)}'})">＋ 단지 추가</span></div>`;
     } else {
@@ -578,6 +659,12 @@ function render(){
 <span class="chv c">▼</span>
 </div>
 <div class="cx-body">`;
+        if(cx.codes.length>0){
+          html+=`<div class="bulk-bar sm">
+<button class="bulk-btn blue" onclick="shareComplexCodes('${esc(rg.id)}','${esc(cx.id)}')">💬 단지전체 공유</button>
+<button class="bulk-btn" onclick="copyComplexCodes('${esc(rg.id)}','${esc(cx.id)}')">📋 단지전체 복사</button>
+</div>`;
+        }
         let ps='__NONE__';
         cx.codes.forEach(cd=>{
           if(cd.section&&cd.section!==ps)html+=`<div class="sec-lbl">${esc(cd.section)}</div>`;
@@ -744,7 +831,7 @@ const DND={
     const rect=this.src.getBoundingClientRect();this.offY=touch.clientY-rect.top;
     const ghost=document.getElementById('drag-ghost');
     const clone=this.src.cloneNode(true);
-    clone.querySelectorAll('.rg-body,.cx-body,.add-row-btn').forEach(b=>b.remove());
+    clone.querySelectorAll('.rg-body,.cx-body,.add-row-btn,.bulk-bar').forEach(b=>b.remove());
     clone.style.cssText='width:100%;';ghost.innerHTML='';ghost.appendChild(clone);
     ghost.style.cssText=`display:block;left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;`;
     this.ghost=ghost;this.src.classList.add('drag-placeholder');
