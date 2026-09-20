@@ -87,12 +87,13 @@ body.dragging .cscroll{scroll-snap-type:none; user-select: none; -webkit-user-se
 .rg-clickable{display:flex;align-items:center;gap:10px;flex:1;padding:12px 10px 12px 14px;min-width:0;cursor:pointer;}
 .rg-ico{width:36px;height:36px;border-radius:10px;background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.25);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
 .region-card.open .rg-ico{background:rgba(245,158,11,.2);}
-.rg-name{font-size:19px;font-weight:700;color:var(--text);}
+.rg-name{font-size:19px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .rg-meta{font-size:13px;color:var(--text2);font-family:var(--mono);margin-top:2px;}
-.rg-acts{display:flex;align-items:center;gap:4px;padding:0 10px 0 0;flex-shrink:0;}
-.abt{width:40px;height:40px;border:1px solid var(--border2);border-radius:9px;background:var(--s3);color:var(--text2);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.rg-acts{display:flex;align-items:center;gap:3px;padding:0 8px 0 0;flex-shrink:0;}
+.abt{width:33px;height:33px;border:1px solid var(--border2);border-radius:9px;background:var(--s3);color:var(--text2);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .abt:active{transform:scale(.9);}
 .abt.add{color:var(--amber);border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.08);}
+.abt.share,.asm.share{color:var(--amber);border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.08);}
 .abt.del{color:var(--red);border-color:rgba(248,113,113,.3);background:rgba(248,113,113,.06);}
 .chv{color:var(--text3);font-size:11px;transition:transform .25s;margin-left:2px;flex-shrink:0;}
 .region-card.open .chv.r{transform:rotate(180deg);color:var(--amber);}
@@ -105,14 +106,14 @@ body.dragging .cscroll{scroll-snap-type:none; user-select: none; -webkit-user-se
 .cx-hdr{display:flex;align-items:center;background:var(--s2);min-height:50px;user-select:none;}
 .cx-bar{width:3px;align-self:stretch;flex-shrink:0;background:linear-gradient(180deg,var(--blue),var(--blue-dim));opacity:.5;transition:opacity .2s;}
 .complex-card.open .cx-bar{opacity:1;}
-.cx-clickable{display:flex;align-items:center;gap:9px;flex:1;padding:10px 8px 10px 12px;min-width:0;cursor:pointer;}
-.cx-ico{width:30px;height:30px;border-radius:8px;background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.2);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.cx-clickable{display:flex;align-items:center;gap:8px;flex:1;padding:10px 5px 10px 10px;min-width:0;cursor:pointer;}
+.cx-ico{width:28px;height:28px;border-radius:8px;background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.2);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
 .complex-card.open .cx-ico{background:rgba(96,165,250,.18);}
 .cx-col{flex:1;min-width:0;}
 .cx-name{font-size:16px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .cx-addr{font-size:13px;color:var(--text2);font-family:var(--mono);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.cx-acts{display:flex;align-items:center;gap:3px;padding:0 8px 0 0;}
-.asm{width:38px;height:38px;border:1px solid var(--border2);border-radius:9px;background:var(--s3);color:var(--text2);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.cx-acts{display:flex;align-items:center;gap:2px;padding:0 7px 0 0;}
+.asm{width:30px;height:30px;border:1px solid var(--border2);border-radius:8px;background:var(--s3);color:var(--text2);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .asm:active{transform:scale(.88);}
 .asm.add{color:var(--blue);border-color:rgba(96,165,250,.3);background:rgba(96,165,250,.08);}
 .asm.del{color:var(--red);border-color:rgba(248,113,113,.3);background:rgba(248,113,113,.06);}
@@ -136,12 +137,6 @@ body.dragging .cscroll{scroll-snap-type:none; user-select: none; -webkit-user-se
 .code-acts{display:flex;gap:3px;padding:0 8px 0 0;flex-shrink:0;}
 .copy-hint{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:15px;color:var(--green);font-weight:700;font-family:var(--mono);background:rgba(10,10,14,.92);padding:3px 12px;border-radius:6px;opacity:0;pointer-events:none;transition:opacity .15s;white-space:nowrap;}
 .code-row.copied .copy-hint{opacity:1;}
-.bulk-bar{display:flex;gap:6px;margin-bottom:10px;}
-.bulk-btn{flex:1;height:36px;border-radius:8px;border:1px solid var(--border2);background:var(--s3);color:var(--text2);font-size:12.5px;font-weight:700;font-family:var(--sans);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;}
-.bulk-btn:active{transform:scale(.97);}
-.bulk-btn.amber{background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.22);color:var(--amber);}
-.bulk-btn.blue{background:rgba(96,165,250,.1);border-color:rgba(96,165,250,.25);color:var(--blue);}
-.bulk-bar.sm .bulk-btn{height:33px;font-size:12px;}
 .zoom-copy{width:100%;padding:13px;border:none;border-radius:11px;background:var(--amber);color:#1a1200;font-size:15px;font-weight:700;font-family:var(--sans);cursor:pointer;margin-top:4px;}
 .zoom-copy:active{transform:scale(.98);}
 .add-row-btn{width:100%;padding:13px;border:1px dashed var(--border3);border-radius:10px;background:transparent;color:var(--text2);font-size:15px;font-family:var(--sans);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:border-color .15s,color .15s;margin-top:4px;}
@@ -591,9 +586,7 @@ function getRegionCodesText(rid){
   return text;
 }
 function shareComplexCodes(rid,cid){ const t=getComplexCodesText(rid,cid); if(!t){showToast('⚠️ 공유할 코드가 없습니다');return;} shareOut(t); }
-function copyComplexCodes(rid,cid){ const t=getComplexCodesText(rid,cid); if(!t){showToast('⚠️ 복사할 코드가 없습니다');return;} copyOut(t); }
 function shareRegionCodes(rid){ const t=getRegionCodesText(rid); if(!t){showToast('⚠️ 공유할 코드가 없습니다');return;} shareOut(t); }
-function copyRegionCodes(rid){ const t=getRegionCodesText(rid); if(!t){showToast('⚠️ 복사할 코드가 없습니다');return;} copyOut(t); }
 
 function render(){
   const root=document.getElementById('contentRoot');
@@ -625,6 +618,7 @@ function render(){
 <div><div class="rg-name">${esc(rg.name)}</div></div>
 </div>
 <div class="rg-acts">
+${kc>0?`<button class="abt share" onclick="event.stopPropagation();shareRegionCodes('${esc(rg.id)}')" title="구역 전체 공유">💬</button>`:''}
 <button class="abt add" onclick="openModal('aC',{r:'${esc(rg.id)}'})">＋</button>
 <button class="abt" onclick="openModal('eR',{r:'${esc(rg.id)}'})">✏️</button>
 <button class="abt del" onclick="cdR('${esc(rg.id)}')">🗑</button>
@@ -632,12 +626,6 @@ function render(){
 <span class="chv r">▼</span>
 </div>
 <div class="rg-body">`;
-    if(kc>0){
-      html+=`<div class="bulk-bar">
-<button class="bulk-btn amber" onclick="shareRegionCodes('${esc(rg.id)}')">💬 구역전체 공유</button>
-<button class="bulk-btn" onclick="copyRegionCodes('${esc(rg.id)}')">📋 구역전체 복사</button>
-</div>`;
-    }
     if(!mcx.length){
       html+=`<div style="text-align:center;padding:20px 0;color:var(--text3);font-size:12px;font-family:var(--mono);">단지가 없습니다 · <span style="color:var(--amber);cursor:pointer;" onclick="openModal('aC',{r:'${esc(rg.id)}'})">＋ 단지 추가</span></div>`;
     } else {
@@ -652,6 +640,7 @@ function render(){
 <div class="cx-col"><div class="cx-name">${esc(cx.name)}</div><div class="cx-addr">${esc(cx.addr||'')}</div></div>
 </div>
 <div class="cx-acts">
+${cx.codes.length>0?`<button class="asm share" onclick="event.stopPropagation();shareComplexCodes('${esc(rg.id)}','${esc(cx.id)}')" title="단지 전체 공유">💬</button>`:''}
 <button class="asm add" onclick="openModal('aK',{r:'${esc(rg.id)}',c:'${esc(cx.id)}'})">＋</button>
 <button class="asm" onclick="openModal('eC',{r:'${esc(rg.id)}',c:'${esc(cx.id)}'})">✏️</button>
 <button class="asm del" onclick="cdC('${esc(rg.id)}','${esc(cx.id)}')">🗑</button>
@@ -659,12 +648,6 @@ function render(){
 <span class="chv c">▼</span>
 </div>
 <div class="cx-body">`;
-        if(cx.codes.length>0){
-          html+=`<div class="bulk-bar sm">
-<button class="bulk-btn blue" onclick="shareComplexCodes('${esc(rg.id)}','${esc(cx.id)}')">💬 단지전체 공유</button>
-<button class="bulk-btn" onclick="copyComplexCodes('${esc(rg.id)}','${esc(cx.id)}')">📋 단지전체 복사</button>
-</div>`;
-        }
         let ps='__NONE__';
         cx.codes.forEach(cd=>{
           if(cd.section&&cd.section!==ps)html+=`<div class="sec-lbl">${esc(cd.section)}</div>`;
@@ -831,7 +814,7 @@ const DND={
     const rect=this.src.getBoundingClientRect();this.offY=touch.clientY-rect.top;
     const ghost=document.getElementById('drag-ghost');
     const clone=this.src.cloneNode(true);
-    clone.querySelectorAll('.rg-body,.cx-body,.add-row-btn,.bulk-bar').forEach(b=>b.remove());
+    clone.querySelectorAll('.rg-body,.cx-body,.add-row-btn').forEach(b=>b.remove());
     clone.style.cssText='width:100%;';ghost.innerHTML='';ghost.appendChild(clone);
     ghost.style.cssText=`display:block;left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;`;
     this.ghost=ghost;this.src.classList.add('drag-placeholder');
