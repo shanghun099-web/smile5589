@@ -157,6 +157,9 @@ body.dragging .cscroll{scroll-snap-type:none; user-select: none; -webkit-user-se
 .fchk{display:flex;align-items:center;gap:10px;padding:11px 13px;background:var(--s3);border:1px solid var(--border2);border-radius:9px;cursor:pointer;}
 .fchk input[type=checkbox]{width:16px;height:16px;accent-color:var(--amber);}
 .fchk label{font-size:15px;color:var(--text2);cursor:pointer;}
+.kprev{pointer-events:none;padding:8px;background:var(--s1);border:1px dashed var(--border2);border-radius:12px;}
+.kprev .sec-lbl{margin-top:0;}
+.kprev .code-row{margin-bottom:0;}
 .macts{display:flex;gap:8px;margin-top:20px;}
 .bpri{flex:1;padding:14px;background:linear-gradient(135deg,var(--amber),#d97706);color:#0a0a0e;font-weight:700;font-size:16px;font-family:var(--sans);border:none;border-radius:11px;cursor:pointer;}
 .bpri:active{opacity:.85;}
@@ -930,13 +933,14 @@ function openModal(type,ctx){
   }
   document.getElementById('fmTitle').innerHTML=title;
   document.getElementById('fmFields').innerHTML=fields;
+  if(type==='aK'||type==='eK'){ drawCodePreview(); ['ks','kb','kv'].forEach(id=>document.getElementById(id).addEventListener('input',drawCodePreview)); document.getElementById('kg').addEventListener('change',drawCodePreview); }
   document.getElementById('formModal').classList.add('active');
   document.body.style.overflow='hidden';
   setTimeout(()=>document.getElementById('fmFields').querySelector('input[type=text]')?.focus(),200);
 }
 
 function fi(id,lbl,ph,val,list){return`<div class="fg"><label class="flbl" for="${id}">${lbl}</label><input class="finp" type="text" id="${id}" placeholder="${ph}" value="${esc(val)}" autocomplete="off"${list?` list="${list}"`:''}></div>`;}
-// 코드 추가/편집 공통 필드: 동·구역 → 코드 → 사용법·메모 (화면에 보이는 순서와 동일)
+// 코드 추가/편집 공통 필드: 동·구역 → 주소 및 라인 → 코드 → 공동 코드 → 미리보기 (화면에 보이는 순서와 동일)
 function codeFields(cd,rid,cid){
   const cx=fC(rid,cid);
   const secs=[...new Set((cx?.codes||[]).map(k=>(k.section||'').trim()).filter(Boolean))];
@@ -944,9 +948,21 @@ function codeFields(cd,rid,cid){
   return dl+
     fi('ks','동 · 구역 (선택)','예: 102동, 지하주차장, 후문',cd?.section||'','secList')+
     `<div class="fhint" style="margin-top:-8px;margin-bottom:14px;">같은 동·구역 코드들 위에 큰 제목으로 표시돼요. 이어지는 코드는 비워두면 돼요.</div>`+
+    fi('kb','주소 및 라인 (선택)','예: 일원로3길 14 · 1~2라인',cd?.sublabel||'')+
     fi('kv','코드 ✱','예: ##9077, 열경1657',cd?.value||'')+
-    fi('kb','사용법 · 메모 (선택)','예: 1005호 · 열쇠 → 엔터 → 1003',cd?.sublabel||'')+
-    fc('kg','공동 코드 (황금색)',cd?.isGlobal||false);
+    fc('kg','공동 코드 (황금색)',cd?.isGlobal||false)+
+    `<div class="fg"><label class="flbl">미리보기</label><div class="kprev" id="kPrev"></div></div>`;
+}
+/* 편집 중인 값으로 목록에 보일 모양을 그대로 그린다 (동·구역 제목 + 코드 줄) */
+function drawCodePreview(){
+  const box=document.getElementById('kPrev'); if(!box)return;
+  const v=id=>(document.getElementById(id)?.value||'').trim();
+  const sec=v('ks'), sub=v('kb'), val=v('kv'), g=document.getElementById('kg')?.checked;
+  box.innerHTML=(sec?`<div class="sec-lbl">${esc(sec)}</div>`:'')+
+    `<div class="code-row${g?' global':''}"><div class="dh kh">⠿</div><div class="code-main">`+
+    (sub?`<div class="code-memo">${esc(sub)}</div>`:'')+
+    `<div class="code-val">${val?esc(val):'<span style="color:var(--text3)">코드</span>'}</div></div>`+
+    `<div class="code-acts"><button class="asm" type="button" tabindex="-1">✏️</button><button class="asm del" type="button" tabindex="-1">🗑</button></div></div>`;
 }
 function fc(id,lbl,chk=false){return`<div class="fg"><div class="fchk"><input type="checkbox" id="${id}" ${chk?'checked':''}><label for="${id}">🟡 ${lbl}</label></div></div>`;}
 
