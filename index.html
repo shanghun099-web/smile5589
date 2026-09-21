@@ -948,7 +948,7 @@ function codeFields(cd,rid,cid){
   return dl+
     fi('ks','동 · 구역 (선택)','예: 102동, 일원로, 양재대로',cd?.section||'','secList')+
     `<div class="fhint" style="margin-top:-8px;margin-bottom:14px;">아파트는 동 번호, 빌라·상가는 길 이름(일원로, 양재대로)을 적으세요 — 같은 동·길 코드들 위에 큰 제목으로 표시돼요. 이어지는 코드는 비워두면 됩니다.</div>`+
-    fi('kb','주소 및 라인 (선택)','예: 3길 14 · 1~2라인, 1005호',cd?.sublabel||'')+
+    fi('kb','주소 및 라인 (선택)','예: 일원로3길 13 · 1~2라인, 1005호',cd?.sublabel||'')+
     fi('kv','코드 ✱','예: ##9077, 열경1657',cd?.value||'')+
     fc('kg','공동 코드 (황금색)',cd?.isGlobal||false)+
     `<div class="fg"><label class="flbl">미리보기</label><div class="kprev" id="kPrev"></div></div>`;
