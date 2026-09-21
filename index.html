@@ -34,9 +34,9 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 .hinfo h1{font-size:15px;font-weight:700;color:var(--text);letter-spacing:.07em;text-transform:uppercase;}
 .hinfo p{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:1px;}
 .header-actions{display:flex;align-items:center;gap:6px;flex-shrink:0;}
-.add-rgn-btn{display:flex;align-items:center;gap:4px;padding:10px 14px;background:linear-gradient(135deg,var(--amber),#d97706);color:#0a0a0e;font-weight:700;font-size:14px;font-family:var(--sans);border:none;border-radius:9px;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+.add-rgn-btn{display:flex;align-items:center;gap:4px;padding:10px 11px;background:linear-gradient(135deg,var(--amber),#d97706);color:#0a0a0e;font-weight:700;font-size:14px;font-family:var(--sans);border:none;border-radius:9px;cursor:pointer;white-space:nowrap;flex-shrink:0;}
 .add-rgn-btn:active{opacity:.8;}
-.backup-btn{width:40px;height:40px;background:var(--s3);border:1px solid var(--border2);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;flex-shrink:0;transition:border-color .2s,background .2s;}
+.backup-btn{width:36px;height:36px;background:var(--s3);border:1px solid var(--border2);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;flex-shrink:0;transition:border-color .2s,background .2s;}
 .backup-btn:active{background:var(--border2);}
 
 .swrap{position:relative;padding:10px 16px 8px;flex-shrink:0;}
@@ -207,9 +207,10 @@ body.dragging .cscroll{scroll-snap-type:none; user-select: none; -webkit-user-se
         <p>⠿ 꾹 누르기 = 순서변경</p>
       </div>
       <div class="header-actions">
+        <button class="backup-btn" id="btnFold" onclick="foldAll()" title="모두 접기 / 펼치기">⏫</button>
         <button class="backup-btn" onclick="openParseModal()" title="텍스트 자동 추가">🪄</button>
         <button class="backup-btn" onclick="openBackupModal()" title="백업/복원">💾</button>
-        <button class="add-rgn-btn" onclick="openModal('aR')">＋ 지역 추가</button>
+        <button class="add-rgn-btn" onclick="openModal('aR')" title="지역 추가">＋ 지역</button>
       </div>
     </div>
   </div>
@@ -680,6 +681,13 @@ ${cd.sublabel?`<div class="code-memo">${esc(cd.sublabel)}</div>`:''}
 }
 
 function tR(id){openR.has(id)?openR.delete(id):openR.add(id);render();}
+/* ⏫ 모두 접기: 여기저기 펼쳐 놓은 지역·단지를 한 번에 정리. 다 접힌 상태에서 누르면 지역만 모두 펼친다 */
+function foldAll(){
+  if(q){ clearSearch(); }
+  if(openR.size||openC.size){ openR.clear(); openC.clear(); render(); showToast('⏫ 모두 접었어요'); }
+  else { data.regions.forEach(r=>openR.add(r.id)); render(); showToast('⏬ 지역을 모두 펼쳤어요'); }
+  window.scrollTo({top:0,behavior:'smooth'});
+}
 function tC(id){openC.has(id)?openC.delete(id):openC.add(id);render();}
 function handleSearch(v){
   q=nkey(v).toLowerCase();
