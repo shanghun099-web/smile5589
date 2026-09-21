@@ -946,8 +946,8 @@ function codeFields(cd,rid,cid){
   const secs=[...new Set((cx?.codes||[]).map(k=>(k.section||'').trim()).filter(Boolean))];
   const dl=`<datalist id="secList">${secs.map(x=>`<option value="${esc(x)}">`).join('')}</datalist>`;
   return dl+
-    fi('ks','동 · 구역 (선택)','예: 102동, 지하주차장, 후문',cd?.section||'','secList')+
-    `<div class="fhint" style="margin-top:-8px;margin-bottom:14px;">같은 동·구역 코드들 위에 큰 제목으로 표시돼요. 이어지는 코드는 비워두면 돼요.</div>`+
+    fi('ks','동 · 구역 (선택)','예: 102동',cd?.section||'','secList')+
+    `<div class="fhint" style="margin-top:-8px;margin-bottom:14px;">아파트면 동 번호를 적으세요 — 같은 동 코드들 위에 큰 제목으로 표시돼요 (이어지는 코드는 비워두면 됨). 빌라·상가처럼 동이 없으면 비워두고 아래 주소 칸에 적으세요.</div>`+
     fi('kb','주소 및 라인 (선택)','예: 일원로3길 14 · 1~2라인',cd?.sublabel||'')+
     fi('kv','코드 ✱','예: ##9077, 열경1657',cd?.value||'')+
     fc('kg','공동 코드 (황금색)',cd?.isGlobal||false)+
