@@ -191,6 +191,23 @@ body.dragging .cscroll{scroll-snap-type:none; user-select: none; -webkit-user-se
 .bk-schema{font-size:9px;color:var(--text3);font-family:var(--mono);text-align:center;margin-top:14px;letter-spacing:.05em;opacity:.6;}
 .bk-schema strong{color:var(--amber);font-weight:600;}
 
+/* 🪄 마법지팡이 — 정리 파일 미리보기 */
+.wand-lblrow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;}
+.wand-lblrow .flbl{margin-bottom:0;}
+.wand-file{padding:7px 11px;border:1px solid rgba(245,158,11,.35);background:rgba(245,158,11,.08);color:var(--amber);border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;}
+.wand-box{background:var(--s3);border:1px solid var(--border3);border-radius:12px;padding:12px;margin-bottom:14px;}
+.wand-hd{font-size:15px;font-weight:700;color:var(--amber2);margin-bottom:8px;}
+.wand-stats{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;}
+.ws{background:var(--s2);border:1px solid var(--border2);border-radius:9px;padding:7px 9px;font-size:13px;color:var(--text2);}
+.ws b{display:block;font-family:var(--mono);font-size:19px;color:var(--text);}
+.ws.new b{color:var(--green2);} .ws.diff b{color:var(--red);} .ws.chk b{color:var(--amber2);}
+.wand-box details{border-top:1px solid var(--border2);padding:7px 0 2px;}
+.wand-box summary{font-size:14px;font-weight:600;color:var(--text);cursor:pointer;padding:3px 0;}
+.wand-list{font-size:13px;color:var(--text2);line-height:1.6;max-height:220px;overflow-y:auto;padding:4px 0 2px 4px;word-break:break-all;}
+.wand-list div{padding:2px 0;border-bottom:1px dashed var(--border);}
+.wand-list .v{font-family:var(--mono);color:var(--green2);}
+.wand-list .o{font-family:var(--mono);color:var(--red);}
+
 .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--s3);border:1px solid var(--green);color:var(--green);padding:12px 22px;border-radius:50px;font-size:15px;font-family:var(--mono);font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:600;white-space:nowrap;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
@@ -259,6 +276,14 @@ body.dragging .cscroll{scroll-snap-type:none; user-select: none; -webkit-user-se
         <span class="bk-txt">백업 불러오기<span>표준/구버전 .json 모두 인식</span></span>
         <input type="file" accept=".json" style="display:none" onchange="importBackup(this.files[0]); this.value='';">
       </label>
+      <button class="bk-btn import" onclick="sendCodesFile()">
+        <span class="bk-ico">📨</span>
+        <span class="bk-txt">다른 사람에게 보내기<span>카톡으로 파일 전송 · 받는 쪽은 🪄 에서 합치기</span></span>
+      </button>
+      <button class="bk-btn import" id="undoImportBtn" onclick="undoLastImport()" hidden>
+        <span class="bk-ico">↩</span>
+        <span class="bk-txt">마지막 자동 추가 되돌리기<span id="undoImportInfo"></span></span>
+      </button>
     </div>
     <button class="bk-close" onclick="closeModal('backupModal')">닫기</button>
     <div class="bk-schema">📦 <strong>access-codes-v1</strong> 표준 포맷 · 배송관리자 호환</div>
@@ -267,23 +292,28 @@ body.dragging .cscroll{scroll-snap-type:none; user-select: none; -webkit-user-se
 
 <div class="movl" id="parseModal" onclick="ovcl(event,'parseModal')">
   <div class="mbox" onclick="event.stopPropagation()">
-    <div class="mtitle"><span>🪄</span> 텍스트 자동 분류 추가</div>
+    <div class="mtitle"><span>🪄</span> 마법지팡이 — 붙여넣으면 알아서 분류</div>
+    <div class="fhint" style="margin:-6px 0 12px">메모·카톡 대화·정리 파일, 다른 사람이 💬 공유한 글이나 📨 보낸 파일도 여기 넣으면 겹치는 건 빼고 합쳐요.</div>
     <div class="fg">
       <label class="flbl" for="parseTargetRegion">대상 지역 선택</label>
       <select class="finp" id="parseTargetRegion" style="background: var(--s3); color: var(--text); font-weight: 500;" onchange="onParseRegionChange()"></select>
     </div>
-    <div class="fg">
+    <div class="fg" id="parseComplexFg">
       <label class="flbl" for="parseTargetComplex">대상 단지 선택</label>
       <select class="finp" id="parseTargetComplex" style="background: var(--s3); color: var(--text); font-weight: 500;"></select>
       <div class="fhint" id="parseComplexHint">＊ 자동 분류: 텍스트에서 단지명을 추출해 단지를 만들거나 매칭합니다.</div>
     </div>
     <div class="fg">
-      <label class="flbl" for="parseInput">미정리 텍스트 입력</label>
-      <textarea class="finp" id="parseInput" rows="6" style="height: auto; resize: vertical; font-family: var(--sans); line-height: 1.5;" placeholder="예시 입력:&#10;일원동 3길 14 공동현관 ##1234&#10;대치현대 101동 공동현관 ##9077&#10;&#10;정리된 목록도 그대로 붙여넣기 가능:&#10;☆단지명(주소)&#10;■101동 1~2라인&#10;#1701 8728&#10;☆봉은사로 주소(오름차순)&#10;봉은사로55길18 종1234"></textarea>
+      <div class="wand-lblrow">
+        <label class="flbl" for="parseInput">미정리 텍스트 입력</label>
+        <label class="wand-file">📄 파일 열기<input type="file" accept=".txt,.json,text/plain,application/json" hidden onchange="loadParseFile(this.files[0]); this.value='';"></label>
+      </div>
+      <textarea class="finp" id="parseInput" rows="6" style="height: auto; resize: vertical; font-family: var(--sans); line-height: 1.5;" oninput="schedWandPreview()" placeholder="예시 입력:&#10;일원동 3길 14 공동현관 ##1234&#10;대치현대 101동 공동현관 ##9077&#10;&#10;정리된 목록도 그대로 붙여넣기 가능:&#10;☆단지명(주소)&#10;■101동 1~2라인&#10;#1701 8728&#10;☆봉은사로 주소(오름차순)&#10;봉은사로55길18 종1234&#10;&#10;▶ 정리 파일(.txt)도 통째로:&#10;▶ 강남대로118길66&#10;   A동 #4321#&#10;   B동 #1877"></textarea>
     </div>
+    <div id="wandPreview"></div>
     <div class="macts">
       <button class="bsec" onclick="closeModal('parseModal')">취소</button>
-      <button class="bpri" onclick="submitParseForm()">분류 및 추가</button>
+      <button class="bpri" id="parseSubmitBtn" onclick="submitParseForm()">분류 및 추가</button>
     </div>
   </div>
 </div>
@@ -310,6 +340,7 @@ function showToast(msg){
 }
 
 function openBackupModal(){
+  refreshUndoBtn();
   document.getElementById('backupModal').classList.add('active');
   document.body.style.overflow='hidden';
 }
@@ -1017,7 +1048,7 @@ function cdK(rid,cid,kid){
 function onParseRegionChange(){
   const rid=document.getElementById('parseTargetRegion').value;
   const cxSelect=document.getElementById('parseTargetComplex');
-  const region=fR(rid);
+  const region=rid==='__NEW__'?null:fR(rid);
   let opts='<option value="__AUTO__">🪄 자동 분류 (단지 자동 생성/매칭)</option>';
   if(region && region.complexes.length){
     opts+=region.complexes.map(cx=>`<option value="${esc(cx.id)}">${esc(cx.name)}</option>`).join('');
@@ -1025,6 +1056,7 @@ function onParseRegionChange(){
   cxSelect.innerHTML=opts;
   cxSelect.value='__AUTO__';
   updateParseHint();
+  schedWandPreview(0);
 }
 
 function updateParseHint(){
@@ -1040,23 +1072,21 @@ function updateParseHint(){
 function openParseModal() {
   const select = document.getElementById('parseTargetRegion');
   if (!select) return;
-  if (!data.regions || !data.regions.length) {
-    showToast('⚠️ 먼저 지역을 추가해 주세요');
-    return;
-  }
-  
-  select.innerHTML = data.regions.map(r => `<option value="${esc(r.id)}">${esc(r.name)}</option>`).join('');
-  
+
+  select.innerHTML = data.regions.map(r => `<option value="${esc(r.id)}">${esc(r.name)}</option>`).join('')
+    + '<option value="__NEW__">＋ 새 지역 만들기</option>';
+
   const validActiveId = Array.from(openR).find(id => fR(id));
   if (validActiveId) {
     select.value = validActiveId;
   } else if (data.regions.length > 0) {
     select.value = data.regions[0].id;
+  } else {
+    select.value = '__NEW__';
   }
 
-  onParseRegionChange();
-  
   document.getElementById('parseInput').value = '';
+  onParseRegionChange();
   document.getElementById('parseModal').classList.add('active');
   document.body.style.overflow = 'hidden';
 }
@@ -1092,7 +1122,7 @@ function parseCodeFromLine(trLine){
 // ════════════════════════════════════════════════════════════════
 function isStructuredText(text){return /^\s*[☆■]/m.test(text)||/주소\s*\(?\s*오름차순/.test(text);}
 
-const ROAD_FIX={'봉은가로':'봉은사로','심성로':'삼성로'};
+const ROAD_FIX={'봉은가로':'봉은사로','심성로':'삼성로','강나대로':'강남대로','서능로':'선릉로','보문사로':'봉은사로'};
 const CODE_WORDS=new Set(['종','열쇠','경비','경비열쇠','열쇠경비','경찰열쇠','비번','비','문','키','별','시작','호출','엔터','벨','열','경키','기능','ent','확인','체크필요']);
 // "봉은사로55길18", "봉은사로 78길25", "봉은사로404", "봉은사로442-9", "선릉로116길" → {road,n,n2,key,display,rest}
 function parseRoadAddr(line){
@@ -1231,9 +1261,36 @@ function submitParseForm() {
       return;
     }
 
-    const region = fR(rid);
-    if (!region) {
+    // '＋ 새 지역 만들기'는 실제로 추가하기 직전에 이름을 물어보고 만든다
+    let region = rid === '__NEW__' ? null : fR(rid);
+    if (rid !== '__NEW__' && !region) {
       showToast('⚠️ 대상 지역이 올바르지 않습니다.');
+      return;
+    }
+    const ensureRegion = () => {
+      if (region) return region;
+      const def = (text.split('\n')[0].match(/^\s*([가-힣]{2,})/) || [])[1] || '새 지역';
+      const nm = prompt('새 지역 이름을 적어 주세요', def);
+      if (!nm || !nm.trim()) return null;
+      region = { id: uid(), name: nm.trim(), complexes: [] };
+      data.regions.push(region);
+      return region;
+    };
+
+    const kind = smartKind(text);
+
+    // ── 🪄 마법지팡이: 정리 파일 · 공유받은 글 · 보내기 파일 · 아무 메모 (단지를 직접 고른 메모는 아래 예전 방식)
+    if (kind !== 'structured' && !(kind === 'memo' && cidSel && cidSel !== '__AUTO__')) {
+      const parsed = smartParse(text, kind);
+      const plan = planAll(region, parsed);
+      const nAdd = plan.items.filter(x => x.status !== 'dup').length;
+      if (!nAdd) { showToast(plan.items.length ? '✓ 모두 이미 있는 코드예요' : '⚠️ 읽을 수 있는 코드가 없어요'); return; }
+      const before = JSON.stringify(data);
+      if (!plan.multi && !ensureRegion()) return;
+      const r = applyAll(plan, region);
+      rememberUndo(before, (plan.multi ? '지역 ' + r.rids.length + '곳' : region.name) + ' · 코드 ' + r.added + '개');
+      save(); closeModal('parseModal'); r.rids.forEach(id => openR.add(id)); render();
+      showToast(`✓ ${r.added}개 추가` + (r.diff ? ` · ⚠ ${r.diff}곳 확인` : ''));
       return;
     }
 
@@ -1242,11 +1299,14 @@ function submitParseForm() {
       const parsed = parseStructuredText(text);
       const nK = parsed.complexes.reduce((s,c)=>s+c.codes.length,0);
       if (!nK) { showToast('⚠️ 분류할 수 있는 코드를 찾지 못했습니다.'); return; }
-      let msg = `"${region.name}" 지역에 추가할까요?\n\n단지: ${parsed.complexes.length}개\n코드: ${nK}개`;
+      let msg = `"${region ? region.name : '새 지역'}" 지역에 추가할까요?\n\n단지: ${parsed.complexes.length}개\n코드: ${nK}개`;
       if (parsed.skipped.length) msg += `\n\n건너뛴 줄 ${parsed.skipped.length}개:\n` + parsed.skipped.slice(0,12).join('\n') + (parsed.skipped.length>12?'\n…':'');
       if (!confirm(msg)) return;
+      const before = JSON.stringify(data);
+      if (!ensureRegion()) return;
       const r = addStructuredToRegion(region, parsed);
-      save(); closeModal('parseModal'); openR.add(rid); render();
+      rememberUndo(before, region.name + ' · 코드 ' + r.addedK + '개');
+      save(); closeModal('parseModal'); openR.add(region.id); render();
       showToast(`✓ 단지 ${r.addedCx}개 · 코드 ${r.addedK}개 추가` + (r.dup ? ` (중복 ${r.dup}개 제외)` : ''));
       return;
     }
@@ -1294,74 +1354,492 @@ function submitParseForm() {
       return;
     }
 
-    // ── 모드 2: 자동 분류 (기존 동작) ──
-    lines.forEach(line => {
-      const trLine = line.trim();
-      if (!trLine) return;
-
-      const { codeValue, remaining } = parseCodeFromLine(trLine);
-
-      let complexName = '';
-      let labelName = '';
-
-      const complexKeywords = /(아파트|단지|현대|래미안|푸르지오|써밋|르엘|하이스턴|아이원|팰리스|타워|빌딩|빌라|맨션|힐스테이트|자이|아이파크|e편한세상|더샵|롯데캐슬|하이캐슬)/;
-      const hasComplex = complexKeywords.test(remaining);
-
-      if (hasComplex) {
-        const match = remaining.match(complexKeywords);
-        const idx = remaining.indexOf(match[0]) + match[0].length;
-        complexName = remaining.substring(0, idx).trim();
-        labelName = remaining.substring(idx).trim().replace(/\s+/g, ' ');
-        if (!labelName) labelName = '공동 현관';
-      } else {
-        complexName = '개별 주소 코드';
-        labelName = remaining.replace(/\s+/g, ' ');
-      }
-
-      if (!complexName) complexName = '지정되지 않은 단지';
-
-      let complex = region.complexes.find(cx => {
-        const target = (cx.name || '').toLowerCase().replace(/\s+/g, '');
-        const source = (complexName || '').toLowerCase().replace(/\s+/g, '');
-        return target === source || source.includes(target) || target.includes(source);
-      });
-
-      if (!complex) {
-        const cxId = uid();
-        complex = { id: cxId, name: complexName, addr: '', codes: [] };
-        region.complexes.push(complex);
-        openC.add(cxId);
-      }
-
-      if (!complex.codes) complex.codes = [];
-
-      const isGlobal = /공동|전체|공통|정문/.test(labelName) || /##/.test(codeValue);
-
-      insertCodeSorted(complex, {
-        id: uid(),
-        section: '',
-        label: '',
-        sublabel: labelName,
-        value: codeValue,
-        isGlobal: isGlobal
-      });
-
-      addedCount++;
-    });
-
-    if (addedCount > 0) {
-      save();
-      closeModal('parseModal');
-      openR.add(rid);
-      render();
-      showToast(`✓ ${addedCount}개 항목 분류 완료`);
-    } else {
-      showToast('⚠️ 분류할 수 있는 텍스트를 찾지 못했습니다.');
-    }
+    showToast('⚠️ 분류할 수 있는 텍스트를 찾지 못했습니다.');
   } catch (err) {
     console.error(err);
     showToast('⚠️ 분류 중 오류가 발생했습니다.');
   }
+}
+
+// ════════════════════════════════════════════════════════════════
+// 🪄 마법지팡이 — "▶ 주소 / 아래 줄에 비번" 정리 파일 읽기
+//   1. 강남대로                 → 구간 제목 (첫 구간 전의 머리말·⚠ 요약은 읽지 않음)
+//   ▶ 강남대로118길66            → 주소. 도로명이면 그 도로 이름 단지(강남대로)로,
+//                                   '논현동60-1' 같은 지번은 '논현동 지번' 단지로, 그 밖엔 건물 이름이 단지
+//      A동 #4321# (2회)           → 코드. 앞 글자는 메모, 괄호는 메모, (2회)·(원문 '…')는 버림
+//      601호 – 뒤쪽 입구 5555*     → '–' 앞은 메모, 뒤에서 첫 번호부터가 코드
+//      (…확인)                     → 괄호만 있는 줄은 바로 위 코드의 메모
+//   ■ 201동 / (201-1) / 0102 → 0613  → 세대별 비번 (구간 제목이 단지 이름, 201동이 동·구역)
+//   - …                          → 분류 안 되는 메모: 가져오지 않고 미리보기에 목록만
+//   ⚠                            → 메모 끝에 '⚠ …' 로 남겨 현장에서 확인
+// 이미 있는 코드는 건너뛰고, 같은 주소인데 번호가 다르면 지우지 않고 새 코드를 '⚠ 기존과 다름'으로 더한다.
+// ════════════════════════════════════════════════════════════════
+
+// 비교용: 띄어쓰기·기호 빼고 (번지의 '-'는 남김: 40-6 ≠ 406)
+const wNorm=s=>String(s||'').toLowerCase().replace(/[^0-9a-z가-힣\-]/g,'');
+// s 가 p 로 시작하고 바로 뒤가 숫자·'-'가 아님 (28 이 281 에 걸리지 않게)
+const wStarts=(s,p)=>s.startsWith(p)&&!(/[0-9]$/.test(p)&&/[0-9\-]/.test(s.charAt(p.length)));
+
+function wandFlag(s){ // "9999 / 4025 ⚠ 비번 다르게 적힘" → {main, flag}
+  const i=s.indexOf('⚠');
+  if(i<0) return {main:s.trim(),flag:''};
+  return {main:s.slice(0,i).trim(), flag:s.slice(i+1).trim()||'확인 필요'};
+}
+function wandNotes(s){ // 괄호 → 메모. (2회)·(원문 '강나대로') 같은 정리 흔적은 버림
+  const notes=[];
+  s=s.replace(/[\(（]([^()（）]*)[\)）]/g,(m,x)=>{
+    x=x.trim().replace(/^\d+\s*회\s*[,，]\s*/,'');
+    if(x&&!/^\d+\s*회$/.test(x)&&!/^원문\s*['‘’"][^'‘’"]*['‘’"]$/.test(x)) notes.push(x);
+    return ' ';
+  });
+  return {main:s.replace(/\s+/g,' ').trim(), notes};
+}
+// 코드로 볼 낱말: 숫자·#·*·☆ 가 들어 있고 '101동' '1~2호' '10층' 같은 위치 표시가 아님
+function wandIsCode(t){
+  return /[0-9#*☆]/.test(t) && !/^[\d~·,\-]+(동|호|층|차|라인|단지|길)$/.test(t) && !/^[가-힣a-zA-Z]+\d+(동|호|층|차|단지)$/.test(t)
+    && !/^\d+(월|일|시|분|년|개|명|원|번째)$|^\d+월\d+일$/.test(t);
+}
+function wandValueLine(line){
+  const f=wandFlag(line);
+  const n=wandNotes(f.main);
+  let label='', right=n.main;
+  const dm=right.match(/\s[–—-]\s/);           // "601호 – 뒤쪽 입구 5555*"
+  if(dm){ label=right.slice(0,dm.index).trim(); right=right.slice(dm.index+dm[0].length).trim(); }
+  const toks=right.split(' ').filter(Boolean);
+  const i=toks.findIndex(wandIsCode);
+  const pre=(i<0?right:toks.slice(0,i).join(' ')).replace(/[:：]$/,'').trim();
+  const value=i<0?'':toks.slice(i).join(' ');
+  const lab=[label,pre].filter(Boolean).join(' · ');
+  if(!value) return {label:lab, value:'번호 없음', notes:n.notes.filter(x=>!/번호\s*없음/.test(x)), flag:f.flag, noCode:true};
+  return {label:lab, value, notes:n.notes, flag:f.flag};
+}
+function wandEntry(s){
+  const f=wandFlag(s.replace(/^\s*▶\s*/,''));
+  if(f.flag==='확인 필요') f.flag='같은 주소 다른 비번 · 현장 확인';
+  const n=wandNotes(f.main);
+  const base={notes:n.notes, flag:f.flag};
+  const ra=parseRoadAddr(n.main);
+  if(ra) return {...base, kind:'road', cx:ra.road, cxAddr:'개별 주소 · 오름차순', where:ra.display, name:ra.rest, key:ra.key};
+  const gm=n.main.match(/^([가-힣]+동)\s?(\d+)\s?길\s?(\d+(?:-\d+)?)\s*(.*)$/);   // 일원동 3길 14 → '일원동 개별 주소'
+  if(gm) return {...base, kind:'road', cx:gm[1]+' 개별 주소', cxAddr:'개별 주소 · 오름차순', where:gm[1]+' '+gm[2]+'길 '+gm[3], name:gm[4],
+    key:[gm[1],+gm[2],+gm[3].split('-')[0],+(gm[3].split('-')[1]||0)]};
+  const jm=n.main.match(/^([가-힣]+동)\s?(\d+)(?:-(\d+))?(?![\d길])\s*(.*)$/);   // 논현동60-1 → 지번
+  if(jm) return {...base, kind:'road', cx:jm[1]+' 지번', cxAddr:'지번 주소', where:jm[1]+' '+jm[2]+(jm[3]?'-'+jm[3]:''), name:jm[4], key:[jm[1],+jm[2],+(jm[3]||0),0]};
+  return {notes:[], flag:f.flag, kind:'bldg', cx:n.main+(n.notes.length?'('+n.notes.join(', ')+')':''), cxAddr:'', where:'', name:'', key:null};
+}
+
+function parseWandText(text){
+  const complexes=[], skipped=[], memos=[];
+  const getCx=(name,addr)=>{let c=complexes.find(x=>wNorm(x.name)===wNorm(name));if(!c){c={name,addr:addr||'',codes:[]};complexes.push(c);}else if(!c.addr&&addr)c.addr=addr;return c;};
+  const headRe=/^(\d{1,2})\.\s+(.+)$/;
+  const lines=text.split(/\r?\n/);
+  const hasHeads=lines.some(l=>headRe.test(l.trim()));
+  let inBody=!hasHeads, title='', ent=null, dong='', hhLine='', last=null;
+
+  // 코드 하나 만들기 (메모는 나중에 finish 에서 합침)
+  const push=(cx,c)=>{cx.codes.push(c);last=c;return c;};
+
+  lines.forEach(raw=>{
+    const s=raw.replace(/ /g,' ').trim();
+    if(!s||/^[=\-─━_~]{4,}$/.test(s)) return;
+    const hm=s.match(headRe);
+    if(hm&&!/[→]/.test(s)){ inBody=true; title=hm[2].trim(); ent=null; dong=''; last=null; return; }
+    if(!inBody||s.startsWith('※')) return;
+
+    if(s.startsWith('▶')){ ent=wandEntry(s); dong=''; last=null; return; }
+    if(s.startsWith('■')){ dong=s.slice(1).trim().replace(/\s+/g,''); ent=null; hhLine=''; last=null; return; }
+    if(/^[-•]\s?/.test(s)){ memos.push(s.replace(/^[-•]\s*/,'')); return; }
+
+    // ── 세대별 비번 (■ 201동 아래) ──
+    if(dong){
+      const lm=s.match(/^[\(（]\s*\d+\s*-\s*(\d+)\s*[\)）]$/);
+      if(lm){ hhLine=lm[1]; return; }
+      const cm=s.match(/^(\d{2,4})\s*(?:→|->|=>|:)\s*(.+)$/);
+      if(cm){
+        const f=wandFlag(cm[2]); const n=wandNotes(f.main);
+        if(!n.main){ skipped.push(s); return; }
+        const cxName=title.replace(/[\(（][^()（）]*[\)）]/g,'').replace(/세대별\s*비번|비번/g,'').replace(/\s+/g,' ').trim()||'세대별 비번';
+        push(getCx(cxName,''),{section:dong, base:cm[1]+'호'+(hhLine?' · '+hhLine+'라인':''), value:n.main, notes:n.notes, flag:f.flag, isGlobal:false,
+          mk:{sec:wNorm(dong), addr:wNorm(cm[1]+'호'), lab:''}});
+        return;
+      }
+      skipped.push(s); return;
+    }
+
+    if(!ent){ skipped.push(s); return; }
+    if(s.startsWith('→')) return;                       // "→ 맨 아래 … 참고" 같은 안내 줄
+    const pm=s.match(/^[\(（](.*)[\)）]$/);
+    if(pm){ (last||ent).notes.push(pm[1].trim()); return; }   // 괄호만 있는 줄 → 바로 위 코드 메모
+
+    const v=wandValueLine(s);
+    const cx=getCx(ent.cx,ent.cxAddr);
+    let section='', base, mk;
+    if(ent.kind==='road'){
+      base=ent.where+(ent.name?' '+ent.name:'')+(v.label?' · '+v.label:'');
+      mk={sec:'', addr:wNorm(ent.where), lab:wNorm(v.label), road:true};
+    } else {
+      // 건물 이름 단지: "1동 1~2호 라인" → 동·구역 '1동' + 메모 '1~2호 라인'
+      const dm=v.label.match(/^([A-Za-z0-9·]+동)(?:\s+(.*))?$/);
+      if(dm){ section=dm[1]; base=dm[2]||''; } else base=v.label;
+      mk={sec:wNorm(section), addr:wNorm(base), lab:''};
+    }
+    push(cx,{section, base, value:v.value, notes:[...ent.notes,...v.notes], flag:v.flag||ent.flag, noCode:!!v.noCode,
+      isGlobal:/공동/.test(v.label), key:ent.key, mk});
+  });
+
+  return {complexes, skipped, memos, flags:wandFinish(complexes)};
+}
+// 메모 합치기 · 도로 단지는 주소 오름차순 · 같은 줄 중복 제거 → ⚠ 표시 개수
+function wandFinish(complexes){
+  let flags=0;
+  complexes.forEach(c=>{
+    c.codes.forEach(k=>{
+      k.sublabel=(k.base+(k.notes.length?' ('+k.notes.join(', ')+')':'')+(k.flag?' ⚠ '+k.flag:'')).trim();
+      if(k.flag||k.notes.some(x=>/확인/.test(x)))k.check=true;
+    });
+    if(c.codes.some(k=>k.section)&&c.codes.some(k=>!k.section)){
+      c.codes=[...c.codes.filter(k=>!k.section),...c.codes.filter(k=>k.section)];
+    }
+    if(c.codes.some(k=>k.key)){
+      c.codes=c.codes.map((k,i)=>({k,i})).sort((a,b)=>{const x=a.k.key||[],y=b.k.key||[];
+        for(let j=0;j<4;j++){if(x[j]!==y[j])return typeof x[j]==='string'?ncmp(x[j],y[j]):(x[j]||0)-(y[j]||0);}return a.i-b.i;}).map(o=>o.k);
+    }
+    const seen=new Set();
+    c.codes=c.codes.filter(k=>{const key=wNorm(k.section+'|'+k.sublabel+'|'+k.value);if(seen.has(key))return false;seen.add(key);return true;});
+    flags+=c.codes.filter(k=>k.check).length;
+  });
+  return flags;
+}
+
+// 지역에 이미 있는 코드와 비교 → 새로 / 이미 있음 / 기존과 다름
+function wAddrOf(sub){
+  const t=String(sub||'').trim();
+  const ra=parseRoadAddr(t); if(ra) return wNorm(ra.display);
+  const jm=t.match(/^([가-힣]+동)\s?(\d+(?:-\d+)?)/); return jm?wNorm(jm[1]+jm[2]):null;
+}
+function planWand(region, complexes){
+  const items=[];
+  complexes.forEach(pc=>{
+    const ex=region?region.complexes.find(c=>wNorm(c.name)===wNorm(pc.name)):null;
+    let cur='';
+    const exCodes=ex?ex.codes.map(k=>{if((k.section||'').trim())cur=k.section.trim();return{k,sec:wNorm(cur),sub:wNorm(k.sublabel),addr:wAddrOf(k.sublabel),val:wNorm(k.value)};}):[];
+    pc.codes.forEach(c=>{
+      // 도로명·지번은 메모 앞의 주소를 다시 읽어 똑같은 주소끼리, 건물 단지는 동·구역+메모 앞부분으로 비교
+      const same=exCodes.filter(e=>e.sec===c.mk.sec&&(c.mk.road?e.addr===c.mk.addr:wStarts(e.sub,c.mk.addr))&&(!c.mk.lab||e.sub.includes(c.mk.lab)));
+      let status='new', old=[];
+      if(same.some(e=>e.val===wNorm(c.value))) status='dup';
+      else if(same.length&&!c.noCode){ status='diff'; old=[...new Set(same.map(e=>e.k.value))]; }
+      items.push({pc, ex, c, status, old});
+    });
+  });
+  return items;
+}
+// 묶음이 하나면 고른 지역으로, 여러 지역이 든 파일이면 이름이 같은 지역끼리 (없으면 새로 만듦)
+function planAll(selRegion, parsed){
+  const multi=parsed.groups.length>1, items=[];
+  parsed.groups.forEach((g,gi)=>{
+    const region=multi?(data.regions.find(r=>wNorm(r.name)===wNorm(g.rname))||null):selRegion;
+    planWand(region,g.complexes).forEach(it=>{it.gi=gi;it.region=region;items.push(it);});
+  });
+  return {items, parsed, multi};
+}
+function applyWand(region, items){
+  let added=0,newCx=0,diff=0;
+  const made=new Map();
+  items.forEach(it=>{
+    if(it.status==='dup')return;
+    let cx=it.ex||made.get(it.pc);
+    if(!cx){
+      cx=region.complexes.find(c=>wNorm(c.name)===wNorm(it.pc.name));
+      if(!cx){cx={id:uid(),name:it.pc.name,addr:it.pc.addr,codes:[]};region.complexes.push(cx);newCx++;cx._fresh=true;}
+      made.set(it.pc,cx);
+    }
+    const sub=it.status==='diff'?it.c.sublabel+' ⚠ 기존('+it.old.join(', ')+')과 다름':it.c.sublabel;
+    const cd={id:uid(),section:it.c.section,label:'',sublabel:sub,value:it.c.value,isGlobal:!!it.c.isGlobal};
+    if(cx._fresh)cx.codes.push(cd);else insertCodeSorted(cx,cd);
+    added++; if(it.status==='diff')diff++;
+  });
+  made.forEach(cx=>delete cx._fresh);
+  return {added,newCx,diff};
+}
+function applyAll(plan, selRegion){
+  let added=0,newCx=0,diff=0;const rids=[];
+  plan.parsed.groups.forEach((g,gi)=>{
+    const its=plan.items.filter(x=>x.gi===gi);
+    if(!its.some(x=>x.status!=='dup'))return;
+    let region=selRegion;
+    if(plan.multi){
+      region=data.regions.find(r=>wNorm(r.name)===wNorm(g.rname));
+      if(!region){region={id:uid(),name:g.rname||'받은 지역',complexes:[]};data.regions.push(region);}
+    }
+    const r=applyWand(region,its);
+    added+=r.added;newCx+=r.newCx;diff+=r.diff;rids.push(region.id);
+  });
+  return {added,newCx,diff,rids};
+}
+
+// ════════════════════════════════════════════════════════════════
+// 🪄 무엇을 붙여넣었는지 알아보기
+//   json  — 📨 보내기 파일 · 💾 백업 파일 (겹치는 건 빼고 합침)
+//   wand  — ▶ 정리 파일
+//   share — 이 앱의 💬 공유 글 (🏘️ [지역] / 🏢 단지 / [동] / ▫️ 메모 / 🔑 코드)
+//   structured — ☆단지 / ■동 목록 (예전 방식 그대로)
+//   memo  — 그 밖의 아무 메모 (카톡 대화 내보내기 포함) → 한 줄씩 주소·건물·코드를 찾아 ▶ 정리 파일로 바꿔 읽음
+// ════════════════════════════════════════════════════════════════
+function smartKind(text){
+  const t=text.trim();
+  if(/^[\[{]/.test(t)){try{JSON.parse(t);return 'json';}catch(e){}}
+  if(/^\s*▶/m.test(text))return 'wand';
+  if(/^\s*(🏘|🏢)/m.test(text)&&/^\s*(🔑|▫)/m.test(text))return 'share';
+  if(isStructuredText(text))return 'structured';
+  return 'memo';
+}
+const KIND_NAME={json:'받은 파일로',wand:'정리 파일로',share:'공유받은 목록으로',memo:'메모 글로'};
+function smartParse(text,kind){
+  if(kind==='json')return parseJsonForWand(text);
+  if(kind==='share')return parseShareText(text);
+  let skip=[], src=text;
+  if(kind==='memo'){const m=memoToWand(text);src=m.text;skip=m.skipped;}
+  const p=parseWandText(src);
+  return {groups:[{rname:null,complexes:p.complexes}], skipped:[...skip,...p.skipped], memos:p.memos, flags:p.flags};
+}
+
+// 앱에 저장된 모양(동·구역/메모/코드) 그대로인 코드 → 비교용 정보 붙이기
+function wandPlainCode(section,sublabel,value,isGlobal){
+  const sub=String(sublabel||'').trim(), sec=String(section||'').trim();
+  const ad=wAddrOf(sub), lm=sub.match(/·\s*([^·(⚠]+)/);
+  return {section:sec, base:sub, notes:[], flag:'', value:String(value||'').trim(), isGlobal:!!isGlobal,
+    mk:ad?{sec:wNorm(sec),addr:ad,lab:lm?wNorm(lm[1]):'',road:true}:{sec:wNorm(sec),addr:wNorm(sub),lab:''}};
+}
+// 📨 보내기 파일 / 💾 백업 파일
+function parseJsonForWand(text){
+  let j=null;try{j=JSON.parse(text.trim());}catch(e){}
+  const r=j&&parseStandardPayload(j);
+  if(!r)return {groups:[],skipped:['출입코드 파일이 아니에요'],memos:[],flags:0};
+  const groups=r.regions.map(rg=>({rname:rg.name,complexes:rg.complexes.map(c=>{
+    let cur='';   // 비어 있는 동·구역은 앞의 것을 물려받으므로 풀어서 적어 둠
+    return {name:c.name,addr:c.addr||'',codes:c.codes.map(k=>{if((k.section||'').trim())cur=k.section.trim();
+      return wandPlainCode(cur,[k.label,k.sublabel].map(x=>(x||'').trim()).filter(Boolean).join(' · '),k.value,k.isGlobal);})};
+  })}));
+  const flags=groups.reduce((s,g)=>s+wandFinish(g.complexes),0);
+  return {groups,skipped:[],memos:[],flags};
+}
+// 💬 공유 글 (지역 전체 · 단지 하나 둘 다)
+function parseShareText(text){
+  const groups=[], skipped=[];
+  let g=null, cx=null, sec='', memo=null;
+  const G=()=>{if(!g){g={rname:null,complexes:[]};groups.push(g);}return g;};
+  const lines=text.split(/\r?\n/).map(l=>l.replace(/ /g,' ').trim());
+  const add=(m,v)=>{if(!v)return;if(!cx){cx={name:'받은 코드',addr:'',codes:[]};G().complexes.push(cx);}cx.codes.push(wandPlainCode(sec,m,v,false));};
+  lines.forEach((s,i)=>{
+    if(!s||/^[━─=\-]{3,}$/.test(s))return;
+    let m;
+    if((m=s.match(/^🏘️?\s*\[(.+?)\]/))){g={rname:m[1].trim(),complexes:[]};groups.push(g);cx=null;sec='';memo=null;return;}
+    if((m=s.match(/^🏢️?\s*(.+)$/))){
+      let nm=m[1].trim(),ad='';const pm=nm.match(/^(.*?)\s+\(([^()]*)\)$/);if(pm){nm=pm[1].trim();ad=pm[2].trim();}
+      cx=G().complexes.find(c=>wNorm(c.name)===wNorm(nm));
+      if(!cx){cx={name:nm,addr:ad,codes:[]};G().complexes.push(cx);}
+      sec='';memo=null;return;
+    }
+    if((m=s.match(/^📍️?\s*(.+)$/))){if(cx&&!cx.addr)cx.addr=m[1].trim();return;}
+    if((m=s.match(/^\[(.+)\]$/))){sec=m[1].trim();memo=null;return;}
+    if((m=s.match(/^▫️?\s*(.+)$/))){
+      const body=m[1].trim(), next=lines.slice(i+1).find(x=>x)||'';
+      const k=body.lastIndexOf(': ');
+      if(!/^🔑/.test(next)&&k>0){add(body.slice(0,k).trim(),body.slice(k+2).trim());memo=null;}
+      else memo=body;
+      return;
+    }
+    if((m=s.match(/^🔑️?\s*(.+)$/))){add(memo||'',m[1].trim());memo=null;return;}
+    skipped.push(s);
+  });
+  const flags=groups.reduce((s,gg)=>s+wandFinish(gg.complexes),0);
+  return {groups,skipped,memos:[],flags};
+}
+
+// ── 아무 메모 → ▶ 정리 파일 ──
+//  "강남대로114길28 종3077"            → ▶ 강남대로 114길 28 / 종3077
+//  "세진하우스 강남대로122길62 종1234"   → ▶ 강남대로 122길 62 세진하우스 / 종1234
+//  "대치현대 101동 공동현관 ##9077"      → ▶ 대치현대 / 101동 공동현관 – ##9077
+//  "논현로111길21"  다음 줄 "열쇠3690"   → 주소만 있는 줄 아래의 코드만 있는 줄은 그 주소 것
+//  "A동 #4321# B동 #1877"               → 한 줄에 여러 개면 위치(동·호·현관) 단어에서 끊음
+//  카톡 대화 내보내기의 [이름] [오후 3:12] · 날짜 줄 · 인사말은 걸러냄
+const W_LOC=/^([A-Za-z0-9·~,\-]*(동|호|층|라인)|공동현관|공동|현관|정문|후문|쪽문|철문|뒷문|주차장|지하|입구|뒤쪽|앞쪽|엘리베이터|엘베)$/;
+const W_BLDG=/(아파트|빌라|빌딩|하우스|타워|맨션|오피스텔|단지|캐슬|자이|푸르지오|래미안|레미안|힐스|파크|팰리스|센타|센터|상가|위브|빌|홈|텔|스테이트|더샵|편한세상|주택|원룸|기숙사|회관|아이빌|프라임)/;
+const W_CHAT=/(요|니다|죠|네요|ㅋ|ㅎ|\?|!|감사|수고|부탁|알겠|사진|동영상|이모티콘|삭제된 메시지|파일:)/;
+function wandStripChat(s){
+  return s.replace(/^\[[^\]]{1,30}\]\s*\[[^\]]{1,20}\]\s*/,'')                       // [이름] [오후 3:12]
+    .replace(/^\d{4}[.\-/년]\s*\d{1,2}[.\-/월]\s*\d{1,2}[.일]?\s*(오전|오후)?\s*\d{1,2}:\d{2}\s*,?\s*[^:：]{1,20}\s*[:：]\s*/,'') // 2024. 6. 19. 오후 3:12, 이름 :
+    .replace(/^(오전|오후)\s*\d{1,2}:\d{2}\s*/,'')
+    .replace(/^(?:[-•·▪◦]|\d{1,3}[.)])\s+/,'')
+    .trim();
+}
+function wandSplitRest(rest){
+  const toks=[];
+  rest.replace(/[\(（][^()（）]*[\)）]|\S+/g,m=>{splitNameCode(m).forEach(x=>toks.push(x));return m;});
+  let i=0;const name=[];
+  while(i<toks.length&&!wandIsCode(toks[i])&&!W_LOC.test(toks[i])&&!/^[\(（–—]/.test(toks[i]))name.push(toks[i++]);
+  const pairs=[];let lab=[],code=[];
+  for(;i<toks.length;i++){
+    const t=toks[i];
+    if(/^[–—]$/.test(t))continue;
+    if(/^[\(（]/.test(t)){(code.length?code:lab).push(t);continue;}
+    if(wandIsCode(t)){code.push(t);continue;}
+    if(code.length&&W_LOC.test(t)){pairs.push({lab:lab.join(' '),code:code.join(' ')});lab=[t];code=[];continue;}
+    (code.length?code:lab).push(t);
+  }
+  if(code.length)pairs.push({lab:lab.join(' '),code:code.join(' ')});
+  return {name:name.join(' '),pairs,pend:code.length?'':lab.join(' ')};
+}
+function memoToWand(text){
+  const out=[], skipped=[];
+  let cur=null, pend='';
+  const open=h=>{if(cur!==h){out.push('▶ '+h);cur=h;}pend='';};
+  const val=(lab,code)=>{lab=[pend,lab].filter(Boolean).join(' ');out.push('   '+(lab?lab+' – ':'')+code);};
+  text.split(/\r?\n/).forEach(raw=>{
+    const orig=raw.replace(/ /g,' ').trim();
+    let s=wandStripChat(orig);
+    if(!s)return;
+    if(/^-{3,}.*-{3,}$/.test(s)||/^\d{4}년\s*\d{1,2}월\s*\d{1,2}일[^0-9#*]*$/.test(s)||/카카오톡 대화|저장한 날짜/.test(s))return;
+    s=s.replace(/^▶\s*/,'');
+    // 주소가 줄 중간에 있으면 앞부분은 건물 이름으로
+    let pre='';
+    const mid=s.match(/[가-힣]+로\s?\d+(?:\s?길\s?\d+(?:-\d+)?|-\d+)?/);
+    if(mid&&mid.index>0&&!parseRoadAddr(s)){pre=s.slice(0,mid.index).trim();s=s.slice(mid.index);}
+    const ra=parseRoadAddr(s);
+    const gm=!ra&&s.match(/^([가-힣]+동)\s?(\d+)\s?길\s?(\d+(?:-\d+)?)(.*)$/);
+    const jm=!ra&&!gm&&s.match(/^([가-힣]+동)\s?(\d+(?:-\d+)?)(?![\d길])(.*)$/);
+    let addr='', rest=s;
+    if(ra){addr=ra.display;rest=ra.rest;}
+    else if(gm){addr=gm[1]+' '+gm[2]+'길 '+gm[3];rest=gm[4];}
+    else if(jm){addr=jm[1]+' '+jm[2];rest=jm[3];}
+    const sp=wandSplitRest(rest.trim());
+    if(addr){
+      const nm=[pre,sp.name].filter(Boolean).join(' ');
+      if(W_CHAT.test(nm)){skipped.push(orig);return;}
+      open(addr+(nm?' '+nm:''));
+      sp.pairs.forEach(p=>val(p.lab,p.code));
+      pend=sp.pend;
+      return;
+    }
+    const nm=[pre,sp.name].filter(Boolean).join(' ');
+    if(nm&&(W_CHAT.test(nm)||nm.length>25)){skipped.push(orig);return;}
+    if(nm&&sp.pairs.length){open(nm);sp.pairs.forEach(p=>val(p.lab,p.code));pend=sp.pend;return;}
+    if(!nm&&sp.pairs.length){
+      if(cur===null){skipped.push(orig+'  (어느 주소인지 없음)');return;}
+      sp.pairs.forEach(p=>val(p.lab,p.code));pend=sp.pend;return;
+    }
+    if(nm&&!sp.pairs.length&&W_BLDG.test(nm)&&!/\d{3,}/.test(nm)){open(nm);pend=sp.pend;return;}
+    if(!nm&&sp.pend&&cur!==null){pend=sp.pend;return;}   // "101동" 만 있는 줄 → 다음 코드의 위치
+    skipped.push(orig);
+  });
+  return {text:out.join('\n'),skipped};
+}
+
+// ── 미리보기: 붙여넣거나 파일을 열면 바로 몇 개가 새로 들어가는지 보여줌 ──
+let wandTimer=null, wandAutoText='';
+function schedWandPreview(ms){clearTimeout(wandTimer);wandTimer=setTimeout(renderWandPreview,ms==null?250:ms);}
+function renderWandPreview(){
+  const box=document.getElementById('wandPreview');
+  const btn=document.getElementById('parseSubmitBtn');
+  const cxFg=document.getElementById('parseComplexFg');
+  if(!box)return;
+  const text=document.getElementById('parseInput').value;
+  const kind=text.trim()?smartKind(text):'';
+  const cidSel=document.getElementById('parseTargetComplex').value;
+  cxFg.style.display=(kind&&kind!=='memo'&&kind!=='structured')?'none':'';   // 정리된 글은 단지를 스스로 나눔
+  if(!kind||kind==='structured'||(kind==='memo'&&cidSel&&cidSel!=='__AUTO__')){box.innerHTML='';btn.textContent='분류 및 추가';return;}
+  const parsed=smartParse(text,kind);
+  // 받은 목록의 지역 이름과 같은 지역이 있으면 처음 한 번 그 지역을 골라 둠
+  const selEl=document.getElementById('parseTargetRegion');
+  if(wandAutoText!==text&&parsed.groups.length===1&&parsed.groups[0].rname){
+    const same=data.regions.find(r=>wNorm(r.name)===wNorm(parsed.groups[0].rname));
+    if(same&&selEl.value!==same.id){selEl.value=same.id;}
+  }
+  wandAutoText=text;
+  const rid=selEl.value;
+  const region=rid==='__NEW__'?null:fR(rid);
+  const plan=planAll(region,parsed);
+  const cnt=s=>plan.items.filter(x=>x.status===s).length;
+  const nNew=cnt('new'),nDup=cnt('dup'),nDiff=cnt('diff'),nAdd=nNew+nDiff;
+  const L=(arr,f)=>`<div class="wand-list">${arr.map(f).join('')}</div>`;
+  const byCx=new Map();
+  plan.items.forEach(it=>{const o=byCx.get(it.pc)||{pc:it.pc,ex:it.ex,rn:it.region?it.region.name:(parsed.groups[it.gi].rname||''),n:0,d:0};if(it.status==='dup')o.d++;else o.n++;byCx.set(it.pc,o);});
+  const diffs=plan.items.filter(x=>x.status==='diff');
+  const checks=plan.items.filter(x=>x.status!=='dup'&&x.c.check);
+  const outs=[...parsed.memos.map(m=>'📝 '+m),...parsed.skipped.map(m=>'⏭ '+m)];
+  const target=plan.multi?`지역 ${parsed.groups.length}곳 (이름 같은 지역에 합침)`:(region?region.name:'새 지역');
+  const from=parsed.groups.length===1&&parsed.groups[0].rname?`<div class="fhint" style="margin:-4px 0 8px">보낸 쪽 지역 이름: ${esc(parsed.groups[0].rname)}</div>`:'';
+  box.innerHTML=`<div class="wand-box">
+<div class="wand-hd">🪄 ${KIND_NAME[kind]} 읽었어요 — ${esc(target)}</div>${from}
+<div class="wand-stats">
+<div class="ws new">새로 추가<b>${nNew}</b></div>
+<div class="ws">이미 있음 (건너뜀)<b>${nDup}</b></div>
+<div class="ws diff">기존과 번호 다름<b>${nDiff}</b></div>
+<div class="ws chk">⚠ 현장 확인 표시<b>${checks.length}</b></div>
+</div>
+${byCx.size?`<details${kind==='memo'?' open':''}><summary>🏢 단지별 (${byCx.size}곳)</summary>${L([...byCx.values()],o=>`<div>${plan.multi?esc(o.rn)+' › ':''}${esc(o.pc.name)} — 새로 <span class="v">${o.n}</span>${o.d?` · 있음 ${o.d}`:''}${o.ex?' · 기존 단지에 합침':' · 새 단지'}</div>`)}</details>`:''}
+${kind==='memo'&&nAdd?`<details><summary>👀 이렇게 나눴어요 (${nAdd})</summary>${L(plan.items.filter(x=>x.status!=='dup'),x=>`<div>${esc(x.pc.name)} · ${esc([x.c.section,x.c.sublabel].filter(Boolean).join(' '))} <span class="v">${esc(x.c.value)}</span></div>`)}</details>`:''}
+${nDiff?`<details open><summary>⚠ 기존과 번호 다름 (${nDiff})</summary>${L(diffs,x=>`<div>${esc(x.c.sublabel||x.c.section)}<br>기존 <span class="o">${esc(x.old.join(', '))}</span> → 새 <span class="v">${esc(x.c.value)}</span></div>`)}</details>`:''}
+${checks.length?`<details><summary>🔎 현장 확인 표시 (${checks.length})</summary>${L(checks,x=>`<div>${esc(x.pc.name)} · ${esc([x.c.section,x.c.sublabel].filter(Boolean).join(' '))} <span class="v">${esc(x.c.value)}</span></div>`)}</details>`:''}
+${outs.length?`<details${kind==='memo'&&outs.length<=8?' open':''}><summary>📝 가져오지 않는 줄 (${outs.length})</summary>${L(outs,m=>`<div>${esc(m)}</div>`)}</details>`:''}
+<div class="fhint" style="margin-top:8px">기존 코드는 지우지 않아요. 번호가 다른 곳은 새 코드에 ⚠ 표시를 달아 옆에 더해요. 추가한 뒤 💾 에서 되돌릴 수 있어요.</div>
+</div>`;
+  btn.textContent=nAdd?`🪄 ${nAdd}개 추가`:'추가할 새 코드 없음';
+}
+
+// 📄 파일 열기 — 메모장 저장 방식(UTF-8 / 옛 한글 ANSI) 둘 다
+function loadParseFile(file){
+  if(!file)return;
+  const rd=new FileReader();
+  rd.onload=e=>{
+    const buf=e.target.result;
+    let t=new TextDecoder('utf-8').decode(buf);
+    if(t.includes('�')){try{t=new TextDecoder('euc-kr').decode(buf);}catch(err){}}
+    document.getElementById('parseInput').value=t.replace(/^﻿/,'');
+    schedWandPreview(0);
+    showToast('📄 '+file.name+' 불러옴');
+  };
+  rd.readAsArrayBuffer(file);
+}
+
+// ── 📨 다른 사람에게 보내기 — 전체 코드를 파일 하나로 (받는 쪽 🪄 가 겹치는 건 빼고 합침)
+// 폰 공유 창은 .json 을 못 넘기는 경우가 있어 내용은 표준 JSON, 이름은 .txt 로 보냄
+async function sendCodesFile(){
+  const n=data.regions.reduce((s,r)=>s+r.complexes.reduce((a,c)=>a+c.codes.length,0),0);
+  if(!n){showToast('⚠️ 보낼 코드가 없어요');return;}
+  const payload=buildStandardPayload(data.regions,'출입코드노트','');
+  const name='출입코드_보내기_'+new Date().toISOString().slice(0,10)+'.txt';
+  const file=new File([JSON.stringify(payload)],name,{type:'text/plain'});
+  try{
+    if(navigator.canShare&&navigator.canShare({files:[file]})){
+      await navigator.share({files:[file],title:'출입코드 '+n+'개'});
+      closeModal('backupModal');return;
+    }
+  }catch(e){if(e&&e.name==='AbortError')return;}
+  const a=document.createElement('a');a.href=URL.createObjectURL(file);a.download=name;a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  showToast('📨 파일 저장 — 카톡으로 보내 주세요');
+}
+
+// ── ↩ 마지막 자동 추가 되돌리기 (추가하기 직전 상태를 한 번 기억) ──
+function rememberUndo(before,label){
+  try{localStorage.setItem('acn5_undo',JSON.stringify({at:Date.now(),label,data:before}));}catch(e){}
+}
+function refreshUndoBtn(){
+  const b=document.getElementById('undoImportBtn');if(!b)return;
+  let u=null;try{u=JSON.parse(localStorage.getItem('acn5_undo')||'null');}catch(e){}
+  b.hidden=!u;
+  if(u){const d=new Date(u.at);document.getElementById('undoImportInfo').textContent=`${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')} · ${u.label} 추가 전으로`;}
+}
+function undoLastImport(){
+  let u=null;try{u=JSON.parse(localStorage.getItem('acn5_undo')||'null');}catch(e){}
+  if(!u){showToast('⚠️ 되돌릴 기록이 없어요');return;}
+  if(!confirm(`마지막 자동 추가(${u.label})를 되돌릴까요?\n\n그 뒤에 직접 고친 내용도 함께 사라져요.`))return;
+  try{data=migrateLabels(JSON.parse(u.data));}catch(e){showToast('⚠️ 되돌리기 실패');return;}
+  save();try{localStorage.removeItem('acn5_undo');}catch(e){}
+  openR=new Set();openC=new Set();closeModal('backupModal');render();
+  showToast('↩ 되돌렸어요');
 }
 
 document.getElementById('parseTargetComplex').addEventListener('change', updateParseHint);
