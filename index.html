@@ -720,7 +720,17 @@ function foldAll(){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 function tC(id){openC.has(id)?openC.delete(id):openC.add(id);render();}
+// 소리가 같은 모음은 같은 글자로 봄 — 음성 인식이 "래미"를 "레미"로 적어도 찾게
+//   ㅔ→ㅐ, ㅖ→ㅒ, ㅚ·ㅞ→ㅙ  (검색어와 저장된 글 양쪽에 똑같이 적용, 화면 글자는 그대로)
+const KO_FOLD={5:1,7:3,11:10,15:10};
+function koFold(s){
+  return String(s||'').replace(/[가-힣]/g,ch=>{
+    const c=ch.charCodeAt(0)-0xAC00, jung=Math.floor(c/28)%21, f=KO_FOLD[jung];
+    return f===undefined?ch:String.fromCharCode(ch.charCodeAt(0)+(f-jung)*28);
+  });
+}
 function handleSearch(v){
+  v=koFold(v);
   q=nkey(v).toLowerCase();
   // 단어별 토큰: 띄어쓰기 기준 + 한글→숫자 경계("상록108동" → "상록","108동")
   qt=v.toLowerCase().replace(/([가-힣a-z])(?=\d)/g,'$1 ').split(/\s+/).filter(Boolean);
@@ -743,7 +753,7 @@ function tokRe(t){
 let qDropped=[];   // 데이터 어디에도 없어서 무시한 단어 (음성 인식이 잘못 들은 말)
 function buildMatches(){
   const items=[];
-  const T=arr=>nkey(arr.join('|')).toLowerCase();
+  const T=arr=>koFold(nkey(arr.join('|'))).toLowerCase();
   data.regions.forEach(rg=>rg.complexes.forEach(cx=>{
     let sec='';
     cx.codes.forEach(cd=>{
